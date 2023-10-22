@@ -11,7 +11,7 @@ public class TeamColor {
         this.sign = sign;
     }
 
-    public static final TeamColor RED = new TeamColor("赤チーム", Colors.orangered);
+    public static final TeamColor RED = new TeamColor("赤チーム", Colors.red);
     public static final TeamColor WHITE = new TeamColor("白チーム", Colors.white);
     public static final TeamColor YELLOW = new TeamColor("黄チーム", Colors.yellow);
 }

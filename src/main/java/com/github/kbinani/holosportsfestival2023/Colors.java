@@ -9,6 +9,7 @@ public class Colors {
   public final static TextColor magenta = TextColor.fromHexString("#FF00FF");
   public final static TextColor orange = TextColor.fromHexString("#FFA500");
   public final static TextColor orangered = TextColor.fromHexString("#FF4500");
+  public final static TextColor red = TextColor.fromHexString("#FF0000");
   public final static TextColor white = TextColor.fromHexString("#FFFFFF");
   public final static TextColor yellow = TextColor.fromHexString("#FFFF00");
 

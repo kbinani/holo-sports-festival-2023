@@ -31,6 +31,7 @@ public class Editor {
     side.line(1, line1);
     side.line(2, line2);
     side.line(3, line3);
+    sign.setWaxed(true);
     sign.update();
   }
 }
