@@ -1,18 +1,19 @@
 package com.github.kbinani.holosportsfestival2023;
 
+import com.github.kbinani.holosportsfestival2023.himerace.Level;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 
 public class Main extends JavaPlugin implements Listener {
   private World world;
@@ -21,7 +22,7 @@ public class Main extends JavaPlugin implements Listener {
   public void onEnable() {
     Optional<World> overworld = getServer().getWorlds().stream().filter(it -> it.getEnvironment() == World.Environment.NORMAL).findFirst();
     if (overworld.isEmpty()) {
-      getLogger().log(Level.SEVERE, "server should have at least one overworld dimension");
+      getLogger().log(java.util.logging.Level.SEVERE, "server should have at least one overworld dimension");
       setEnabled(false);
       return;
     }
@@ -52,9 +53,9 @@ public class Main extends JavaPlugin implements Listener {
       reasons.add("pvp is set to false");
     }
     if (!reasons.isEmpty()) {
-      getLogger().log(Level.SEVERE, "Disabling the plugin because:");
+      getLogger().log(java.util.logging.Level.SEVERE, "Disabling the plugin because:");
       for (String reason : reasons) {
-        getLogger().log(Level.SEVERE, "  " + reason);
+        getLogger().log(java.util.logging.Level.SEVERE, "  " + reason);
       }
       setEnabled(false);
       return;
@@ -67,6 +68,14 @@ public class Main extends JavaPlugin implements Listener {
 
     PluginManager pluginManager = getServer().getPluginManager();
     pluginManager.registerEvents(this, this);
+
+  }
+
+  @EventHandler
+  public void onPlayerJoin(PlayerJoinEvent e) {
+    //debug
+    var l = new Level(world, TeamColor.RED, new Point3i(-23, -60, -16));
+    l.reset();
   }
 
   @EventHandler
