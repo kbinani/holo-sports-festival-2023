@@ -43,6 +43,16 @@ public class Level {
         Component.text(color.japanese).color(color.sign),
         Component.text("騎士").color(Colors.orange),
         Component.text("右クリでエントリー！").color(Colors.aqua));
+
+    setInvisibleFloorActive(true);
+  }
+
+  private void setInvisibleFloorActive(boolean active) {
+    String block = active ? "barrier" : "air";
+    Editor.Fill(world, new Point3i(-22, -58, -6), new Point3i(-19, -58, 6), block);
+    Editor.Fill(world, new Point3i(-15, -58, -6), new Point3i(-12, -58, 6), block);
+    Editor.Fill(world, new Point3i(-18, -58, -3), new Point3i(-16, -58, 0), block);
+    Editor.Fill(world, new Point3i(-18, -58, 4), new Point3i(-16, -58, 6), block);
   }
 
   private Point3i pos(int x, int y, int z) {

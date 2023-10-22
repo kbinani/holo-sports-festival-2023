@@ -1,7 +1,9 @@
 package com.github.kbinani.holosportsfestival2023;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -13,6 +15,55 @@ import javax.annotation.Nonnull;
 
 public class Editor {
   private Editor() {
+  }
+
+  public static void Fill(@Nonnull World world, Point3i from, Point3i to, String blockDataString) {
+    Load(world, from, to);
+    Server server = Bukkit.getServer();
+    BlockData blockData = null;
+    try {
+      blockData = server.createBlockData(blockDataString);
+    } catch (Throwable e) {
+      e.printStackTrace(System.err);
+      return;
+    }
+    int x0 = Math.min(from.x, to.x);
+    int y0 = Math.min(from.y, to.y);
+    int z0 = Math.min(from.z, to.z);
+    int x1 = Math.max(from.x, to.x);
+    int y1 = Math.max(from.y, to.y);
+    int z1 = Math.max(from.z, to.z);
+    for (int y = y0; y <= y1; y++) {
+      for (int z = z0; z <= z1; z++) {
+        for (int x = x0; x <= x1; x++) {
+          world.setBlockData(x, y, z, blockData);
+        }
+      }
+    }
+  }
+
+  private static void Load(@Nonnull World world, Point3i from, Point3i to) {
+    int cx0 = from.x >> 4;
+    int cz0 = from.z >> 4;
+    int cx1 = to.x >> 4;
+    int cz1 = to.z >> 4;
+    if (cx1 < cx0) {
+      int t = cx0;
+      cx0 = cx1;
+      cx1 = t;
+    }
+    if (cz1 < cz0) {
+      int t = cz0;
+      cz0 = cz1;
+      cz1 = t;
+    }
+    for (int cx = cx0; cx <= cx1; cx++) {
+      for (int cz = cz0; cz <= cz1; cz++) {
+        if (!world.isChunkLoaded(cx, cz)) {
+          world.loadChunk(cx, cz);
+        }
+      }
+    }
   }
 
   public static void StandingSign(@Nonnull World world, Point3i p, Material material, int rot, Component line0, Component line1, Component line2, Component line3) {
