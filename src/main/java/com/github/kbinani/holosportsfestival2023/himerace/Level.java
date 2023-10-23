@@ -7,23 +7,34 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.event.player.PlayerMoveEvent;
 
-public class Level {
+class Level {
   private final World world;
   private final Point3i origin;
   private final TeamColor color;
+  private final Stage[] stages;
 
   /**
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
    * @param origin
    */
-  public Level(World world, TeamColor color, Point3i origin) {
+  Level(World world, TeamColor color, Point3i origin) {
     this.world = world;
     this.color = color;
     this.origin = origin;
+    this.stages = new Stage[]{
+        new BlockHeadStage(world, origin)
+    };
   }
 
-  public void reset() {
+  void debugOnPlayerMove(PlayerMoveEvent e) {
+    for (var stage : stages) {
+      stage.debugOnPlayerMove(e);
+    }
+  }
+
+  void reset() {
     Editor.StandingSign(
         world,
         pos(-16, -60, -20),
@@ -44,15 +55,9 @@ public class Level {
         Component.text("騎士").color(Colors.orange),
         Component.text("右クリでエントリー！").color(Colors.aqua));
 
-    setInvisibleFloorActive(true);
-  }
-
-  private void setInvisibleFloorActive(boolean active) {
-    String block = active ? "barrier" : "air";
-    Editor.Fill(world, new Point3i(-22, -58, -6), new Point3i(-19, -58, 6), block);
-    Editor.Fill(world, new Point3i(-15, -58, -6), new Point3i(-12, -58, 6), block);
-    Editor.Fill(world, new Point3i(-18, -58, -3), new Point3i(-16, -58, 0), block);
-    Editor.Fill(world, new Point3i(-18, -58, 4), new Point3i(-16, -58, 6), block);
+    for (var stage : this.stages) {
+      stage.stageReset();
+    }
   }
 
   private Point3i pos(int x, int y, int z) {

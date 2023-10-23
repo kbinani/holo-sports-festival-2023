@@ -1,6 +1,6 @@
 package com.github.kbinani.holosportsfestival2023;
 
-import com.github.kbinani.holosportsfestival2023.himerace.Level;
+import com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.World;
@@ -15,8 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public class Main extends JavaPlugin implements Listener {
   private World world;
+  private List<MiniGame> miniGames;
+  private boolean isLevelsReady = false;
 
   @Override
   public void onEnable() {
@@ -69,13 +72,21 @@ public class Main extends JavaPlugin implements Listener {
     PluginManager pluginManager = getServer().getPluginManager();
     pluginManager.registerEvents(this, this);
 
+    miniGames = new ArrayList<>();
+    miniGames.add(new HimeraceEventListener(world));
+    for (var miniGame : miniGames) {
+      pluginManager.registerEvents(miniGame, this);
+    }
   }
 
   @EventHandler
   public void onPlayerJoin(PlayerJoinEvent e) {
-    //debug
-    var l = new Level(world, TeamColor.RED, new Point3i(-23, -60, -16));
-    l.reset();
+    if (!isLevelsReady) {
+      isLevelsReady = true;
+      for (var miniGame : miniGames) {
+        miniGame.miniGameReset();
+      }
+    }
   }
 
   @EventHandler

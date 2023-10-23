@@ -2,6 +2,8 @@ package com.github.kbinani.holosportsfestival2023;
 
 import org.bukkit.Location;
 
+import java.util.Objects;
+
 public class Point3i {
     public int x;
     public int y;
@@ -35,6 +37,11 @@ public class Point3i {
         }
         Point3i v = (Point3i) o;
         return v.x == x && v.y == y && v.z == z;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
     }
 
     @Override
