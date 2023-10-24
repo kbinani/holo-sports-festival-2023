@@ -8,9 +8,11 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 class Level {
   private final World world;
+  private final JavaPlugin owner;
   private final Point3i origin;
   private final TeamColor color;
   private final Stage[] stages;
@@ -19,12 +21,13 @@ class Level {
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
    * @param origin
    */
-  Level(World world, TeamColor color, Point3i origin) {
+  Level(World world, JavaPlugin owner, TeamColor color, Point3i origin) {
     this.world = world;
+    this.owner = owner;
     this.color = color;
     this.origin = origin;
     this.stages = new Stage[]{
-        new BlockHeadStage(world, origin)
+        new BlockHeadStage(world, owner, origin)
     };
   }
 

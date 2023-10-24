@@ -11,10 +11,8 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.util.Transformation;
-import org.joml.AxisAngle4f;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import java.util.*;
 
@@ -24,14 +22,14 @@ class BlockHeadStage implements Stage {
   private final Region2D[] firstFloorRegions;
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
-  private Map<UUID, BlockDisplay> headBlocks = new HashMap<>();
+  private Map<Player, BlockDisplay> headBlocks = new HashMap<>();
 
   private static final Material[] kHeadBlockMaterials = new Material[]{
       Material.MANGROVE_PLANKS,
       Material.BIRCH_PLANKS,
   };
 
-  BlockHeadStage(World world, Point3i origin) {
+  BlockHeadStage(World world, JavaPlugin owner, Point3i origin) {
     this.world = world;
     this.origin = origin;
     this.firstFloorRegions = new Region2D[]{
@@ -112,39 +110,31 @@ class BlockHeadStage implements Stage {
       if (player != knight) {
         continue;
       }
-      var id = player.getUniqueId();
-      var display = headBlocks.get(id);
+      var display = headBlocks.get(player);
       if (display == null) {
-        var bd = summonBlockDisplay(index);
-        headBlocks.put(id, bd);
-        display = bd;
+        display = summonBlockDisplay(index);
+        headBlocks.put(player, display);
       }
-      // transformation で移動させるとクライアント側で表示したときガタツキが無くなる.
-      //TODO: origin と反対側を向いた時, origin から離れていると表示対象外になる. 一定時間おきにプレイヤーの近くに teleport した方がよさそう
       var location = getBlockDisplayLocation(player, index);
-      var translation = location.sub(new Vector3f(origin.x, origin.y, origin.z));
-      display.setInterpolationDelay(0);
-      display.setInterpolationDuration(1);
-      display.setTransformation(new Transformation(new Vector3f((float) translation.x, (float) translation.y, (float) translation.z), new AxisAngle4f(), new Vector3f(1), new AxisAngle4f()));
+      display.teleport(new Location(world, location.getX(), location.getY(), location.getZ(), 0, 0));
     }
   }
 
   private BlockDisplay summonBlockDisplay(int index) {
-    var origin = new Location(world, this.origin.x, this.origin.y, this.origin.z, 0, 0);
-    return world.spawn(origin, BlockDisplay.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+    return world.spawn(new Location(world, origin.x, origin.y, origin.z, 0, 0), BlockDisplay.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       var material = kHeadBlockMaterials[index % kHeadBlockMaterials.length];
       it.setBlock(material.createBlockData());
       it.setBrightness(new Display.Brightness(15, 15));
     });
   }
 
-  private Vector3d getBlockDisplayLocation(Player player, int index) {
+  private Vector getBlockDisplayLocation(Player player, int index) {
     var location = player.getLocation();
     var x = location.getX() - 0.5;
     // z-fighting を避けるため y 方向は少しずらす
     var y = y(-58) + 0.001 * (index + 1);
     var z = location.getZ() - 0.5;
-    return new Vector3d(x, y, z);
+    return new Vector(x, y, z);
   }
 
   private boolean isFloorBlock(Point2i p) {

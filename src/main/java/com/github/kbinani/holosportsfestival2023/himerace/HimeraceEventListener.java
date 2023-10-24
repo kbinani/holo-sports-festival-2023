@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,15 +19,17 @@ import java.util.Map;
 
 public class HimeraceEventListener implements MiniGame {
   private final World world;
+  private final JavaPlugin owner;
   private final Map<TeamColor, Level> levels = new HashMap<>();
   private final Map<TeamColor, Team> teams = new HashMap<>();
   private Status status = Status.IDLE;
 
-  public HimeraceEventListener(World world) {
+  public HimeraceEventListener(World world, JavaPlugin owner) {
     this.world = world;
-    this.levels.put(TeamColor.RED, new Level(world, TeamColor.RED, pos(-23, -60, -16)));
-    this.levels.put(TeamColor.WHITE, new Level(world, TeamColor.WHITE, pos(-39, -60, -16)));
-    this.levels.put(TeamColor.YELLOW, new Level(world, TeamColor.YELLOW, pos(-55, -60, -16)));
+    this.owner = owner;
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-23, -60, -16)));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-39, -60, -16)));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-55, -60, -16)));
   }
 
   private void setStatus(Status s) {
@@ -78,7 +81,10 @@ public class HimeraceEventListener implements MiniGame {
       join(player, TeamColor.YELLOW, Role.PRINCESS);
     } else if (location.equals(pos(-50, -60, -20))) {
       join(player, TeamColor.YELLOW, Role.KNIGHT);
+    } else {
+      return;
     }
+    e.setCancelled(true);
   }
 
   private void join(Player player, TeamColor color, Role role) {
