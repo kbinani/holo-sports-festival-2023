@@ -38,6 +38,10 @@ class Team {
     return new LinkedList<>(knights);
   }
 
+  @Nullable Player getPrincess() {
+    return princess;
+  }
+
   @Nullable
   Role getCurrentRole(Player player) {
     if (princess != null && princess.getUniqueId().equals(player.getUniqueId())) {

@@ -12,6 +12,7 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -23,6 +24,12 @@ class BlockHeadStage implements Stage {
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
   private Map<Player, BlockDisplay> headBlocks = new HashMap<>();
+
+  enum PrincessStatus {
+    STATIONAL,
+    FALL,
+  }
+  private PrincessStatus princessStatus = PrincessStatus.FALL;
 
   private static final Material[] kHeadBlockMaterials = new Material[]{
       Material.MANGROVE_PLANKS,
@@ -63,12 +70,36 @@ class BlockHeadStage implements Stage {
   public void stageOnPlayerMove(Player player, Participation participation, Team team) {
     var knights = team.getKnights();
     setFloorForKnights(knights);
-    if (participation.role == Role.KNIGHT) {
-      setHeadBlocksForKnights(player, knights);
+    switch (participation.role) {
+      case KNIGHT -> {
+        setHeadBlocksForKnights(player, knights);
+        var princess = team.getPrincess();
+        if (princess != null) {
+          setPrincessStatus(isPrincessOnHeadBlock(princess) ? PrincessStatus.STATIONAL : PrincessStatus.FALL, team);
+        }
+      }
+      case PRINCESS -> {
+        setPrincessStatus(isPrincessOnHeadBlock(player) ? PrincessStatus.STATIONAL : PrincessStatus.FALL, team);
+      }
+    }
+  }
+
+  void setPrincessStatus(PrincessStatus status, Team team) {
+    if (princessStatus == status) {
+      return;
+    }
+    System.out.println(status);
+    princessStatus = status;
+    switch (princessStatus) {
+      case FALL -> resetFloors();
+      case STATIONAL -> setFloorForKnights(team.getKnights());
     }
   }
 
   void setFloorForKnights(List<Player> players) {
+    if (princessStatus == PrincessStatus.FALL) {
+      return;
+    }
     var blocks = new HashSet<Point2i>();
     for (var player : players) {
       var location = player.getLocation();
@@ -120,6 +151,29 @@ class BlockHeadStage implements Stage {
     }
   }
 
+  private boolean isPrincessOnHeadBlock(Player princess) {
+    var location = princess.getLocation();
+    var floorY = y(-57);
+    if (location.getY() < floorY) {
+      return false;
+    }
+    var base = new BoundingBox(
+        x(-18) - 0.3, -64, z(-7) - 0.3,
+        x(-15) + 0.3, 448, z(-3) + 0.3);
+    if (base.contains(location.toVector())) {
+      return true;
+    }
+    for (var headBlock : headBlocks.values()) {
+      var center = headBlock.getLocation().toVector().add(new Vector(0.5, 0.0, 0.5));
+      var dx = Math.abs(center.getX() - location.getX());
+      var dz = Math.abs(center.getZ() - location.getZ());
+      if (dx <= 0.8 && dz <= 0.8) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private BlockDisplay summonBlockDisplay(int index) {
     return world.spawn(new Location(world, origin.x, origin.y, origin.z, 0, 0), BlockDisplay.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       var material = kHeadBlockMaterials[index % kHeadBlockMaterials.length];
@@ -152,6 +206,7 @@ class BlockHeadStage implements Stage {
   }
 
   private void resetFloors() {
+    activeFloorBlocks.clear();
     for (var region : firstFloorRegions) {
       Editor.Fill(world, new Point3i(region.northWest.x, y(-58), region.northWest.z), new Point3i(region.southEast.x, y(-58), region.southEast.z), "air");
     }
