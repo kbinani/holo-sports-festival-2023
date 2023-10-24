@@ -4,5 +4,5 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 interface Stage {
   void stageReset();
-  void debugOnPlayerMove(PlayerMoveEvent e);
+  void stageOnPlayerMove(Team team);
 }

@@ -3,35 +3,35 @@ package  com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.Region2D;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.util.Transformation;
+import org.joml.AxisAngle4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.*;
 
 class BlockHeadStage implements Stage {
-  static class Region2D {
-    final Point2i northWest;
-    final Point2i southEast;
-
-    Region2D(Point2i northWest, Point2i southEast) {
-      this.northWest = northWest;
-      this.southEast = southEast;
-    }
-
-    boolean contains(Point2i p) {
-      return northWest.x <= p.x && p.x <= southEast.x && northWest.z <= p.z && p.z <= southEast.z;
-    }
-  }
-
   private final World world;
   private final Point3i origin;
   private final Region2D[] firstFloorRegions;
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
+  private Map<UUID, BlockDisplay> headBlocks = new HashMap<>();
+
+  private static final Material[] kHeadBlockMaterials = new Material[]{
+      Material.MANGROVE_PLANKS,
+      Material.BIRCH_PLANKS,
+  };
 
   BlockHeadStage(World world, Point3i origin) {
     this.world = world;
@@ -64,8 +64,10 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
-  public void debugOnPlayerMove(PlayerMoveEvent e) {
-    setFloorForKnights(Arrays.stream(new Player[]{e.getPlayer()}).toList());
+  public void stageOnPlayerMove(Team team) {
+    var knights = team.getKnights();
+    setFloorForKnights(knights);
+    setHeadBlocksForKnights(knights);
   }
 
   void setFloorForKnights(List<Player> players) {
@@ -101,6 +103,50 @@ class BlockHeadStage implements Stage {
       Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), "air");
     }
     this.activeFloorBlocks = blocks;
+  }
+
+  void setHeadBlocksForKnights(List<Player> players) {
+    int index = -1;
+    for (Player player : players) {
+      index++;
+      var id = player.getUniqueId();
+      var display = headBlocks.get(id);
+      if (display == null) {
+        var bd = summonBlockDisplay(player, index);
+        if (bd != null) {
+          headBlocks.put(id, bd);
+          display = bd;
+        }
+      }
+      if (display == null) {
+        continue;
+      }
+      // transformation で移動させるとクライアント側で表示したときガタツキが無くなる.
+      //TODO: origin と反対側を向いた時, origin から離れていると表示対象外になる. 一定時間おきにプレイヤーの近くに teleport した方がよさそう
+      var location = getBlockDisplayLocation(player, index);
+      var translation = location.sub(new Vector3f(origin.x, origin.y, origin.z));
+      display.setInterpolationDelay(0);
+      display.setInterpolationDuration(1);
+      display.setTransformation(new Transformation(new Vector3f((float) translation.x, (float) translation.y, (float) translation.z), new AxisAngle4f(), new Vector3f(1), new AxisAngle4f()));
+    }
+  }
+
+  @Nullable
+  private BlockDisplay summonBlockDisplay(Player player, int index) {
+    var origin = new Location(world, this.origin.x, this.origin.y, this.origin.z, 0, 0);
+    return world.spawn(origin, BlockDisplay.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      var material = kHeadBlockMaterials[index % kHeadBlockMaterials.length];
+      it.setBlock(material.createBlockData());
+    });
+  }
+
+  private Vector3d getBlockDisplayLocation(Player player, int index) {
+    var location = player.getLocation();
+    var x = location.getX() - 0.5;
+    // z-fighting を避けるため y 方向は少しずらす
+    var y = y(-58) + 0.001 * (index + 1);
+    var z = location.getZ() - 0.5;
+    return new Vector3d(x, y, z);
   }
 
   private boolean isFloorBlock(Point2i p) {

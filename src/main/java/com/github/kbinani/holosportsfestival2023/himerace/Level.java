@@ -28,9 +28,9 @@ class Level {
     };
   }
 
-  void debugOnPlayerMove(PlayerMoveEvent e) {
+  void onPlayerMove(Team team) {
     for (var stage : stages) {
-      stage.debugOnPlayerMove(e);
+      stage.stageOnPlayerMove(team);
     }
   }
 
