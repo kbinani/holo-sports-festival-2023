@@ -1,7 +1,5 @@
 package com.github.kbinani.holosportsfestival2023;
 
-import com.github.kbinani.holosportsfestival2023.Point2i;
-
 public class Region2D {
   public final Point2i northWest;
   public final Point2i southEast;

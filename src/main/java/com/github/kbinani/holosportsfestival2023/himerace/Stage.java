@@ -1,8 +1,8 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.entity.Player;
 
 interface Stage {
   void stageReset();
-  void stageOnPlayerMove(Team team);
+  void stageOnPlayerMove(Player player, Participation participation, Team team);
 }

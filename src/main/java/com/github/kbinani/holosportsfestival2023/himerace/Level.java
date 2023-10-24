@@ -7,7 +7,7 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.entity.Player;
 
 class Level {
   private final World world;
@@ -28,9 +28,9 @@ class Level {
     };
   }
 
-  void onPlayerMove(Team team) {
+  void onPlayerMove(Player player, Participation participation, Team team) {
     for (var stage : stages) {
-      stage.stageOnPlayerMove(team);
+      stage.stageOnPlayerMove(player, participation, team);
     }
   }
 

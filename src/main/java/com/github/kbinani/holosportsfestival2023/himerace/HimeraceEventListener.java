@@ -51,7 +51,7 @@ public class HimeraceEventListener implements MiniGame {
       return;
     }
     var level = levels.get(participation.color);
-    level.onPlayerMove(ensureTeam(participation.color));
+    level.onPlayerMove(player, participation, ensureTeam(participation.color));
   }
 
   @EventHandler

@@ -8,16 +8,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.BlockDisplay;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 class BlockHeadStage implements Stage {
@@ -64,10 +62,12 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
-  public void stageOnPlayerMove(Team team) {
+  public void stageOnPlayerMove(Player player, Participation participation, Team team) {
     var knights = team.getKnights();
     setFloorForKnights(knights);
-    setHeadBlocksForKnights(knights);
+    if (participation.role == Role.KNIGHT) {
+      setHeadBlocksForKnights(player, knights);
+    }
   }
 
   void setFloorForKnights(List<Player> players) {
@@ -105,21 +105,19 @@ class BlockHeadStage implements Stage {
     this.activeFloorBlocks = blocks;
   }
 
-  void setHeadBlocksForKnights(List<Player> players) {
+  void setHeadBlocksForKnights(Player knight, List<Player> knights) {
     int index = -1;
-    for (Player player : players) {
+    for (Player player : knights) {
       index++;
+      if (player != knight) {
+        continue;
+      }
       var id = player.getUniqueId();
       var display = headBlocks.get(id);
       if (display == null) {
-        var bd = summonBlockDisplay(player, index);
-        if (bd != null) {
-          headBlocks.put(id, bd);
-          display = bd;
-        }
-      }
-      if (display == null) {
-        continue;
+        var bd = summonBlockDisplay(index);
+        headBlocks.put(id, bd);
+        display = bd;
       }
       // transformation で移動させるとクライアント側で表示したときガタツキが無くなる.
       //TODO: origin と反対側を向いた時, origin から離れていると表示対象外になる. 一定時間おきにプレイヤーの近くに teleport した方がよさそう
@@ -131,12 +129,12 @@ class BlockHeadStage implements Stage {
     }
   }
 
-  @Nullable
-  private BlockDisplay summonBlockDisplay(Player player, int index) {
+  private BlockDisplay summonBlockDisplay(int index) {
     var origin = new Location(world, this.origin.x, this.origin.y, this.origin.z, 0, 0);
     return world.spawn(origin, BlockDisplay.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       var material = kHeadBlockMaterials[index % kHeadBlockMaterials.length];
       it.setBlock(material.createBlockData());
+      it.setBrightness(new Display.Brightness(15, 15));
     });
   }
 
