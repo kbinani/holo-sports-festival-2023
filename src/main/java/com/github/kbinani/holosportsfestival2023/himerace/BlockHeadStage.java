@@ -34,7 +34,7 @@ class BlockHeadStage implements Stage {
     this.origin = origin;
     this.firstFloorRegions = new Region2D[]{
         new Region2D(pos(-22, -14), pos(-19, 6)),
-        new Region2D(pos(-18, -14), pos(-16, -11)),
+        new Region2D(pos(-18, -14), pos(-16, -8)),
         new Region2D(pos(-15, -14), pos(-12, 6)),
         new Region2D(pos(-18, -3), pos(-16, 0)),
         new Region2D(pos(-18, 4), pos(-16, 6)),
