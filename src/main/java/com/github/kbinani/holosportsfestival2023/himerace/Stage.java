@@ -5,13 +5,16 @@ import com.github.kbinani.holosportsfestival2023.Point3i;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 interface Stage {
   void stageReset();
 
-  void stageOnPlayerMove(Player player, Participation participation, Team team);
+  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team);
+
+  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team);
 
   void stageOpenGate();
 

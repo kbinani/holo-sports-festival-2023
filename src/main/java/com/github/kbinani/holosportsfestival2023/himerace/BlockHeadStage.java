@@ -8,6 +8,8 @@ import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
@@ -71,10 +73,13 @@ class BlockHeadStage implements Stage {
     headBlocks.clear();
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);
     princessStatus = PrincessStatus.FALL;
+    setOpenFirstGate(false);
+    setOpenSecondGate(false);
   }
 
   @Override
-  public void stageOnPlayerMove(Player player, Participation participation, Team team) {
+  public void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+    var player = e.getPlayer();
     var knights = team.getKnights();
     setFloorForKnights(knights);
     switch (participation.role) {
@@ -92,6 +97,27 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
+  public void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+    if (participation.role != Role.PRINCESS) {
+      return;
+    }
+    var block = e.getClickedBlock();
+    if (block == null) {
+      return;
+    }
+    var location = new Point3i(block.getLocation());
+    switch (e.getAction()) {
+      case PHYSICAL -> {
+        if (location.equals(pos(-17, -60, 9))) {
+          setOpenFirstGate(true);
+        } else if (location.equals(pos(-17, -60, 24))) {
+          setOpenSecondGate(true);
+        }
+      }
+    }
+  }
+
+  @Override
   public void stageOpenGate() {
     Stage.OpenGate(owner, world, pos(-19, -60, -16));
   }
@@ -99,6 +125,18 @@ class BlockHeadStage implements Stage {
   @Override
   public void stageCloseGate() {
     Stage.CloseGate(owner, world, pos(-19, -60, -16));
+  }
+
+  void setOpenFirstGate(boolean open) {
+    var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
+    Editor.Fill(world, pos(-21, -60, 7), pos(-20, -60, 7), block);
+    Editor.Fill(world, pos(-18, -60, 7), pos(-16, -60, 7), block);
+    Editor.Fill(world, pos(-14, -60, 7), pos(-13, -60, 7), block);
+  }
+
+  void setOpenSecondGate(boolean open) {
+    var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
+    Editor.Fill(world, pos(-21, -60, 21), pos(-13, -60, 21), block);
   }
 
   void setPrincessStatus(PrincessStatus status, Team team) {

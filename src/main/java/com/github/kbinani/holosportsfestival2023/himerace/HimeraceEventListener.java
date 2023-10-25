@@ -7,8 +7,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -88,8 +86,6 @@ public class HimeraceEventListener implements MiniGame {
         Component.empty(),
         Component.text("エントリーリスト").color(Colors.aqua)
     );
-    setOpenFirstGate(false);
-    setOpenSecondGate(false);
   }
 
   @EventHandler
@@ -101,7 +97,7 @@ public class HimeraceEventListener implements MiniGame {
       return;
     }
     var level = levels.get(participation.color);
-    level.onPlayerMove(player, participation, ensureTeam(participation.color));
+    level.onPlayerMove(e, participation, ensureTeam(participation.color));
   }
 
   @EventHandler
@@ -109,66 +105,41 @@ public class HimeraceEventListener implements MiniGame {
   public void onPlayerInteract(PlayerInteractEvent e) {
     Player player = e.getPlayer();
     Block block = e.getClickedBlock();
+    var participation = getCurrentParticipation(player);
+    if (participation != null) {
+      var level = levels.get(participation.color);
+      level.onPlayerInteract(e, participation, ensureTeam(participation.color));
+    }
     if (block == null) {
       return;
     }
-    if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
-      return;
-    }
     Point3i location = new Point3i(block.getLocation());
-    if (location.equals(pos(-16, -60, -20))) {
-      join(player, TeamColor.RED, Role.PRINCESS);
-    } else if (location.equals(pos(-18, -60, -20))) {
-      join(player, TeamColor.RED, Role.KNIGHT);
-    } else if (location.equals(pos(-32, -60, -20))) {
-      join(player, TeamColor.WHITE, Role.PRINCESS);
-    } else if (location.equals(pos(-34, -60, -20))) {
-      join(player, TeamColor.WHITE, Role.KNIGHT);
-    } else if (location.equals(pos(-48, -60, -20))) {
-      join(player, TeamColor.YELLOW, Role.PRINCESS);
-    } else if (location.equals(pos(-50, -60, -20))) {
-      join(player, TeamColor.YELLOW, Role.KNIGHT);
-    } else if (location.equals(pos(-12, -60, -20))) {
-      start();
-    } else if (location.equals(pos(-13, -60, -20))) {
-      stop();
-    } else if (location.equals(pos(-14, -60, -20))) {
-      announceParticipants();
-    } else {
-      return;
+    switch (e.getAction()) {
+      case RIGHT_CLICK_BLOCK -> {
+        if (location.equals(pos(-16, -60, -20))) {
+          join(player, TeamColor.RED, Role.PRINCESS);
+        } else if (location.equals(pos(-18, -60, -20))) {
+          join(player, TeamColor.RED, Role.KNIGHT);
+        } else if (location.equals(pos(-32, -60, -20))) {
+          join(player, TeamColor.WHITE, Role.PRINCESS);
+        } else if (location.equals(pos(-34, -60, -20))) {
+          join(player, TeamColor.WHITE, Role.KNIGHT);
+        } else if (location.equals(pos(-48, -60, -20))) {
+          join(player, TeamColor.YELLOW, Role.PRINCESS);
+        } else if (location.equals(pos(-50, -60, -20))) {
+          join(player, TeamColor.YELLOW, Role.KNIGHT);
+        } else if (location.equals(pos(-12, -60, -20))) {
+          start();
+        } else if (location.equals(pos(-13, -60, -20))) {
+          stop();
+        } else if (location.equals(pos(-14, -60, -20))) {
+          announceParticipants();
+        } else {
+          return;
+        }
+        e.setCancelled(true);
+      }
     }
-    e.setCancelled(true);
-  }
-
-  @EventHandler
-  @SuppressWarnings("unused")
-  public void onBlockRedstoneEvent(BlockRedstoneEvent e) {
-    if (e.getOldCurrent() != 0 || e.getNewCurrent() <= 0) {
-      return;
-    }
-    Block block = e.getBlock();
-    if (block.getWorld() != world) {
-      return;
-    }
-
-    Point3i location = new Point3i(block.getLocation());
-    if (location.equals(pos(-17, -60, 9))) {
-      setOpenFirstGate(true);
-    } else if (location.equals(pos(-17, -60, 24))) {
-      setOpenSecondGate(true);
-    }
-  }
-
-  private void setOpenFirstGate(boolean open) {
-    var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-21, -60, 7), pos(-20, -60, 7), block);
-    Editor.Fill(world, pos(-18, -60, 7), pos(-16, -60, 7), block);
-    Editor.Fill(world, pos(-14, -60, 7), pos(-13, -60, 7), block);
-  }
-
-  private void setOpenSecondGate(boolean open) {
-    var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-21, -60, 21), pos(-13, -60, 21), block);
   }
 
   private void announceParticipants() {

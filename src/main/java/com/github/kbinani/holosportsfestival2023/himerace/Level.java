@@ -7,7 +7,8 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 class Level {
@@ -16,6 +17,7 @@ class Level {
   private final Point3i origin;
   private final TeamColor color;
   private final Stage[] stages;
+  private final BlockHeadStage blockHeadStage;
 
   /**
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
@@ -26,14 +28,21 @@ class Level {
     this.owner = owner;
     this.color = color;
     this.origin = origin;
+    this.blockHeadStage = new BlockHeadStage(world, owner, origin);
     this.stages = new Stage[]{
-        new BlockHeadStage(world, owner, origin)
+      this.blockHeadStage
     };
   }
 
-  void onPlayerMove(Player player, Participation participation, Team team) {
+  void onPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
     for (var stage : stages) {
-      stage.stageOnPlayerMove(player, participation, team);
+      stage.stageOnPlayerMove(e, participation, team);
+    }
+  }
+
+  void onPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+    for (var stage : stages) {
+      stage.stageOnPlayerInteract(e, participation, team);
     }
   }
 
@@ -64,7 +73,7 @@ class Level {
   }
 
   void openGateBlockHead() {
-    this.stages[0].stageOpenGate();
+    this.blockHeadStage.stageOpenGate();
   }
 
   private Point3i pos(int x, int y, int z) {
