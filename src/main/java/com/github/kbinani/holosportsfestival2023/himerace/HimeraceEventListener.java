@@ -1,8 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.MiniGame;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.*;
+import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -11,6 +10,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,6 +23,8 @@ public class HimeraceEventListener implements MiniGame {
   private final Map<TeamColor, Level> levels = new HashMap<>();
   private final Map<TeamColor, Team> teams = new HashMap<>();
   private Status status = Status.IDLE;
+  static final Component title = Component.text("[Himerace]").color(Colors.aqua);
+  private final BoundingBox announceBounds;
 
   public HimeraceEventListener(World world, JavaPlugin owner) {
     this.world = world;
@@ -30,6 +32,7 @@ public class HimeraceEventListener implements MiniGame {
     this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-23, -60, -16)));
     this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-39, -60, -16)));
     this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-55, -60, -16)));
+    this.announceBounds = new BoundingBox(x(-75), -64, z(-36), x(5), 448, z(165));
   }
 
   private void setStatus(Status s) {
@@ -103,7 +106,19 @@ public class HimeraceEventListener implements MiniGame {
 
   private void join(Player player, TeamColor color, Role role) {
     var team = ensureTeam(color);
-    team.add(player, role);
+    if (team.add(player, role)) {
+      broadcast(title
+          .append(Component.text(" " + player.getName() + " が").color(Colors.white))
+          .append(color.component())
+          .append(Component.text("の").color(Colors.white))
+          .append(role.component())
+          .append(Component.text("にエントリーしました。").color(Colors.white))
+      );
+    }
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
 
   private void start() {
@@ -136,8 +151,22 @@ public class HimeraceEventListener implements MiniGame {
     return team;
   }
 
-  private static Point3i pos(int x, int y, int z) {
+  private static int x(int x) {
     // 座標が間違っていたらここでオフセットする
-    return new Point3i(x, y, z);
+    return x;
+  }
+
+  private static int y(int y) {
+    // 座標が間違っていたらここでオフセットする
+    return y;
+  }
+
+  private static int z(int z) {
+    // 座標が間違っていたらここでオフセットする
+    return z;
+  }
+
+  private static Point3i pos(int x, int y, int z) {
+    return new Point3i(x(x), y(y), z(z));
   }
 }

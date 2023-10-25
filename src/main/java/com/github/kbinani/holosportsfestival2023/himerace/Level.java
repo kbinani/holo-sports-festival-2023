@@ -43,9 +43,9 @@ class Level {
         pos(-16, -60, -20),
         Material.OAK_SIGN,
         8,
-        Component.text("[Himerace]").color(Colors.aqua),
-        Component.text(color.japanese).color(color.sign),
-        Component.text("姫").color(Colors.magenta),
+        HimeraceEventListener.title,
+        color.component(),
+        Role.PRINCESS.component(),
         Component.text("右クリでエントリー！").color(Colors.aqua));
 
     Editor.StandingSign(
@@ -53,9 +53,9 @@ class Level {
         pos(-18, -60, -20),
         Material.OAK_SIGN,
         8,
-        Component.text("[Himerace]").color(Colors.aqua),
-        Component.text(color.japanese).color(color.sign),
-        Component.text("騎士").color(Colors.orange),
+        HimeraceEventListener.title,
+        color.component(),
+        Role.KNIGHT.component(),
         Component.text("右クリでエントリー！").color(Colors.aqua));
 
     for (var stage : this.stages) {

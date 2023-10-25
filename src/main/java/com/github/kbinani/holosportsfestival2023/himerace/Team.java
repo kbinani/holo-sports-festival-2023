@@ -11,27 +11,31 @@ class Team {
   private final List<Player> knights = new LinkedList<>();
   private static final int kMaxKnightPlayers = 2;
 
-  void add(Player player, Role role) {
+  boolean add(Player player, Role role) {
     if (getCurrentRole(player) != null) {
       //TODO: エラーメッセージ
-      return;
+      return false;
     }
-    switch (role) {
+    return switch (role) {
       case PRINCESS -> {
         if (princess == null) {
           princess = player;
+          yield true;
         } else {
           //TODO: エラーメッセージ
+          yield false;
         }
       }
       case KNIGHT -> {
         if (kMaxKnightPlayers > knights.size()) {
           knights.add(player);
+          yield true;
         } else {
           //TODO: エラーメッセージ
+          yield false;
         }
       }
-    }
+    };
   }
 
   List<Player> getKnights() {
