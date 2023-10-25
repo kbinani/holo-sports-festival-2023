@@ -52,6 +52,7 @@ public class HimeraceEventListener implements MiniGame {
     levels.forEach((color, level) -> {
       level.reset();
     });
+    teams.clear();
   }
 
   @EventHandler

@@ -68,7 +68,9 @@ class BlockHeadStage implements Stage {
   public void stageReset() {
     resetFloors();
     stageCloseGate();
+    headBlocks.clear();
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);
+    princessStatus = PrincessStatus.FALL;
   }
 
   @Override
