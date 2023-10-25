@@ -174,10 +174,26 @@ class BlockHeadStage implements Stage {
     if (location.getY() < floorY) {
       return false;
     }
+    var minY = -64;
+    var maxY = 448;
     var base = new BoundingBox(
-        x(-18) - 0.3, -64, z(-7) - 0.3,
-        x(-15) + 0.3, 448, z(-3) + 0.3);
+        x(-18) - 0.3, minY, z(-7) - 0.3,
+        x(-15) + 0.3, maxY, z(-3) + 0.3);
     if (base.contains(location.toVector())) {
+      return true;
+    }
+    var gate1 = new BoundingBox(
+      x(-22) - 0.3, minY, z(7) - 0.3,
+        x(-11) + 0.3, maxY, z(8) + 0.3
+    );
+    if (gate1.contains(location.toVector())) {
+      return true;
+    }
+    var gate2 = new BoundingBox(
+        x(-22) - 0.3, minY, z(21) - 0.3,
+        x(-11) + 0.3, maxY, z(22) + 0.3
+    );
+    if (gate2.contains(location.toVector())) {
       return true;
     }
     for (var headBlock : headBlocks.values()) {
