@@ -1,9 +1,6 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Editor;
-import com.github.kbinani.holosportsfestival2023.Point2i;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.Region2D;
+import com.github.kbinani.holosportsfestival2023.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -25,6 +22,8 @@ class BlockHeadStage implements Stage {
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
   private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
+  private final BoundingBox boundingBox;
+  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.block_head";
 
   enum PrincessStatus {
     STATIONAL,
@@ -62,12 +61,14 @@ class BlockHeadStage implements Stage {
         new Region2D(pos(-14, 15), pos(-12, 20)),
         new Region2D(pos(-19, 18), pos(-15, 20)),
     };
+    this.boundingBox = new BoundingBox(x(-23), y(-60), z(-16), x(-10), y(-60), z(27));
   }
 
   @Override
   public void stageReset() {
     resetFloors();
     stageCloseGate();
+    Kill.EntitiesByScoreboardTag(world, scoreboardTag);
   }
 
   @Override
@@ -192,6 +193,7 @@ class BlockHeadStage implements Stage {
       var material = kHeadBlockMaterials[index % kHeadBlockMaterials.length];
       it.setBlock(material.createBlockData());
       it.setBrightness(new Display.Brightness(15, 15));
+      it.addScoreboardTag(scoreboardTag);
     });
   }
 
