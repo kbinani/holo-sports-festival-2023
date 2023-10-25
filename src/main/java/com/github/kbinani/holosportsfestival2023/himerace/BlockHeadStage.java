@@ -163,6 +163,7 @@ class BlockHeadStage implements Stage {
         headBlocks.put(player, display);
       }
       var location = getBlockDisplayLocation(player, index);
+      display.setTeleportDuration(1);
       display.teleportAsync(location.toLocation(world));
     }
   }
