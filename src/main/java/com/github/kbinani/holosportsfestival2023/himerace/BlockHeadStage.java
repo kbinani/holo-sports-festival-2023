@@ -14,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 class BlockHeadStage implements Stage {
@@ -26,6 +27,15 @@ class BlockHeadStage implements Stage {
   private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
   private final BoundingBox boundingBox;
   static final String scoreboardTag = "hololive_sports_festival_2023.himerace.block_head";
+  private boolean firstGateOpen = false;
+  private boolean secondGateOpen = false;
+  private boolean finished = false;
+
+  interface Delegate {
+    void blockHeadStageDidFinish();
+  }
+  @Nullable
+  Delegate delegate;
 
   enum PrincessStatus {
     STATIONAL,
@@ -75,6 +85,7 @@ class BlockHeadStage implements Stage {
     princessStatus = PrincessStatus.FALL;
     setOpenFirstGate(false);
     setOpenSecondGate(false);
+    setFinished(false);
   }
 
   @Override
@@ -112,6 +123,7 @@ class BlockHeadStage implements Stage {
           setOpenFirstGate(true);
         } else if (location.equals(pos(-17, -60, 24))) {
           setOpenSecondGate(true);
+          setFinished(true);
         }
       }
     }
@@ -127,7 +139,21 @@ class BlockHeadStage implements Stage {
     Stage.CloseGate(owner, world, pos(-19, -60, -16));
   }
 
+  private void setFinished(boolean b) {
+    if (finished == b) {
+      return;
+    }
+    finished = b;
+    if (b && delegate != null) {
+      delegate.blockHeadStageDidFinish();
+    }
+  }
+
   void setOpenFirstGate(boolean open) {
+    if (firstGateOpen == open) {
+      return;
+    }
+    firstGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
     Editor.Fill(world, pos(-21, -60, 7), pos(-20, -60, 7), block);
     Editor.Fill(world, pos(-18, -60, 7), pos(-16, -60, 7), block);
@@ -135,6 +161,10 @@ class BlockHeadStage implements Stage {
   }
 
   void setOpenSecondGate(boolean open) {
+    if (secondGateOpen == open) {
+      return;
+    }
+    secondGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
     Editor.Fill(world, pos(-21, -60, 21), pos(-13, -60, 21), block);
   }
