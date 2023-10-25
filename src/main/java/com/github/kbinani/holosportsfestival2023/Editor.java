@@ -70,7 +70,7 @@ public class Editor {
     int cx = p.x >> 4;
     int cz = p.z >> 4;
     world.loadChunk(cx, cz);
-    BlockData blockData = material.createBlockData("[rotation=" + 8 + "]");
+    BlockData blockData = material.createBlockData("[rotation=" + rot + "]");
     world.setBlockData(p.x, p.y, p.z, blockData);
     Block block = world.getBlockAt(p.x, p.y, p.z);
     BlockState state = block.getState();

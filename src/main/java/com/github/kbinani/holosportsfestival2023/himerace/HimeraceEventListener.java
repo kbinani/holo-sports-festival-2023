@@ -36,6 +36,15 @@ public class HimeraceEventListener implements MiniGame {
     if (s == status) {
       return;
     }
+    status = s;
+    switch (status) {
+      case IDLE -> miniGameReset();
+      case BLOCK_HEAD_STAGE -> {
+        for (var level : levels.values()) {
+          level.openGateBlockHead();
+        }
+      }
+    }
   }
 
   @Override
@@ -81,6 +90,10 @@ public class HimeraceEventListener implements MiniGame {
       join(player, TeamColor.YELLOW, Role.PRINCESS);
     } else if (location.equals(pos(-50, -60, -20))) {
       join(player, TeamColor.YELLOW, Role.KNIGHT);
+    } else if (location.equals(pos(-12, -60, -20))) {
+      start();
+    } else if (location.equals(pos(-13, -60, -20))) {
+      stop();
     } else {
       return;
     }
@@ -90,6 +103,14 @@ public class HimeraceEventListener implements MiniGame {
   private void join(Player player, TeamColor color, Role role) {
     var team = ensureTeam(color);
     team.add(player, role);
+  }
+
+  private void start() {
+    setStatus(Status.BLOCK_HEAD_STAGE);
+  }
+
+  private void stop() {
+    setStatus(Status.IDLE);
   }
 
   @Nullable

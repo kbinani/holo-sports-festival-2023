@@ -63,6 +63,10 @@ class Level {
     }
   }
 
+  void openGateBlockHead() {
+    this.stages[0].stageOpenGate();
+  }
+
   private Point3i pos(int x, int y, int z) {
     // [-23, -60, -16] はステージを仮の座標で再現した時の、赤チーム用 Level の origin
     return new Point3i(x + 23 + origin.x, y + 60 + origin.y, z + 16 + origin.z);

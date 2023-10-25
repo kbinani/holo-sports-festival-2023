@@ -19,16 +19,18 @@ import java.util.*;
 
 class BlockHeadStage implements Stage {
   private final World world;
+  private final JavaPlugin owner;
   private final Point3i origin;
   private final Region2D[] firstFloorRegions;
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
-  private Map<Player, BlockDisplay> headBlocks = new HashMap<>();
+  private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
 
   enum PrincessStatus {
     STATIONAL,
     FALL,
   }
+
   private PrincessStatus princessStatus = PrincessStatus.FALL;
 
   private static final Material[] kHeadBlockMaterials = new Material[]{
@@ -38,6 +40,7 @@ class BlockHeadStage implements Stage {
 
   BlockHeadStage(World world, JavaPlugin owner, Point3i origin) {
     this.world = world;
+    this.owner = owner;
     this.origin = origin;
     this.firstFloorRegions = new Region2D[]{
         new Region2D(pos(-22, -14), pos(-19, 6)),
@@ -64,6 +67,7 @@ class BlockHeadStage implements Stage {
   @Override
   public void stageReset() {
     resetFloors();
+    stageCloseGate();
   }
 
   @Override
@@ -84,11 +88,20 @@ class BlockHeadStage implements Stage {
     }
   }
 
+  @Override
+  public void stageOpenGate() {
+    Stage.OpenGate(owner, world, pos(-19, -60, -16));
+  }
+
+  @Override
+  public void stageCloseGate() {
+    Stage.CloseGate(owner, world, pos(-19, -60, -16));
+  }
+
   void setPrincessStatus(PrincessStatus status, Team team) {
     if (princessStatus == status) {
       return;
     }
-    System.out.println(status);
     princessStatus = status;
     switch (princessStatus) {
       case FALL -> resetFloors();

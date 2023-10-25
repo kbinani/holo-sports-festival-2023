@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import java.util.Objects;
 
@@ -37,6 +38,18 @@ public class Point3i {
         }
         Point3i v = (Point3i) o;
         return v.x == x && v.y == y && v.z == z;
+    }
+
+    public Point3i added(int x, int y, int z) {
+        return new Point3i(this.x + x, this.y + y, this.z + z);
+    }
+
+    public Location toLocation(World world, float pitch, float yaw) {
+        return new Location(world, x, y, z, pitch, yaw);
+    }
+
+    public Location toLocation(World world) {
+        return toLocation(world, 0, 0);
     }
 
     @Override
