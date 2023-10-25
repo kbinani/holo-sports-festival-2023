@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -56,6 +57,36 @@ public class HimeraceEventListener implements MiniGame {
       level.reset();
     });
     teams.clear();
+    Editor.StandingSign(
+        world,
+        pos(-12, -60, -20),
+        Material.OAK_SIGN,
+        8,
+        title,
+        Component.empty(),
+        Component.empty(),
+        Component.text("ゲームスタート").color(Colors.aqua)
+    );
+    Editor.StandingSign(
+        world,
+        pos(-13, -60, -20),
+        Material.OAK_SIGN,
+        8,
+        title,
+        Component.empty(),
+        Component.empty(),
+        Component.text("ゲームを中断する").color(Colors.aqua)
+    );
+    Editor.StandingSign(
+        world,
+        pos(-14, -60, -20),
+        Material.OAK_SIGN,
+        8,
+        title,
+        Component.empty(),
+        Component.empty(),
+        Component.text("エントリーリスト").color(Colors.aqua)
+    );
   }
 
   @EventHandler
@@ -98,10 +129,48 @@ public class HimeraceEventListener implements MiniGame {
       start();
     } else if (location.equals(pos(-13, -60, -20))) {
       stop();
+    } else if (location.equals(pos(-14, -60, -20))) {
+      announceParticipants();
     } else {
       return;
     }
     e.setCancelled(true);
+  }
+
+  private void announceParticipants() {
+    broadcast(
+        Component.text("----------").color(Colors.lime)
+            .appendSpace()
+            .append(title)
+            .appendSpace()
+            .append(Component.text("エントリー者").color(Colors.aqua))
+            .appendSpace()
+            .append(Component.text("----------").color(Colors.lime))
+    );
+    for (int i = 0; i < TeamColor.all.length; i++) {
+      var color = TeamColor.all[i];
+      var team = ensureTeam(color);
+      broadcast(
+          Component.text(" ")
+              .append(color.component())
+              .appendSpace()
+              .append(Component.text(String.format(" (%d) ", team.size())).color(color.sign))
+      );
+      var princess = team.getPrincess();
+      if (princess != null) {
+        broadcast(
+            Component.text(String.format("  - [姫] %s", princess.getName())).color(Colors.red)
+        );
+      }
+      for (var knight : team.getKnights()) {
+        broadcast(
+            Component.text(String.format("  - %s", knight.getName())).color(Colors.red)
+        );
+      }
+      if (i < 2) {
+        broadcast(Component.empty());
+      }
+    }
   }
 
   private void join(Player player, TeamColor color, Role role) {
@@ -127,6 +196,7 @@ public class HimeraceEventListener implements MiniGame {
 
   private void stop() {
     setStatus(Status.IDLE);
+    miniGameReset();
   }
 
   @Nullable

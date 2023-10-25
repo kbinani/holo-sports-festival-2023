@@ -56,4 +56,12 @@ class Team {
     }
     return null;
   }
+
+  int size() {
+    int i = knights.size();
+    if (princess != null) {
+      i++;
+    }
+    return i;
+  }
 }
