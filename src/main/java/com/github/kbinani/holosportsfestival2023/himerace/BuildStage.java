@@ -36,12 +36,12 @@ class BuildStage extends Stage {
   }
 
   @Override
-  public void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+  public void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
 
   }
 
   @Override
-  public void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+  public void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
 
   }
 }

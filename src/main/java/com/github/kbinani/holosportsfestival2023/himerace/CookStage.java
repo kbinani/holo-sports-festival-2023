@@ -36,12 +36,12 @@ class CookStage extends Stage {
   }
 
   @Override
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
 
   }
 
   @Override
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
 
   }
 }

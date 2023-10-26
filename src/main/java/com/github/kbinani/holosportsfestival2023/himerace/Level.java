@@ -56,15 +56,15 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     };
   }
 
-  void onPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+  void onPlayerMove(PlayerMoveEvent e, Participation participation) {
     for (var stage : stages) {
-      stage.stageOnPlayerMove(e, participation, team);
+      stage.stageOnPlayerMove(e, participation);
     }
   }
 
-  void onPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+  void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
     for (var stage : stages) {
-      stage.stageOnPlayerInteract(e, participation, team);
+      stage.stageOnPlayerInteract(e, participation);
     }
   }
 

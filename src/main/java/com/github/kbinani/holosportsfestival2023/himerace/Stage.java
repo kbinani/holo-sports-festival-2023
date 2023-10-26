@@ -24,9 +24,9 @@ abstract class Stage {
 
   abstract void stageReset();
 
-  abstract void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team);
+  abstract void stageOnPlayerMove(PlayerMoveEvent e, Participation participation);
 
-  abstract void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team);
+  abstract void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation);
 
   final void stageOpenGate() {
     // origin: dark_oak_fence の一番北西下の位置

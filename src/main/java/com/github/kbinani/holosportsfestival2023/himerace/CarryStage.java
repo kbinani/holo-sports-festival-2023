@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -92,8 +93,9 @@ class CarryStage extends Stage {
   }
 
   @Override
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
     var player = e.getPlayer();
+    var team = participation.team;
     var knights = team.getKnights();
     setFloorForKnights(knights);
     switch (participation.role) {
@@ -111,8 +113,11 @@ class CarryStage extends Stage {
   }
 
   @Override
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
     if (participation.role != Role.PRINCESS) {
+      return;
+    }
+    if (e.getAction() != Action.PHYSICAL) {
       return;
     }
     var block = e.getClickedBlock();
@@ -120,15 +125,11 @@ class CarryStage extends Stage {
       return;
     }
     var location = new Point3i(block.getLocation());
-    switch (e.getAction()) {
-      case PHYSICAL -> {
-        if (location.equals(pos(-94, 80, -36))) {
-          setOpenFirstGate(true);
-        } else if (location.equals(pos(-94, 80, -21))) {
-          setOpenSecondGate(true);
-          setFinished(true);
-        }
-      }
+    if (location.equals(pos(-94, 80, -36))) {
+      setOpenFirstGate(true);
+    } else if (location.equals(pos(-94, 80, -21))) {
+      setOpenSecondGate(true);
+      setFinished(true);
     }
   }
 
