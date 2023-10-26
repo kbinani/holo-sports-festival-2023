@@ -34,6 +34,7 @@ class BlockHeadStage implements Stage {
   interface Delegate {
     void blockHeadStageDidFinish();
   }
+
   @Nullable
   Delegate delegate;
 
@@ -45,8 +46,9 @@ class BlockHeadStage implements Stage {
   private PrincessStatus princessStatus = PrincessStatus.FALL;
 
   private static final Material[] kHeadBlockMaterials = new Material[]{
-      Material.MANGROVE_PLANKS,
-      Material.BIRCH_PLANKS,
+    Material.MANGROVE_PLANKS,
+    Material.BIRCH_PLANKS,
+    Material.CHERRY_PLANKS,
   };
 
   BlockHeadStage(World world, JavaPlugin owner, Point3i origin) {
@@ -54,24 +56,24 @@ class BlockHeadStage implements Stage {
     this.owner = owner;
     this.origin = origin;
     this.firstFloorRegions = new Region2D[]{
-        new Region2D(pos(-99, -59), pos(-96, -39)),
-        new Region2D(pos(-95, -59), pos(-93, -53)),
-        new Region2D(pos(-92, -59), pos(-89, -39)),
-        new Region2D(pos(-95, -48), pos(-93, -45)),
-        new Region2D(pos(-95, -41), pos(-93, -39)),
+      new Region2D(pos(-99, -59), pos(-96, -39)),
+      new Region2D(pos(-95, -59), pos(-93, -53)),
+      new Region2D(pos(-92, -59), pos(-89, -39)),
+      new Region2D(pos(-95, -48), pos(-93, -45)),
+      new Region2D(pos(-95, -41), pos(-93, -39)),
     };
     this.secondFloorRegions = new Region2D[]{
-        new Region2D(pos(-99, -37), pos(-97, -37)),
-        new Region2D(pos(-95, -37), pos(-93, -37)),
-        new Region2D(pos(-91, -37), pos(-89, -37)),
-        new Region2D(pos(-99, -36), pos(-89, -35)),
+      new Region2D(pos(-99, -37), pos(-97, -37)),
+      new Region2D(pos(-95, -37), pos(-93, -37)),
+      new Region2D(pos(-91, -37), pos(-89, -37)),
+      new Region2D(pos(-99, -36), pos(-89, -35)),
 
-        new Region2D(pos(-95, -34), pos(-93, -31)),
-        new Region2D(pos(-99, -33), pos(-96, -31)),
-        new Region2D(pos(-92, -33), pos(-89, -31)),
-        new Region2D(pos(-99, -30), pos(-97, -25)),
-        new Region2D(pos(-91, -30), pos(-89, -25)),
-        new Region2D(pos(-96, -27), pos(-92, -25)),
+      new Region2D(pos(-95, -34), pos(-93, -31)),
+      new Region2D(pos(-99, -33), pos(-96, -31)),
+      new Region2D(pos(-92, -33), pos(-89, -31)),
+      new Region2D(pos(-99, -30), pos(-97, -25)),
+      new Region2D(pos(-91, -30), pos(-89, -25)),
+      new Region2D(pos(-96, -27), pos(-92, -25)),
     };
     this.boundingBox = new BoundingBox(x(-100), y(80), z(-61), x(-87), y(80), z(-18));
   }
@@ -121,7 +123,7 @@ class BlockHeadStage implements Stage {
       case PHYSICAL -> {
         if (location.equals(pos(-94, 80, -36))) {
           setOpenFirstGate(true);
-        } else if (location.equals(pos(-94, 80,-21))) {
+        } else if (location.equals(pos(-94, 80, -21))) {
           setOpenSecondGate(true);
           setFinished(true);
         }
@@ -156,7 +158,7 @@ class BlockHeadStage implements Stage {
     firstGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
     Editor.Fill(world, pos(-98, 80, -38), pos(-97, 80, -38), block);
-    Editor.Fill(world, pos(-95, 80,-38), pos(-93, 80, -38), block);
+    Editor.Fill(world, pos(-95, 80, -38), pos(-93, 80, -38), block);
     Editor.Fill(world, pos(-91, 80, -38), pos(-90, 80, -38), block);
   }
 
@@ -245,21 +247,21 @@ class BlockHeadStage implements Stage {
     var minY = -64;
     var maxY = 448;
     var base = new BoundingBox(
-        x(-95) - 0.3, minY, z(-52) - 0.3,
-        x(-92) + 0.3, maxY, z(-48) + 0.3);
+      x(-95) - 0.3, minY, z(-52) - 0.3,
+      x(-92) + 0.3, maxY, z(-48) + 0.3);
     if (base.contains(location.toVector())) {
       return true;
     }
     var gate1 = new BoundingBox(
       x(-99) - 0.3, minY, z(-38) - 0.3,
-        x(-88) + 0.3, maxY, z(-37) + 0.3
+      x(-88) + 0.3, maxY, z(-37) + 0.3
     );
     if (gate1.contains(location.toVector())) {
       return true;
     }
     var gate2 = new BoundingBox(
-        x(-99) - 0.3, minY, z(-24) - 0.3,
-        x(-88) + 0.3, maxY, z(-23) + 0.3
+      x(-99) - 0.3, minY, z(-24) - 0.3,
+      x(-88) + 0.3, maxY, z(-23) + 0.3
     );
     if (gate2.contains(location.toVector())) {
       return true;
