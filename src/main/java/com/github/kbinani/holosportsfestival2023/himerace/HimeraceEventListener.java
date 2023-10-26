@@ -25,24 +25,6 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
   private Status status = Status.IDLE;
   static final Component title = Component.text("[Himerace]").color(Colors.aqua);
   private final BoundingBox announceBounds;
-
-  static class Race {
-    final Map<TeamColor, Team> teams;
-
-    Race(Map<TeamColor, Team> teams) {
-      this.teams = new HashMap<>(teams);
-      teams.clear();
-    }
-
-    boolean isEmpty() {
-      int count = 0;
-      for (var team : teams.values()) {
-        count += team.size();
-      }
-      return count == 0;
-    }
-  }
-
   private @Nullable Race race;
 
   public HimeraceEventListener(World world, JavaPlugin owner) {
@@ -168,7 +150,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       }
       e.setCancelled(true);
     } else {
-      if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK  && pos(-90, 80, -65).equals(new Point3i(block.getLocation()))) {
+      if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK && pos(-90, 80, -65).equals(new Point3i(block.getLocation()))) {
         stop();
         return;
       }
@@ -310,9 +292,46 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
 
   @Override
   public void levelDidFinish(TeamColor color) {
+    var race = this.race;
+    if (race == null) {
+      return;
+    }
+    if (!race.finish(color)) {
+      return;
+    }
     broadcast(title
       .appendSpace()
       .append(color.component())
       .append(Component.text("がゴールしました！").color(Colors.white)));
+    if (!race.isAllTeamsFinished()) {
+      return;
+    }
+    broadcast(title
+      .appendSpace()
+      .append(Component.text("ゲームが終了しました！").color(Colors.white)));
+    broadcast(Component.empty());
+    var separator = "▪"; //TODO: この文字本当は何なのかが分からない
+    broadcast(
+      Component.text(separator.repeat(32)).color(Colors.lightgray)
+        .appendSpace()
+        .append(title)
+        .appendSpace()
+        .append(Component.text(separator.repeat(32)).color(Colors.lightgray))
+    );
+    broadcast(Component.empty());
+    race.result((i, c, durationMillis) -> {
+      long seconds = durationMillis / 1000;
+      long millis = durationMillis - seconds * 1000;
+      long minutes = seconds / 60;
+      seconds = seconds - minutes * 60;
+      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(Colors.aqua)
+        .append(c.component())
+        .appendSpace()
+        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.sign))
+      );
+    });
+    broadcast(Component.empty());
+    //TODO: ステージ内に人が残っていた場合
+    setStatus(Status.IDLE);
   }
 }
