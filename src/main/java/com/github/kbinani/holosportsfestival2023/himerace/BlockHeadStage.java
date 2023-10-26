@@ -54,26 +54,26 @@ class BlockHeadStage implements Stage {
     this.owner = owner;
     this.origin = origin;
     this.firstFloorRegions = new Region2D[]{
-        new Region2D(pos(-22, -14), pos(-19, 6)),
-        new Region2D(pos(-18, -14), pos(-16, -8)),
-        new Region2D(pos(-15, -14), pos(-12, 6)),
-        new Region2D(pos(-18, -3), pos(-16, 0)),
-        new Region2D(pos(-18, 4), pos(-16, 6)),
+        new Region2D(pos(-99, -59), pos(-96, -39)),
+        new Region2D(pos(-95, -59), pos(-93, -53)),
+        new Region2D(pos(-92, -59), pos(-89, -39)),
+        new Region2D(pos(-95, -48), pos(-93, -45)),
+        new Region2D(pos(-95, -41), pos(-93, -39)),
     };
     this.secondFloorRegions = new Region2D[]{
-        new Region2D(pos(-22, 8), pos(-20, 8)),
-        new Region2D(pos(-18, 8), pos(-16, 8)),
-        new Region2D(pos(-14, 8), pos(-12, 8)),
-        new Region2D(pos(-22, 9), pos(-12, 10)),
+        new Region2D(pos(-99, -37), pos(-97, -37)),
+        new Region2D(pos(-95, -37), pos(-93, -37)),
+        new Region2D(pos(-91, -37), pos(-89, -37)),
+        new Region2D(pos(-99, -36), pos(-89, -35)),
 
-        new Region2D(pos(-18, 11), pos(-16, 14)),
-        new Region2D(pos(-22, 12), pos(-19, 14)),
-        new Region2D(pos(-15, 12), pos(-12, 14)),
-        new Region2D(pos(-22, 15), pos(-20, 20)),
-        new Region2D(pos(-14, 15), pos(-12, 20)),
-        new Region2D(pos(-19, 18), pos(-15, 20)),
+        new Region2D(pos(-95, -34), pos(-93, -31)),
+        new Region2D(pos(-99, -33), pos(-96, -31)),
+        new Region2D(pos(-92, -33), pos(-89, -31)),
+        new Region2D(pos(-99, -30), pos(-97, -25)),
+        new Region2D(pos(-91, -30), pos(-89, -25)),
+        new Region2D(pos(-96, -27), pos(-92, -25)),
     };
-    this.boundingBox = new BoundingBox(x(-23), y(-60), z(-16), x(-10), y(-60), z(27));
+    this.boundingBox = new BoundingBox(x(-100), y(80), z(-61), x(-87), y(80), z(-18));
   }
 
   @Override
@@ -119,9 +119,9 @@ class BlockHeadStage implements Stage {
     var location = new Point3i(block.getLocation());
     switch (e.getAction()) {
       case PHYSICAL -> {
-        if (location.equals(pos(-17, -60, 9))) {
+        if (location.equals(pos(-94, 80, -36))) {
           setOpenFirstGate(true);
-        } else if (location.equals(pos(-17, -60, 24))) {
+        } else if (location.equals(pos(-94, 80,-21))) {
           setOpenSecondGate(true);
           setFinished(true);
         }
@@ -131,12 +131,12 @@ class BlockHeadStage implements Stage {
 
   @Override
   public void stageOpenGate() {
-    Stage.OpenGate(owner, world, pos(-19, -60, -16));
+    Stage.OpenGate(owner, world, pos(-96, 80, -61));
   }
 
   @Override
   public void stageCloseGate() {
-    Stage.CloseGate(owner, world, pos(-19, -60, -16));
+    Stage.CloseGate(owner, world, pos(-96, 80, -61));
   }
 
   private void setFinished(boolean b) {
@@ -155,9 +155,9 @@ class BlockHeadStage implements Stage {
     }
     firstGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-21, -60, 7), pos(-20, -60, 7), block);
-    Editor.Fill(world, pos(-18, -60, 7), pos(-16, -60, 7), block);
-    Editor.Fill(world, pos(-14, -60, 7), pos(-13, -60, 7), block);
+    Editor.Fill(world, pos(-98, 80, -38), pos(-97, 80, -38), block);
+    Editor.Fill(world, pos(-95, 80,-38), pos(-93, 80, -38), block);
+    Editor.Fill(world, pos(-91, 80, -38), pos(-90, 80, -38), block);
   }
 
   void setOpenSecondGate(boolean open) {
@@ -166,7 +166,7 @@ class BlockHeadStage implements Stage {
     }
     secondGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-21, -60, 21), pos(-13, -60, 21), block);
+    Editor.Fill(world, pos(-98, 80, -24), pos(-90, 80, -24), block);
   }
 
   void setPrincessStatus(PrincessStatus status, Team team) {
@@ -202,7 +202,7 @@ class BlockHeadStage implements Stage {
     }
 
     var material = "barrier";
-    int y = this.y(-58);
+    int y = this.y(82);
     for (var p : blocks) {
       if (activeFloorBlocks.contains(p)) {
         continue;
@@ -238,28 +238,28 @@ class BlockHeadStage implements Stage {
 
   private boolean isPrincessOnHeadBlock(Player princess) {
     var location = princess.getLocation();
-    var floorY = y(-57);
+    var floorY = y(83);
     if (location.getY() < floorY) {
       return false;
     }
     var minY = -64;
     var maxY = 448;
     var base = new BoundingBox(
-        x(-18) - 0.3, minY, z(-7) - 0.3,
-        x(-15) + 0.3, maxY, z(-3) + 0.3);
+        x(-95) - 0.3, minY, z(-52) - 0.3,
+        x(-92) + 0.3, maxY, z(-48) + 0.3);
     if (base.contains(location.toVector())) {
       return true;
     }
     var gate1 = new BoundingBox(
-      x(-22) - 0.3, minY, z(7) - 0.3,
-        x(-11) + 0.3, maxY, z(8) + 0.3
+      x(-99) - 0.3, minY, z(-38) - 0.3,
+        x(-88) + 0.3, maxY, z(-37) + 0.3
     );
     if (gate1.contains(location.toVector())) {
       return true;
     }
     var gate2 = new BoundingBox(
-        x(-22) - 0.3, minY, z(21) - 0.3,
-        x(-11) + 0.3, maxY, z(22) + 0.3
+        x(-99) - 0.3, minY, z(-24) - 0.3,
+        x(-88) + 0.3, maxY, z(-23) + 0.3
     );
     if (gate2.contains(location.toVector())) {
       return true;
@@ -288,7 +288,7 @@ class BlockHeadStage implements Stage {
     var location = player.getLocation();
     var x = location.getX() - 0.5;
     // z-fighting を避けるため y 方向は少しずらす
-    var y = y(-58) + 0.001 * (index + 1);
+    var y = y(82) + 0.001 * (index + 1);
     var z = location.getZ() - 0.5;
     return new Vector(x, y, z);
   }
@@ -310,27 +310,27 @@ class BlockHeadStage implements Stage {
   private void resetFloors() {
     activeFloorBlocks.clear();
     for (var region : firstFloorRegions) {
-      Editor.Fill(world, new Point3i(region.northWest.x, y(-58), region.northWest.z), new Point3i(region.southEast.x, y(-58), region.southEast.z), "air");
+      Editor.Fill(world, new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
     }
     for (var region : secondFloorRegions) {
-      Editor.Fill(world, new Point3i(region.northWest.x, y(-58), region.northWest.z), new Point3i(region.southEast.x, y(-58), region.southEast.z), "air");
+      Editor.Fill(world, new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
     }
   }
 
   private int x(int x) {
-    return x + 23 + origin.x;
+    return x + 100 + origin.x;
   }
 
   private int y(int y) {
-    return y + 60 + origin.y;
+    return y - 80 + origin.y;
   }
 
   private int z(int z) {
-    return z + 16 + origin.z;
+    return z + 61 + origin.z;
   }
 
   private Point3i pos(int x, int y, int z) {
-    // [-23, -60, -16] はステージを仮の座標で再現した時の、赤チーム用 Level の origin
+    // [-100, 80, -61] は赤チーム用 Level の origin
     return new Point3i(x(x), y(y), z(z));
   }
 

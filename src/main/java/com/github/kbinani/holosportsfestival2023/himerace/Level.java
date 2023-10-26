@@ -51,7 +51,7 @@ class Level implements BlockHeadStage.Delegate {
   void reset() {
     Editor.StandingSign(
       world,
-      pos(-16, -60, -20),
+      pos(-93, 80, -65),
       Material.OAK_SIGN,
       8,
       HimeraceEventListener.title,
@@ -61,7 +61,7 @@ class Level implements BlockHeadStage.Delegate {
 
     Editor.StandingSign(
       world,
-      pos(-18, -60, -20),
+      pos(-95, 80, -65),
       Material.OAK_SIGN,
       8,
       HimeraceEventListener.title,
@@ -79,13 +79,13 @@ class Level implements BlockHeadStage.Delegate {
   }
 
   private Point3i pos(int x, int y, int z) {
-    // [-23, -60, -16] はステージを仮の座標で再現した時の、赤チーム用 Level の origin
-    return new Point3i(x + 23 + origin.x, y + 60 + origin.y, z + 16 + origin.z);
+    // [-100, 80, -61] は赤チーム用 Level の origin
+    return new Point3i(x + 100 + origin.x, y - 80 + origin.y, z + 61 + origin.z);
   }
 
   @Override
   public void blockHeadStageDidFinish() {
     //TODO:
-    Stage.OpenGate(owner, world, pos(-19, -60, 27));
+    Stage.OpenGate(owner, world, pos(-96, 80, -18));
   }
 }

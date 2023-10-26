@@ -29,10 +29,10 @@ public class HimeraceEventListener implements MiniGame {
   public HimeraceEventListener(World world, JavaPlugin owner) {
     this.world = world;
     this.owner = owner;
-    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-23, -60, -16)));
-    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-39, -60, -16)));
-    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-55, -60, -16)));
-    this.announceBounds = new BoundingBox(x(-75), -64, z(-36), x(5), 448, z(165));
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61)));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61)));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61)));
+    this.announceBounds = new BoundingBox(x(-152), -64, z(-81), x(-72), 448, z(120));
   }
 
   private void setStatus(Status s) {
@@ -58,7 +58,7 @@ public class HimeraceEventListener implements MiniGame {
     teams.clear();
     Editor.StandingSign(
         world,
-        pos(-12, -60, -20),
+        pos(-89, 80, -65),
         Material.OAK_SIGN,
         8,
         title,
@@ -68,7 +68,7 @@ public class HimeraceEventListener implements MiniGame {
     );
     Editor.StandingSign(
         world,
-        pos(-13, -60, -20),
+        pos(-90, 80, -65),
         Material.OAK_SIGN,
         8,
         title,
@@ -78,7 +78,7 @@ public class HimeraceEventListener implements MiniGame {
     );
     Editor.StandingSign(
         world,
-        pos(-14, -60, -20),
+        pos(-91, 80, -65),
         Material.OAK_SIGN,
         8,
         title,
@@ -116,23 +116,23 @@ public class HimeraceEventListener implements MiniGame {
     Point3i location = new Point3i(block.getLocation());
     switch (e.getAction()) {
       case RIGHT_CLICK_BLOCK -> {
-        if (location.equals(pos(-16, -60, -20))) {
+        if (location.equals(pos(-93, 80, -65))) {
           join(player, TeamColor.RED, Role.PRINCESS);
-        } else if (location.equals(pos(-18, -60, -20))) {
+        } else if (location.equals(pos(-95, 80, -65))) {
           join(player, TeamColor.RED, Role.KNIGHT);
-        } else if (location.equals(pos(-32, -60, -20))) {
+        } else if (location.equals(pos(-109, 80, -65))) {
           join(player, TeamColor.WHITE, Role.PRINCESS);
-        } else if (location.equals(pos(-34, -60, -20))) {
+        } else if (location.equals(pos(-111, 80, -65))) {
           join(player, TeamColor.WHITE, Role.KNIGHT);
-        } else if (location.equals(pos(-48, -60, -20))) {
+        } else if (location.equals(pos(-125, 80, -65))) {
           join(player, TeamColor.YELLOW, Role.PRINCESS);
-        } else if (location.equals(pos(-50, -60, -20))) {
+        } else if (location.equals(pos(-127, 80, -65))) {
           join(player, TeamColor.YELLOW, Role.KNIGHT);
-        } else if (location.equals(pos(-12, -60, -20))) {
+        } else if (location.equals(pos(-89, 80, -65))) {
           start();
-        } else if (location.equals(pos(-13, -60, -20))) {
+        } else if (location.equals(pos(-90, 80, -65))) {
           stop();
-        } else if (location.equals(pos(-14, -60, -20))) {
+        } else if (location.equals(pos(-91, 80, -65))) {
           announceParticipants();
         } else {
           return;
