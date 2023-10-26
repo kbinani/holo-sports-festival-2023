@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HimeraceEventListener implements MiniGame {
+public class HimeraceEventListener implements MiniGame, Level.Delegate {
   private final World world;
   private final JavaPlugin owner;
   private final Map<TeamColor, Level> levels = new HashMap<>();
@@ -29,9 +29,9 @@ public class HimeraceEventListener implements MiniGame {
   public HimeraceEventListener(World world, JavaPlugin owner) {
     this.world = world;
     this.owner = owner;
-    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61)));
-    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61)));
-    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61)));
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61), this));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61), this));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61), this));
     this.announceBounds = new BoundingBox(x(-152), -64, z(-81), x(-72), 448, z(120));
   }
 
@@ -42,9 +42,9 @@ public class HimeraceEventListener implements MiniGame {
     status = s;
     switch (status) {
       case IDLE -> miniGameReset();
-      case BLOCK_HEAD_STAGE -> {
+      case CARRY_STAGE -> {
         for (var level : levels.values()) {
-          level.openGateBlockHead();
+          level.start();
         }
       }
     }
@@ -57,34 +57,34 @@ public class HimeraceEventListener implements MiniGame {
     });
     teams.clear();
     Editor.StandingSign(
-        world,
-        pos(-89, 80, -65),
-        Material.OAK_SIGN,
-        8,
-        title,
-        Component.empty(),
-        Component.empty(),
-        Component.text("ゲームスタート").color(Colors.aqua)
+      world,
+      pos(-89, 80, -65),
+      Material.OAK_SIGN,
+      8,
+      title,
+      Component.empty(),
+      Component.empty(),
+      Component.text("ゲームスタート").color(Colors.aqua)
     );
     Editor.StandingSign(
-        world,
-        pos(-90, 80, -65),
-        Material.OAK_SIGN,
-        8,
-        title,
-        Component.empty(),
-        Component.empty(),
-        Component.text("ゲームを中断する").color(Colors.red)
+      world,
+      pos(-90, 80, -65),
+      Material.OAK_SIGN,
+      8,
+      title,
+      Component.empty(),
+      Component.empty(),
+      Component.text("ゲームを中断する").color(Colors.red)
     );
     Editor.StandingSign(
-        world,
-        pos(-91, 80, -65),
-        Material.OAK_SIGN,
-        8,
-        title,
-        Component.empty(),
-        Component.empty(),
-        Component.text("エントリーリスト").color(Colors.lime)
+      world,
+      pos(-91, 80, -65),
+      Material.OAK_SIGN,
+      8,
+      title,
+      Component.empty(),
+      Component.empty(),
+      Component.text("エントリーリスト").color(Colors.lime)
     );
   }
 
@@ -144,32 +144,32 @@ public class HimeraceEventListener implements MiniGame {
 
   private void announceParticipants() {
     broadcast(
-        Component.text("----------").color(Colors.lime)
-            .appendSpace()
-            .append(title)
-            .appendSpace()
-            .append(Component.text("エントリー者").color(Colors.aqua))
-            .appendSpace()
-            .append(Component.text("----------").color(Colors.lime))
+      Component.text("----------").color(Colors.lime)
+        .appendSpace()
+        .append(title)
+        .appendSpace()
+        .append(Component.text("エントリー者").color(Colors.aqua))
+        .appendSpace()
+        .append(Component.text("----------").color(Colors.lime))
     );
     for (int i = 0; i < TeamColor.all.length; i++) {
       var color = TeamColor.all[i];
       var team = ensureTeam(color);
       broadcast(
-          Component.text(" ")
-              .append(color.component())
-              .appendSpace()
-              .append(Component.text(String.format(" (%d) ", team.size())).color(color.sign))
+        Component.text(" ")
+          .append(color.component())
+          .appendSpace()
+          .append(Component.text(String.format(" (%d) ", team.size())).color(color.sign))
       );
       var princess = team.getPrincess();
       if (princess != null) {
         broadcast(
-            Component.text(String.format("  - [姫] %s", princess.getName())).color(Colors.red)
+          Component.text(String.format("  - [姫] %s", princess.getName())).color(Colors.red)
         );
       }
       for (var knight : team.getKnights()) {
         broadcast(
-            Component.text(String.format("  - %s", knight.getName())).color(Colors.red)
+          Component.text(String.format("  - %s", knight.getName())).color(Colors.red)
         );
       }
       if (i < 2) {
@@ -182,11 +182,11 @@ public class HimeraceEventListener implements MiniGame {
     var team = ensureTeam(color);
     if (team.add(player, role)) {
       broadcast(title
-          .append(Component.text(" " + player.getName() + " が").color(Colors.white))
-          .append(color.component())
-          .append(Component.text("の").color(Colors.white))
-          .append(role.component())
-          .append(Component.text("にエントリーしました。").color(Colors.white))
+        .append(Component.text(" " + player.getName() + " が").color(Colors.white))
+        .append(color.component())
+        .append(Component.text("の").color(Colors.white))
+        .append(role.component())
+        .append(Component.text("にエントリーしました。").color(Colors.white))
       );
     }
   }
@@ -196,7 +196,8 @@ public class HimeraceEventListener implements MiniGame {
   }
 
   private void start() {
-    setStatus(Status.BLOCK_HEAD_STAGE);
+    //TODO: カウントダウン
+    setStatus(Status.CARRY_STAGE);
   }
 
   private void stop() {
@@ -243,5 +244,13 @@ public class HimeraceEventListener implements MiniGame {
 
   private static Point3i pos(int x, int y, int z) {
     return new Point3i(x(x), y(y), z(z));
+  }
+
+  @Override
+  public void levelDidFinish(TeamColor color) {
+    broadcast(title
+      .appendSpace()
+      .append(color.component())
+      .append(Component.text("がゴールしました！").color(Colors.white)));
   }
 }

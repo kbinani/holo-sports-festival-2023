@@ -11,28 +11,48 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-class Level implements BlockHeadStage.Delegate {
+class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Delegate, SolveStage.Delegate, FightStage.Delegate, GoalStage.Delegate {
   private final World world;
   private final JavaPlugin owner;
   private final Point3i origin;
   private final TeamColor color;
   private final Stage[] stages;
-  private final BlockHeadStage blockHeadStage;
+  private final CarryStage carryStage;
+  private final BuildStage buildStage;
+  private final CookStage cookStage;
+  private final SolveStage solveStage;
+  private final FightStage fightStage;
+  private final GoalStage goalStage;
+
+  interface Delegate {
+    void levelDidFinish(TeamColor color);
+  }
+  private Delegate delegate;
 
   /**
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
    *
    * @param origin
    */
-  Level(World world, JavaPlugin owner, TeamColor color, Point3i origin) {
+  Level(World world, JavaPlugin owner, TeamColor color, Point3i origin, Delegate delegate) {
     this.world = world;
     this.owner = owner;
     this.color = color;
     this.origin = origin;
-    this.blockHeadStage = new BlockHeadStage(world, owner, origin);
-    this.blockHeadStage.delegate = this;
+    this.delegate = delegate;
+    this.carryStage = new CarryStage(world, owner, origin, this);
+    this.buildStage = new BuildStage(world, owner, pos(-100, 80, -18), this);
+    this.cookStage = new CookStage(world, owner, pos(-100, 80, 1), this);
+    this.solveStage = new SolveStage(world, owner, pos(-100, 80, 22), this);
+    this.fightStage = new FightStage(world, owner, pos(-100, 80, 49), this);
+    this.goalStage = new GoalStage(world, owner, pos(-100, 80, 84), this);
     this.stages = new Stage[]{
-      this.blockHeadStage
+      this.carryStage,
+      this.buildStage,
+      this.cookStage,
+      this.solveStage,
+      this.fightStage,
+      this.goalStage,
     };
   }
 
@@ -74,8 +94,8 @@ class Level implements BlockHeadStage.Delegate {
     }
   }
 
-  void openGateBlockHead() {
-    this.blockHeadStage.stageOpenGate();
+  void start() {
+    this.carryStage.stageStart();
   }
 
   private Point3i pos(int x, int y, int z) {
@@ -84,8 +104,34 @@ class Level implements BlockHeadStage.Delegate {
   }
 
   @Override
-  public void blockHeadStageDidFinish() {
-    //TODO:
-    Stage.OpenGate(owner, world, pos(-96, 80, -18));
+  public void carryStageDidFinish() {
+    this.buildStage.stageStart();
+  }
+
+  @Override
+  public void buildStageDidFinish() {
+    this.cookStage.stageStart();
+  }
+
+  @Override
+  public void cookStageDidFinish() {
+    this.solveStage.stageStart();
+  }
+
+  @Override
+  public void solveStageDidFinish() {
+    this.fightStage.stageStart();
+  }
+
+  @Override
+  public void fightStageDidFinish() {
+    this.goalStage.stageStart();
+  }
+
+  @Override
+  public void goalStageDidFinish() {
+    if (delegate != null) {
+      delegate.levelDidFinish(color);
+    }
   }
 }

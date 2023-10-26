@@ -17,10 +17,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.util.*;
 
-class BlockHeadStage implements Stage {
-  private final World world;
-  private final JavaPlugin owner;
-  private final Point3i origin;
+class CarryStage extends Stage {
   private final Region2D[] firstFloorRegions;
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
@@ -32,7 +29,7 @@ class BlockHeadStage implements Stage {
   private boolean finished = false;
 
   interface Delegate {
-    void blockHeadStageDidFinish();
+    void carryStageDidFinish();
   }
 
   @Nullable
@@ -51,10 +48,9 @@ class BlockHeadStage implements Stage {
     Material.CHERRY_PLANKS,
   };
 
-  BlockHeadStage(World world, JavaPlugin owner, Point3i origin) {
-    this.world = world;
-    this.owner = owner;
-    this.origin = origin;
+  CarryStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
+    super(world, owner, origin);
+    this.delegate = delegate;
     this.firstFloorRegions = new Region2D[]{
       new Region2D(pos(-99, -59), pos(-96, -39)),
       new Region2D(pos(-95, -59), pos(-93, -53)),
@@ -79,7 +75,12 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
-  public void stageReset() {
+  void stageStart() {
+    stageOpenGate();
+  }
+
+  @Override
+  void stageReset() {
     resetFloors();
     stageCloseGate();
     headBlocks.clear();
@@ -91,7 +92,7 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
-  public void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
+  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team) {
     var player = e.getPlayer();
     var knights = team.getKnights();
     setFloorForKnights(knights);
@@ -110,7 +111,7 @@ class BlockHeadStage implements Stage {
   }
 
   @Override
-  public void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
+  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team) {
     if (participation.role != Role.PRINCESS) {
       return;
     }
@@ -131,23 +132,13 @@ class BlockHeadStage implements Stage {
     }
   }
 
-  @Override
-  public void stageOpenGate() {
-    Stage.OpenGate(owner, world, pos(-96, 80, -61));
-  }
-
-  @Override
-  public void stageCloseGate() {
-    Stage.CloseGate(owner, world, pos(-96, 80, -61));
-  }
-
   private void setFinished(boolean b) {
     if (finished == b) {
       return;
     }
     finished = b;
     if (b && delegate != null) {
-      delegate.blockHeadStageDidFinish();
+      delegate.carryStageDidFinish();
     }
   }
 

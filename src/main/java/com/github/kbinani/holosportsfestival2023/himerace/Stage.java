@@ -9,19 +9,28 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-interface Stage {
-  void stageReset();
+abstract class Stage {
+  protected final World world;
+  protected final JavaPlugin owner;
+  protected final Point3i origin;
 
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team);
+  Stage(World world, JavaPlugin owner, Point3i origin) {
+    this.world = world;
+    this.owner = owner;
+    this.origin = origin;
+  }
 
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team);
+  abstract void stageStart();
 
-  void stageOpenGate();
+  abstract void stageReset();
 
-  void stageCloseGate();
+  abstract void stageOnPlayerMove(PlayerMoveEvent e, Participation participation, Team team);
 
-  // origin: dark_oak_fence の一番北西下の位置
-  static void OpenGate(JavaPlugin owner, World world, Point3i origin) {
+  abstract void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation, Team team);
+
+  final void stageOpenGate() {
+    // origin: dark_oak_fence の一番北西下の位置
+    var origin = this.origin.added(4, 0, 0);
     var server = Bukkit.getServer();
     var scheduler = server.getScheduler();
     var interval = 15;
@@ -50,8 +59,8 @@ interface Stage {
     }, interval * 2);
   }
 
-  static void CloseGate(JavaPlugin owner, World world, Point3i origin) {
-    var server = Bukkit.getServer();
+  final void stageCloseGate() {
+    var origin = this.origin.added(4, 0, 0);
     Editor.Fill(world, origin, origin.added(4, 2, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(0, 0, 1), origin.added(4, 2, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(1, 4, 0), origin.added(3, 6, 1), "air");
