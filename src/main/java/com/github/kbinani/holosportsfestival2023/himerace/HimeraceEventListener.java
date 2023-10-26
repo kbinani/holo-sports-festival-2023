@@ -168,6 +168,10 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       }
       e.setCancelled(true);
     } else {
+      if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK  && pos(-90, 80, -65).equals(new Point3i(block.getLocation()))) {
+        stop();
+        return;
+      }
       var participation = getCurrentParticipation(player);
       if (participation != null) {
         var level = levels.get(participation.color);
