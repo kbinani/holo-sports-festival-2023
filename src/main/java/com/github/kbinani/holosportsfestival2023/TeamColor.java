@@ -16,9 +16,9 @@ public class TeamColor {
     return Component.text(japanese).color(sign);
   }
 
-  public static final TeamColor RED = new TeamColor("赤チーム", Colors.red);
-  public static final TeamColor WHITE = new TeamColor("白チーム", Colors.white);
-  public static final TeamColor YELLOW = new TeamColor("黄チーム", Colors.yellow);
+  public static final TeamColor RED = new TeamColor("RED", Colors.red);
+  public static final TeamColor WHITE = new TeamColor("WHITE", Colors.white);
+  public static final TeamColor YELLOW = new TeamColor("YELLOW", Colors.yellow);
 
   public static final TeamColor[] all = new TeamColor[]{RED, WHITE, YELLOW};
 }
