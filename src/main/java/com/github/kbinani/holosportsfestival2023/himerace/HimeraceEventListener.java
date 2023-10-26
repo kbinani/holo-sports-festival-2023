@@ -74,7 +74,7 @@ public class HimeraceEventListener implements MiniGame {
         title,
         Component.empty(),
         Component.empty(),
-        Component.text("ゲームを中断する").color(Colors.aqua)
+        Component.text("ゲームを中断する").color(Colors.red)
     );
     Editor.StandingSign(
         world,
@@ -84,7 +84,7 @@ public class HimeraceEventListener implements MiniGame {
         title,
         Component.empty(),
         Component.empty(),
-        Component.text("エントリーリスト").color(Colors.aqua)
+        Component.text("エントリーリスト").color(Colors.lime)
     );
   }
 
