@@ -33,7 +33,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61), this));
     this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61), this));
     this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61), this));
-    this.announceBounds = new BoundingBox(x(-152), -64, z(-81), x(-72), 448, z(120));
+    this.announceBounds = new BoundingBox(-152, -64, -81, -72, 448, 120);
   }
 
   private void setStatus(Status s) {
@@ -271,23 +271,8 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     return null;
   }
 
-  private static int x(int x) {
-    // 座標が間違っていたらここでオフセットする
-    return x;
-  }
-
-  private static int y(int y) {
-    // 座標が間違っていたらここでオフセットする
-    return y;
-  }
-
-  private static int z(int z) {
-    // 座標が間違っていたらここでオフセットする
-    return z;
-  }
-
   private static Point3i pos(int x, int y, int z) {
-    return new Point3i(x(x), y(y), z(z));
+    return new Point3i(x, y, z);
   }
 
   @Override
