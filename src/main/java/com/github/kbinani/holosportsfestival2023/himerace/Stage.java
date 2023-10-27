@@ -114,7 +114,7 @@ abstract class Stage {
     var origin = this.origin.added(4, 0, 0);
     Editor.Fill(world, origin, origin.added(4, 2, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(0, 0, 1), origin.added(4, 2, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");
-    Editor.Fill(world, origin.added(1, 4, 0), origin.added(3, 6, 1), "air");
+    Editor.Fill(world, origin.added(1, 4, 0), origin.added(3, 6, 1), "barrier");
     Editor.Fill(world, origin.added(0, 4, 0), origin.added(0, 6, 1), "chain[axis=y]");
     Editor.Fill(world, origin.added(4, 4, 0), origin.added(4, 6, 1), "chain[axis=y]");
     world.playSound(origin.added(2, 0, 1).toLocation(world), Sound.BLOCK_PISTON_EXTEND, 1.0f, 1.0f);
