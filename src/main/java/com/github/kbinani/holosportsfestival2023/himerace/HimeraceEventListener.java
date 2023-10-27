@@ -27,12 +27,15 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
   private final BoundingBox announceBounds;
   private @Nullable Race race;
 
-  public HimeraceEventListener(World world, JavaPlugin owner) {
+  public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs) {
+    if (mapIDs.length < 3) {
+      throw new RuntimeException();
+    }
     this.world = world;
     this.owner = owner;
-    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61), this));
-    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61), this));
-    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61), this));
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61), mapIDs[0], this));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61), mapIDs[1], this));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61), mapIDs[2], this));
     this.announceBounds = new BoundingBox(-152, -64, -81, -72, 448, 120);
   }
 

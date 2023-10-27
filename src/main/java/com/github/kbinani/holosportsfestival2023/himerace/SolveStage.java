@@ -1,20 +1,78 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
+import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.map.MapCanvas;
+import org.bukkit.map.MapRenderer;
+import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.concurrent.ThreadLocalRandom;
 
 class SolveStage extends Stage {
   interface Delegate {
     void solveStageDidFinish();
+  }
+
+  class Renderer extends MapRenderer {
+    private static final int gap = 8;
+    private static final int size = (128 - gap * 3) / 2;
+    private static final Font font = new Font(Font.SERIF, Font.PLAIN, size);
+    record Rendered(Quiz quiz, BufferedImage image) {}
+    private @Nullable Rendered rendered;
+
+    @Override
+    public void render(@NotNull MapView map, @NotNull MapCanvas canvas, @NotNull Player player) {
+      if (!started) {
+        return;
+      }
+      var q = quiz;
+      if (q == null) {
+        return;
+      }
+      if (rendered != null && rendered.quiz == q) {
+        canvas.drawImage(0, 0, rendered.image);
+        return;
+      }
+      var answer = q.answer;
+      var img = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+      var g = img.createGraphics();
+      g.setColor(new Color(96, 61, 39));
+      g.fillRect(0, 0, 128, 128);
+      for (int x = 0; x < 2; x++) {
+        for (int y = 0; y < 2; y++) {
+          Color color;
+          if (x == 1 && y == 1) {
+            color = Color.lightGray;
+          } else {
+            var cell = q.get(answer.x + x, answer.z + y);
+            color = cell.color;
+          }
+          g.setColor(color);
+          g.fillRoundRect(gap + (gap + size) * x, gap + (gap + size) * y, size, size, 4, 4);
+        }
+      }
+      g.setColor(Color.red);
+      g.setFont(font);
+      g.drawString("?", 84, 113);
+      canvas.drawImage(0, 0, img);
+      rendered = new Rendered(q, img);
+    }
   }
 
   @Nullable
@@ -23,19 +81,25 @@ class SolveStage extends Stage {
   private final Material quizConcealer;
   private final Point3i quizOrigin;
   private boolean quizStarted = false;
-  private Quiz activeQuiz;
+  private @Nullable ItemFrame itemFrame;
+  private final int mapId;
+  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.solve_stage";
 
-  SolveStage(World world, JavaPlugin owner, Point3i origin, Material quizConcealer, Delegate delegate) {
+  SolveStage(World world, JavaPlugin owner, Point3i origin, Material quizConcealer, int mapId, Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
     this.quizOrigin = pos(-92, 83, 38);
     this.quiz = Quiz.Create(ThreadLocalRandom.current());
     this.quizConcealer = quizConcealer;
+    this.mapId = mapId;
+  }
+
+  private Quiz getCurrentQuiz() {
+    return quiz;
   }
 
   @Override
   protected void onStart() {
-
   }
 
   @Override
@@ -50,8 +114,10 @@ class SolveStage extends Stage {
   protected void onReset() {
     quizStarted = false;
     Quiz.Conceal(world, quizOrigin, quizConcealer);
-    activeQuiz = null;
     setGateOpened(false);
+    quiz = Quiz.Create(ThreadLocalRandom.current());
+    Kill.EntitiesByScoreboardTag(world, scoreboardTag);
+    summonItemFrame();
   }
 
   @Override
@@ -80,7 +146,7 @@ class SolveStage extends Stage {
         if (block == null) {
           return;
         }
-        var quiz = this.activeQuiz;
+        var quiz = this.quiz;
         if (quiz == null) {
           return;
         }
@@ -101,8 +167,8 @@ class SolveStage extends Stage {
             // それだと騎士達の提案を待たずに姫側がガチャするのが最速になってしまう.
             // 対策として, 間違いだった場合は何秒か間を空けて違う問題を出題した方がいい気がする.
             //TODO: 時間を開けて再出題する
-            activeQuiz = takeQuiz();
-            activeQuiz.build(world, quizOrigin);
+            this.quiz = Quiz.Create(ThreadLocalRandom.current());
+            this.quiz.build(world, quizOrigin);
           }
           e.setCancelled(true);
         }
@@ -127,8 +193,31 @@ class SolveStage extends Stage {
     if (princess != null) {
       princess.teleport(pos(-91, 85, 34).toLocation(world).add(0.5, 0, 0.5));
     }
-    activeQuiz = takeQuiz();
-    activeQuiz.build(world, quizOrigin);
+    quiz.build(world, quizOrigin);
+  }
+
+  private void summonItemFrame() {
+    if (itemFrame != null) {
+      itemFrame.remove();
+    }
+    itemFrame = world.spawn(pos(-91, 87, 35).toLocation(world).add(0.5, 0.5, 0.96875), ItemFrame.class, CreatureSpawnEvent.SpawnReason.COMMAND, (it) -> {
+      it.addScoreboardTag(scoreboardTag);
+      var item = new ItemStack(Material.FILLED_MAP, 1);
+      if (!(item.getItemMeta() instanceof MapMeta meta)) {
+        return;
+      }
+      meta.setMapId(mapId);
+      var view = meta.getMapView();
+      if (view == null) {
+        return;
+      }
+      view.setLocked(true);
+      var renderers = view.getRenderers();
+      renderers.forEach(view::removeRenderer);
+      view.addRenderer(new Renderer());
+      item.setItemMeta(meta);
+      it.setItem(item);
+    });
   }
 
   private int x(int x) {
@@ -145,11 +234,5 @@ class SolveStage extends Stage {
 
   private Point3i pos(int x, int y, int z) {
     return new Point3i(x(x), y(y), z(z));
-  }
-
-  private Quiz takeQuiz() {
-    var quiz = this.quiz;
-    this.quiz = Quiz.Create(ThreadLocalRandom.current());
-    return quiz;
   }
 }

@@ -1,34 +1,39 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 
+import java.awt.*;
 import java.util.Random;
 import java.util.function.Function;
 
 class Quiz {
   enum Cell {
-    RED('r', Material.RED_WOOL),
-    YELLOW('y', Material.YELLOW_WOOL),
-    ORANGE('o', Material.ORANGE_WOOL),
-    PINK('p', Material.PINK_WOOL);
+    RED('r', Material.RED_WOOL, Colors.red),
+    YELLOW('y', Material.YELLOW_WOOL, Colors.yellow),
+    ORANGE('o', Material.ORANGE_WOOL, Colors.darkorange),
+    PINK('p', Material.PINK_WOOL, Colors.hotpink);
 
     final char letter;
     final Material material;
+    final Color color;
 
-    Cell(char letter, Material material) {
+    Cell(char letter, Material material, TextColor color) {
       this.letter = letter;
       this.material = material;
+      this.color = new Color(color.red(), color.green(), color.blue());
     }
 
     static final Cell all[] = new Cell[]{RED, YELLOW, ORANGE, PINK};
   }
 
   private final Cell cells[];
-  private final Point2i answer;
+  final Point2i answer;
   private static final int width = 15;
   private static final int actualWidth = 13;
   private static final int height = 4;
@@ -55,7 +60,7 @@ class Quiz {
     return get(answer.x + 1, answer.z + 1);
   }
 
-  private Cell get(int x, int y) {
+  Cell get(int x, int y) {
     if (x < 5) {
       return cells[actualWidth * y + x];
     } else if (x < 10) {
@@ -67,7 +72,6 @@ class Quiz {
 
   private boolean valid() {
     if (cells.length != 52) {
-      System.out.println(cells.length);
       return false;
     }
     var count = 0;

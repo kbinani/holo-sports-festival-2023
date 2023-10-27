@@ -24,7 +24,7 @@ class CarryStage extends Stage {
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
   private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
   private final BoundingBox boundingBox;
-  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.block_head";
+  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.carry_stage";
   private boolean firstGateOpen = false;
   private boolean secondGateOpen = false;
 
