@@ -58,13 +58,13 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   void onPlayerMove(PlayerMoveEvent e, Participation participation) {
     for (var stage : stages) {
-      stage.stageOnPlayerMove(e, participation);
+      stage.playerMove(e, participation);
     }
   }
 
   void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
     for (var stage : stages) {
-      stage.stageOnPlayerInteract(e, participation);
+      stage.playerInteract(e, participation);
     }
   }
 
@@ -90,12 +90,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       Component.text("右クリでエントリー！").color(Colors.aqua));
 
     for (var stage : this.stages) {
-      stage.stageReset();
+      stage.reset();
     }
   }
 
   void start() {
-    this.carryStage.stageStart();
+    this.carryStage.start();
   }
 
   private Point3i pos(int x, int y, int z) {
@@ -105,27 +105,27 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   @Override
   public void carryStageDidFinish() {
-    this.buildStage.stageStart();
+    this.buildStage.start();
   }
 
   @Override
   public void buildStageDidFinish() {
-    this.cookStage.stageStart();
+    this.cookStage.start();
   }
 
   @Override
   public void cookStageDidFinish() {
-    this.solveStage.stageStart();
+    this.solveStage.start();
   }
 
   @Override
   public void solveStageDidFinish() {
-    this.fightStage.stageStart();
+    this.fightStage.start();
   }
 
   @Override
   public void fightStageDidFinish() {
-    this.goalStage.stageStart();
+    this.goalStage.start();
   }
 
   @Override

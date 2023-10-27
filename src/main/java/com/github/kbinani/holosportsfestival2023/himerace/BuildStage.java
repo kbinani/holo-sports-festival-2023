@@ -22,8 +22,13 @@ class BuildStage extends Stage {
   }
 
   @Override
-  public void stageStart(){
-    stageOpenGate();
+  protected void onStart(){
+    openGate();
+    setFinished(true);
+  }
+
+  @Override
+  protected void onFinish() {
     if (delegate != null) {
       //TODO:
       delegate.buildStageDidFinish();
@@ -31,17 +36,16 @@ class BuildStage extends Stage {
   }
 
   @Override
-  public void stageReset() {
-    stageCloseGate();
+  protected void onReset() {
   }
 
   @Override
-  public void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
+  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
 
   }
 
   @Override
-  public void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
+  protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
 
   }
 }

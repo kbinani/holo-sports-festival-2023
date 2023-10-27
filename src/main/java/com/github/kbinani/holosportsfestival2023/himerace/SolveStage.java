@@ -22,8 +22,12 @@ class SolveStage extends Stage {
   }
 
   @Override
-  void stageStart() {
-    stageOpenGate();
+  protected void onStart() {
+    setFinished(true);
+  }
+
+  @Override
+  protected void onFinish() {
     if (delegate != null) {
       //TODO:
       delegate.solveStageDidFinish();
@@ -31,17 +35,16 @@ class SolveStage extends Stage {
   }
 
   @Override
-  void stageReset() {
-    stageCloseGate();
+  protected void onReset() {
   }
 
   @Override
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
+  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
 
   }
 
   @Override
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
+  protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
 
   }
 }

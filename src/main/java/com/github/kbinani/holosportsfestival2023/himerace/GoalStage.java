@@ -17,42 +17,34 @@ class GoalStage extends Stage {
 
   @Nullable
   Delegate delegate;
-  boolean finished = false;
 
   GoalStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
   }
 
-  void setFinished(boolean f) {
-    if (finished == f) {
-      return;
-    }
-    finished = f;
-    if (finished && delegate != null) {
+  @Override
+  protected void onStart() {
+  }
+
+  @Override
+  protected void onFinish() {
+    if (delegate != null) {
       delegate.goalStageDidFinish();
     }
   }
 
   @Override
-  void stageStart() {
-    stageOpenGate();
-    finished = false;
+  protected void onReset() {
   }
 
   @Override
-  void stageReset() {
-    stageCloseGate();
-    finished = false;
-  }
-
-  @Override
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
+  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
 
   }
 
   @Override
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
+  protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
     if (participation.role != Role.PRINCESS) {
       return;
     }

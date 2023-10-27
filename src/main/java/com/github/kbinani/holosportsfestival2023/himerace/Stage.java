@@ -13,6 +13,8 @@ abstract class Stage {
   protected final World world;
   protected final JavaPlugin owner;
   protected final Point3i origin;
+  protected boolean started = false;
+  protected boolean finished = false;
 
   Stage(World world, JavaPlugin owner, Point3i origin) {
     this.world = world;
@@ -20,15 +22,64 @@ abstract class Stage {
     this.origin = origin;
   }
 
-  abstract void stageStart();
+  final void start() {
+    if (started || finished) {
+      return;
+    }
+    setStarted(true);
+  }
 
-  abstract void stageReset();
+  final void reset() {
+    closeGate();
+    onReset();
+    finished = false;
+    started = false;
+  }
 
-  abstract void stageOnPlayerMove(PlayerMoveEvent e, Participation participation);
+  final void playerMove(PlayerMoveEvent e, Participation participation) {
+    if (started && !finished) {
+      onPlayerMove(e, participation);
+    }
+  }
 
-  abstract void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation);
+  final void playerInteract(PlayerInteractEvent e, Participation participation) {
+    if (started && !finished) {
+      onPlayerInteract(e, participation);
+    }
+  }
 
-  final void stageOpenGate() {
+  protected abstract void onPlayerMove(PlayerMoveEvent e, Participation participation);
+
+  protected abstract void onPlayerInteract(PlayerInteractEvent e, Participation participation);
+
+  protected abstract void onStart();
+
+  protected abstract void onReset();
+
+  protected abstract void onFinish();
+
+  protected final void setFinished(boolean v) {
+    if (finished == v) {
+      return;
+    }
+    finished = v;
+    if (finished) {
+      onFinish();
+    }
+  }
+
+  protected final void setStarted(boolean v) {
+    if (started == v) {
+      return;
+    }
+    started = v;
+    if (started) {
+      openGate();
+      onStart();
+    }
+  }
+
+  protected final void openGate() {
     // origin: dark_oak_fence の一番北西下の位置
     var origin = this.origin.added(4, 0, 0);
     var server = Bukkit.getServer();
@@ -59,7 +110,7 @@ abstract class Stage {
     }, interval * 2);
   }
 
-  final void stageCloseGate() {
+  protected final void closeGate() {
     var origin = this.origin.added(4, 0, 0);
     Editor.Fill(world, origin, origin.added(4, 2, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(0, 0, 1), origin.added(4, 2, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");

@@ -27,7 +27,6 @@ class CarryStage extends Stage {
   static final String scoreboardTag = "hololive_sports_festival_2023.himerace.block_head";
   private boolean firstGateOpen = false;
   private boolean secondGateOpen = false;
-  private boolean finished = false;
 
   interface Delegate {
     void carryStageDidFinish();
@@ -76,24 +75,22 @@ class CarryStage extends Stage {
   }
 
   @Override
-  void stageStart() {
-    stageOpenGate();
+  protected void onStart() {
+    openGate();
   }
 
   @Override
-  void stageReset() {
+  protected void onReset() {
     resetFloors();
-    stageCloseGate();
     headBlocks.clear();
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);
     princessStatus = PrincessStatus.FALL;
     setOpenFirstGate(false);
     setOpenSecondGate(false);
-    setFinished(false);
   }
 
   @Override
-  void stageOnPlayerMove(PlayerMoveEvent e, Participation participation) {
+  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
     var player = e.getPlayer();
     var team = participation.team;
     var knights = team.getKnights();
@@ -113,7 +110,7 @@ class CarryStage extends Stage {
   }
 
   @Override
-  void stageOnPlayerInteract(PlayerInteractEvent e, Participation participation) {
+  protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
     if (participation.role != Role.PRINCESS) {
       return;
     }
@@ -133,12 +130,9 @@ class CarryStage extends Stage {
     }
   }
 
-  private void setFinished(boolean b) {
-    if (finished == b) {
-      return;
-    }
-    finished = b;
-    if (b && delegate != null) {
+  @Override
+  protected void onFinish() {
+    if (delegate != null) {
       delegate.carryStageDidFinish();
     }
   }
