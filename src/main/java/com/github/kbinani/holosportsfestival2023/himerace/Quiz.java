@@ -29,7 +29,21 @@ class Quiz {
   private final Cell cells[];
   private final Point2i answer;
   private static final int width = 15;
+  private static final int actualWidth = 13;
   private static final int height = 4;
+  /**
+   * 計算量の上限に達して Quiz が生成できなかった時のための fallback.
+   * https://youtu.be/dDv4L4rHwGU?t=526
+   */
+  private static final Quiz fallback = new Quiz(
+    new Cell[]{
+      Cell.RED, Cell.YELLOW, Cell.RED, Cell.ORANGE, Cell.RED, Cell.PINK, Cell.PINK, Cell.YELLOW, Cell.ORANGE, Cell.RED, Cell.ORANGE, Cell.RED, Cell.PINK,
+      Cell.RED, Cell.RED, Cell.PINK, Cell.YELLOW, Cell.ORANGE, Cell.ORANGE, Cell.YELLOW, Cell.PINK, Cell.PINK, Cell.YELLOW, Cell.PINK, Cell.PINK, Cell.RED,
+      Cell.YELLOW, Cell.PINK, Cell.RED, Cell.YELLOW, Cell.YELLOW, Cell.RED, Cell.YELLOW, Cell.RED, Cell.ORANGE, Cell.YELLOW, Cell.RED, Cell.PINK, Cell.ORANGE,
+      Cell.RED, Cell.ORANGE, Cell.ORANGE, Cell.YELLOW, Cell.RED, Cell.RED, Cell.PINK, Cell.PINK, Cell.YELLOW, Cell.PINK, Cell.RED, Cell.ORANGE, Cell.YELLOW
+    },
+    new Point2i(3, 1)
+  );
 
   private Quiz(Cell cells[], Point2i answer) {
     this.cells = cells;
@@ -42,35 +56,43 @@ class Quiz {
 
   private Cell get(int x, int y) {
     if (x < 5) {
-      return cells[width * y + x];
+      return cells[actualWidth * y + x];
     } else if (x < 10) {
-      return cells[width * y + x - 1];
+      return cells[actualWidth * y + x - 1];
     } else {
-      return cells[width * y + x - 2];
+      return cells[actualWidth * y + x - 2];
     }
   }
 
   private boolean valid() {
+    if (cells.length != 52) {
+      System.out.println(cells.length);
+      return false;
+    }
     var count = 0;
-    for (int z = 0; z < height - 1; z++) {
-      for (int x = 0; x < width - 1; x++) {
-        boolean match = true;
-        for (int t = 0; t < 2 && match; t++) {
-          for (int s = 0; s < 2; s++) {
-            if (s == 1 && t == 1) {
-              continue;
-            }
-            if (get(answer.x + s, answer.z + t) != get(x + s, z + t)) {
-              match = false;
-              break;
+    for (int i = 0; i < 3; i++) {
+      int x0 = i * 5;
+      for (int j = 0; j < 4; j++) {
+        int x = x0 + j;
+        for (int z = 0; z < height - 1; z++) {
+          boolean match = true;
+          for (int t = 0; t < 2 && match; t++) {
+            for (int s = 0; s < 2; s++) {
+              if (s == 1 && t == 1) {
+                continue;
+              }
+              if (get(answer.x + s, answer.z + t) != get(x + s, z + t)) {
+                match = false;
+                break;
+              }
             }
           }
-        }
-        if (match) {
-          if (count > 0) {
-            return false;
+          if (match) {
+            if (count > 0) {
+              return false;
+            }
+            count++;
           }
-          count++;
         }
       }
     }
@@ -78,8 +100,8 @@ class Quiz {
   }
 
   private static Quiz Candidate(Random random) {
-    var cells = new Cell[width * height];
-    for (int i = 0; i < width * height; i++) {
+    var cells = new Cell[actualWidth * height];
+    for (int i = 0; i < actualWidth * height; i++) {
       int index = random.nextInt(Cell.all.length);
       cells[i] = Cell.all[index];
     }
@@ -89,12 +111,13 @@ class Quiz {
   }
 
   static Quiz Create(Random random) {
-    while (true) {
+    for (int i = 0; i < 32; i++) {
       var quiz = Candidate(random);
       if (quiz.valid()) {
         return quiz;
       }
     }
+    return fallback;
   }
 
   /**
