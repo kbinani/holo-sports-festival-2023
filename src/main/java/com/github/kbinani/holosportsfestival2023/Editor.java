@@ -46,6 +46,14 @@ public class Editor {
     }
   }
 
+  public static void Set(@Nonnull World world, Point3i pos, String blockDataString) {
+    Fill(world, pos, pos, blockDataString);
+  }
+
+  public static void Set(@Nonnull World world, Point3i pos, BlockData blockData) {
+    Fill(world, pos, pos, blockData);
+  }
+
   private static void Load(@Nonnull World world, Point3i from, Point3i to) {
     int cx0 = from.x >> 4;
     int cz0 = from.z >> 4;

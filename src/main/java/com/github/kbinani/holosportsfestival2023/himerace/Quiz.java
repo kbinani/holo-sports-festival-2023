@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 
 import java.util.Random;
+import java.util.function.Function;
 
 class Quiz {
   enum Cell {
@@ -124,6 +125,17 @@ class Quiz {
    * get(0, 0) の Cell の座標を指定してブロックを設置する.
    */
   void build(World world, Point3i origin) {
+    Build(world, origin, (pos) -> {
+      var cell = get(pos.x, pos.z);
+      return cell.material;
+    });
+  }
+
+  static void Conceal(World world, Point3i origin, Material material) {
+    Build(world, origin, (p) -> material);
+  }
+
+  private static void Build(World world, Point3i origin, Function<Point2i, Material> materialFromPointFunction) {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 5; j++) {
         if (i > 0 && j == 0) {
@@ -148,9 +160,9 @@ class Quiz {
         var top = localOrigin.added(j * direction.x, j * direction.y, j * direction.z);
         var x = i * 5 + j;
         for (int y = 0; y < height; y++) {
-          var cell = get(x, y);
+          var material = materialFromPointFunction.apply(new Point2i(x, y));
           var location = top.added(0, -y, 0);
-          Editor.Fill(world, location, location, cell.material.createBlockData());
+          Editor.Fill(world, location, location, material.createBlockData());
         }
       }
     }

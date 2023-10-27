@@ -27,6 +27,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   interface Delegate {
     void levelDidFinish(TeamColor color);
   }
+
   private Delegate delegate;
 
   /**
@@ -43,7 +44,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     this.carryStage = new CarryStage(world, owner, origin, this);
     this.buildStage = new BuildStage(world, owner, pos(-100, 80, -18), this);
     this.cookStage = new CookStage(world, owner, pos(-100, 80, 1), this);
-    this.solveStage = new SolveStage(world, owner, pos(-100, 80, 22), this);
+    this.solveStage = new SolveStage(world, owner, pos(-100, 80, 22), color.quizConcealer, this);
     this.fightStage = new FightStage(world, owner, pos(-100, 80, 49), this);
     this.goalStage = new GoalStage(world, owner, pos(-100, 80, 84), this);
     this.stages = new Stage[]{
