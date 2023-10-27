@@ -18,7 +18,6 @@ public class Editor {
   }
 
   public static void Fill(@Nonnull World world, Point3i from, Point3i to, String blockDataString) {
-    Load(world, from, to);
     Server server = Bukkit.getServer();
     BlockData blockData = null;
     try {
@@ -27,6 +26,11 @@ public class Editor {
       e.printStackTrace(System.err);
       return;
     }
+    Fill(world, from, to, blockData);
+  }
+
+  public static void Fill(@Nonnull World world, Point3i from, Point3i to, BlockData blockData) {
+    Load(world, from, to);
     int x0 = Math.min(from.x, to.x);
     int y0 = Math.min(from.y, to.y);
     int z0 = Math.min(from.z, to.z);

@@ -1,7 +1,10 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point2i;
+import com.github.kbinani.holosportsfestival2023.Point3i;
 import org.bukkit.Material;
+import org.bukkit.World;
 
 import java.util.Random;
 
@@ -86,14 +89,47 @@ class Quiz {
   }
 
   static Quiz Create(Random random) {
-    int rejection = 0;
     while (true) {
       var quiz = Candidate(random);
       if (quiz.valid()) {
-        System.out.println("rejection=" + rejection);
         return quiz;
       }
-      rejection++;
+    }
+  }
+
+  /**
+   * get(0, 0) の Cell の座標を指定してブロックを設置する.
+   */
+  void build(World world, Point3i origin) {
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 5; j++) {
+        if (i > 0 && j == 0) {
+          continue;
+        }
+        Point3i localOrigin;
+        Point3i direction;
+        switch (i) {
+          case 1:
+            localOrigin = origin.added(0, 0, -4);
+            direction = new Point3i(-1, 0, 0);
+            break;
+          case 2:
+            localOrigin = origin.added(-4, 0, -4);
+            direction = new Point3i(0, 0, 1);
+            break;
+          default:
+            localOrigin = origin;
+            direction = new Point3i(0, 0, -1);
+            break;
+        }
+        var top = localOrigin.added(j * direction.x, j * direction.y, j * direction.z);
+        var x = i * 5 + j;
+        for (int y = 0; y < height; y++) {
+          var cell = get(x, y);
+          var location = top.added(0, -y, 0);
+          Editor.Fill(world, location, location, cell.material.createBlockData());
+        }
+      }
     }
   }
 
