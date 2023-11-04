@@ -8,6 +8,9 @@ import org.bukkit.World;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+
+import javax.annotation.Nullable;
 
 abstract class Stage {
   protected final World world;
@@ -15,6 +18,7 @@ abstract class Stage {
   protected final Point3i origin;
   protected boolean started = false;
   protected boolean finished = false;
+  private @Nullable BukkitTask openGateTask;
 
   Stage(World world, JavaPlugin owner, Point3i origin) {
     this.world = world;
@@ -80,6 +84,11 @@ abstract class Stage {
   }
 
   protected final void openGate() {
+    if (openGateTask != null) {
+      openGateTask.cancel();
+      openGateTask = null;
+    }
+
     // origin: dark_oak_fence の一番北西下の位置
     var origin = this.origin.added(4, 0, 0);
     var server = Bukkit.getServer();
@@ -91,7 +100,7 @@ abstract class Stage {
     Editor.Fill(world, origin.added(0, 4, 1), origin.added(4, 4, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");
     world.playSound(origin.added(2, 0, 1).toLocation(world), Sound.BLOCK_PISTON_EXTEND, 1.0f, 1.0f);
 
-    scheduler.runTaskLater(owner, () -> {
+    var task = scheduler.runTaskLater(owner, () -> {
       Editor.Fill(world, origin.added(0, 1, 0), origin.added(4, 1, 1), "air");
       Editor.Fill(world, origin.added(0, 5, 0), origin.added(4, 5, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
       Editor.Fill(world, origin.added(0, 5, 1), origin.added(4, 5, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");
@@ -99,6 +108,12 @@ abstract class Stage {
     }, interval);
 
     scheduler.runTaskLater(owner, () -> {
+      if (task == openGateTask) {
+        openGateTask = null;
+      }
+      if (task.isCancelled()) {
+        return;
+      }
       Editor.Fill(world, origin.added(0, 2, 0), origin.added(4, 2, 1), "air");
       Editor.Fill(world, origin.added(0, 6, 0), origin.added(0, 6, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=false]");
       Editor.Fill(world, origin.added(0, 6, 1), origin.added(0, 6, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=false]");
@@ -108,9 +123,15 @@ abstract class Stage {
       Editor.Fill(world, origin.added(4, 6, 1), origin.added(4, 6, 1), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=true]");
       world.playSound(origin.added(2, 0, 1).toLocation(world), Sound.BLOCK_PISTON_EXTEND, 1.0f, 1.0f);
     }, interval * 2);
+
+    openGateTask = task;
   }
 
   protected final void closeGate() {
+    if (openGateTask != null) {
+      openGateTask.cancel();
+      openGateTask = null;
+    }
     var origin = this.origin.added(4, 0, 0);
     Editor.Fill(world, origin, origin.added(4, 2, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(0, 0, 1), origin.added(4, 2, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");

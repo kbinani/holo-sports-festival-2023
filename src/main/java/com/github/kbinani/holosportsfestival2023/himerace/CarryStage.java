@@ -76,7 +76,6 @@ class CarryStage extends Stage {
 
   @Override
   protected void onStart() {
-    openGate();
   }
 
   @Override
