@@ -3,9 +3,11 @@ package com.github.kbinani.holosportsfestival2023;
 import com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
@@ -109,5 +111,18 @@ public class Main extends JavaPlugin implements Listener {
         e.setCancelled(true);
         break;
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onBlockForm(BlockFormEvent e) {
+    if (e.isCancelled()) {
+      return;
+    }
+    var from = e.getBlock();
+    if (from.getType() != Material.WHITE_CONCRETE_POWDER) {
+      return;
+    }
+    e.setCancelled(true);
   }
 }
