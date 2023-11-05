@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -120,9 +121,20 @@ public class Main extends JavaPlugin implements Listener {
       return;
     }
     var from = e.getBlock();
-    if (from.getType() != Material.WHITE_CONCRETE_POWDER) {
-      return;
+    if (from.getType() == Material.WHITE_CONCRETE_POWDER) {
+      e.setCancelled(true);
     }
-    e.setCancelled(true);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onBlockFade(BlockFadeEvent e) {
+    var from = e.getBlock().getType();
+    var to = e.getNewState().getType();
+    if (from == Material.FIRE_CORAL_BLOCK && to == Material.DEAD_FIRE_CORAL_BLOCK) {
+      e.setCancelled(true);
+    } else if (from == Material.HORN_CORAL_BLOCK && to == Material.DEAD_HORN_CORAL_BLOCK) {
+      e.setCancelled(true);
+    }
   }
 }
