@@ -13,9 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build
-        run: ./gradlew assemble
+        run: make plugin
       - name: Deploy
         uses: softprops/action-gh-release@v1
         if: github.ref_type == 'tag'
         with:
-          files: build/libs/holo-sports-festival-2023-plugin-${{ env.HOLO_SPORTS_FESTIVAL_2023_PLUGIN_VERSION }}.jar
+          files: plugin/build/libs/holo-sports-festival-2023-plugin-${{ env.HOLO_SPORTS_FESTIVAL_2023_PLUGIN_VERSION }}.jar
