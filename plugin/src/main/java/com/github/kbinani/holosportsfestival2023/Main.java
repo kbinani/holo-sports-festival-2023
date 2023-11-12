@@ -78,7 +78,7 @@ public class Main extends JavaPlugin implements Listener {
 
     miniGames = new ArrayList<>();
     miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
-    miniGames.add(new HoloUpEventListener());
+    miniGames.add(new HoloUpEventListener(world));
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
