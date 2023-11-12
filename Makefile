@@ -1,16 +1,27 @@
+.PHONY: all
+all: plugin server resourcepack
+
 .PHONY: plugin
 plugin:
-	cd plugin && ./gradlew assemble
+	bash plugin/build.sh
 
 .PHONY: server
 server:
-	cd server && ./gradlew rebuildPatches && ./gradlew applyPatches && ./gradlew createReobfBundlerJar
+	bash server/build.sh
+
+.PHONY: resourcepack
+resourcepack:
+	bash resourcepack/build.sh
 
 clean:
-	rm -rf ./plugin/build/libs/*.jar
+	bash plugin/clean.sh
+	bash server/clean.sh
+	bash resourcepack/clean.sh
 
 .PHONY: run
-run: plugin server
-	rm -f ../holo-sports-festival-2023-work/run/plugins/sports-festival-2023.jar
-	ln -sf $$(pwd)/plugin/build/libs/*.jar ../holo-sports-festival-2023-work/run/plugins/sports-festival-2023.jar
-	cd ../holo-sports-festival-2023-work/run && java -jar server.jar -nogui
+run: plugin
+	rm -f ./run/plugins/sports-festival-2023.jar
+	ln -sf $$(pwd)/plugin/build/libs/*.jar ./run/plugins/sports-festival-2023.jar
+	rm -f ./run/server.jar
+	ln -sf $$(pwd)/server/Paper/build/libs/*.jar ./run/server.jar
+	cd ./run && java -jar server.jar -nogui

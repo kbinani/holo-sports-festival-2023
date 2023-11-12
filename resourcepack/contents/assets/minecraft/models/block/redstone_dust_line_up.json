@@ -1,0 +1,16 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "minecraft:block/white_concrete_powder",
+		"particle": "minecraft:block/white_concrete_powder"
+	},
+	"elements": [
+		{
+			"from": [5, 0, 0.1],
+			"to": [11, 16, 0.1],
+			"faces": {
+				"south": {"uv": [5, 0, 11, 16], "texture": "#0"}
+			}
+		}
+	]
+}
