@@ -3,16 +3,50 @@ package com.github.kbinani.holosportsfestival2023.holoup;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HoloUpEventListener implements MiniGame {
   // 位置をずらしたい場合はここでずらす
   private static final Point3i offset = new Point3i(0, 0, 0);
-  private final World world;
   private static final Component title = Component.text("[Holoup]").color(Colors.aqua);
+  private static final Component prefix = title.append(Component.text(" ").color(Colors.white));
+  private static final Point3i joinSignRed = pos(-42, 100, -29);
+  private static final Point3i joinSignWhite = pos(-41, 100, -29);
+  private static final Point3i joinSignYellow = pos(-40, 100, -29);
+  private static final Point3i abortSign = pos(-36, 100, -29);
+  private static final Point3i startSign = pos(-37, 100, -29);
+  private static final BoundingBox announceBounds = new BoundingBox(x(-59), y(99), z(-63), x(12), 500, z(-19));
+  private static final String itemTag = "holo_sports_festival_holoup";
 
-  public HoloUpEventListener(World world) {
+  private final World world;
+  private final JavaPlugin owner;
+  private Status status = Status.IDLE;
+  private final Map<TeamColor, Player> registrants = new HashMap<>();
+  private @Nullable Cancellable countdownTask;
+  private @Nullable Race race;
+
+  public HoloUpEventListener(World world, JavaPlugin owner) {
     this.world = world;
+    this.owner = owner;
   }
 
   @Override
@@ -20,10 +54,15 @@ public class HoloUpEventListener implements MiniGame {
     reset();
   }
 
+  @Override
+  public void miniGameClearItem(Player player) {
+    clearItems(player);
+  }
+
   private void reset() {
     Editor.StandingSign(
       world,
-      pos(-42, 100, -29),
+      joinSignRed,
       Material.OAK_SIGN,
       0,
       title,
@@ -33,7 +72,7 @@ public class HoloUpEventListener implements MiniGame {
     );
     Editor.StandingSign(
       world,
-      pos(-41, 100, -29),
+      joinSignWhite,
       Material.OAK_SIGN,
       0,
       title,
@@ -43,7 +82,7 @@ public class HoloUpEventListener implements MiniGame {
     );
     Editor.StandingSign(
       world,
-      pos(-40, 100, -29),
+      joinSignYellow,
       Material.OAK_SIGN,
       0,
       title,
@@ -64,7 +103,7 @@ public class HoloUpEventListener implements MiniGame {
 
     Editor.StandingSign(
       world,
-      pos(-37, 100, -29),
+      startSign,
       Material.OAK_SIGN,
       0,
       title,
@@ -74,7 +113,7 @@ public class HoloUpEventListener implements MiniGame {
     );
     Editor.StandingSign(
       world,
-      pos(-36, 100, -29),
+      abortSign,
       Material.OAK_SIGN,
       0,
       title,
@@ -92,6 +131,187 @@ public class HoloUpEventListener implements MiniGame {
       Component.empty(),
       Component.text("エントリー リスト").color(Colors.lime)
     );
+
+    registrants.clear();
+    status = Status.IDLE;
+    world.getPlayers().forEach(this::clearItems);
+    if (countdownTask != null) {
+      countdownTask.cancel();
+      countdownTask = null;
+    }
+    race = null;
+  }
+
+  private void abort() {
+    status = Status.IDLE;
+    world.getPlayers().forEach(this::clearItems);
+    if (countdownTask != null) {
+      countdownTask.cancel();
+      countdownTask = null;
+    }
+    race = null;
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerInteract(PlayerInteractEvent e) {
+    Player player = e.getPlayer();
+    Block block = e.getClickedBlock();
+    if (block == null) {
+      return;
+    }
+    if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    Point3i location = new Point3i(block.getLocation());
+    switch (status) {
+      case IDLE -> {
+        if (location.equals(joinSignRed)) {
+          onClickJoin(player, TeamColor.RED);
+        } else if (location.equals(joinSignWhite)) {
+          onClickJoin(player, TeamColor.WHITE);
+        } else if (location.equals(joinSignYellow)) {
+          onClickJoin(player, TeamColor.YELLOW);
+        } else if (location.equals(startSign)) {
+          if (registrants.isEmpty()) {
+            player.sendMessage(prefix
+              .append(Component.text("参加者がいません").color(Colors.red)));
+          } else {
+            startCountdown();
+          }
+        }
+      }
+      case COUNTDOWN -> {
+        if (location.equals(abortSign)) {
+          abort();
+          broadcast(prefix
+            .append(Component.text("ゲームを中断しました").color(Colors.red)));
+        }
+      }
+      case ACTIVE -> {
+        if (location.equals(abortSign)) {
+          reset();
+          broadcast(prefix
+            .append(Component.text("ゲームを中断しました").color(Colors.red)));
+        }
+      }
+    }
+  }
+
+  private void startCountdown() {
+    if (countdownTask != null) {
+      countdownTask.cancel();
+      countdownTask = null;
+    }
+    status = Status.COUNTDOWN;
+    countdownTask = new Countdown(owner, world, announceBounds, Component.text("上を目指せ!holoUp!").color(Colors.lime), 10, this::start);
+  }
+
+  private void start() {
+    boolean ok = true;
+    for (var player : registrants.values()) {
+      if (!giveItems(player)) {
+        ok = false;
+      }
+    }
+    if (!ok) {
+      for (var player : registrants.values()) {
+        clearItems(player);
+      }
+      broadcast(prefix
+        .append(Component.text("インベントリがいっぱいで競技用アイテムが渡せない参加者がいたため中断しました。").color(Colors.red)));
+      status = Status.IDLE;
+      return;
+    }
+    this.race = new Race(registrants);
+    status = Status.ACTIVE;
+    broadcast(prefix
+      .append(Component.text("ゲームがスタートしました。")));
+  }
+
+  private void onClickJoin(Player player, TeamColor color) {
+    var current = registrants.get(color);
+    if (current == null) {
+      if (registrants.containsValue(player)) {
+        player.sendMessage(prefix
+          .append(Component.text("既に他のチームにエントリーしています。").color(Colors.red))
+        );
+      } else {
+        registrants.put(color, player);
+        broadcast(prefix
+          .append(player.teamDisplayName())
+          .append(Component.text("が").color(Colors.white))
+          .append(color.component())
+          .append(Component.text("にエントリーしました。").color(Colors.white))
+        );
+      }
+    } else if (current == player) {
+      registrants.remove(color);
+      broadcast(prefix
+        .append(player.teamDisplayName())
+        .append(Component.text("が").color(Colors.white))
+        .append(color.component())
+        .append(Component.text("のエントリーを解除しました。").color(Colors.white))
+      );
+    } else {
+      player.sendMessage(prefix
+        .append(Component.text("既に").color(Colors.red))
+        .append(color.component())
+        .append(Component.text("のプレイヤーがエントリーしています。").color(Colors.red))
+      );
+    }
+  }
+
+  private boolean giveItems(Player player) {
+    ItemStack weak = ItemBuilder.For(Material.TRIDENT)
+      .amount(1)
+      .customByteTag(itemTag, (byte) 1)
+      .enchant(Enchantment.RIPTIDE, 1)
+      .flags(ItemFlag.HIDE_ATTRIBUTES)
+      .build();
+    if (!player.getInventory().addItem(weak).isEmpty()) {
+      player.sendMessage(prefix
+        .append(Component.text("インベントリがいっぱいで競技用アイテムが渡せません").color(Colors.red))
+      );
+      clearItems(player);
+      return false;
+    }
+    //TODO:
+    return true;
+  }
+
+  private void clearItems(Player player) {
+    PlayerInventory inventory = player.getInventory();
+    for (int i = 0; i < inventory.getSize(); i++) {
+      ItemStack item = inventory.getItem(i);
+      if (item == null) {
+        continue;
+      }
+      ItemMeta meta = item.getItemMeta();
+      if (meta == null) {
+        continue;
+      }
+      PersistentDataContainer container = meta.getPersistentDataContainer();
+      if (container.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+        inventory.clear(i);
+      }
+    }
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, announceBounds, player -> player.sendMessage(message));
+  }
+
+  private static int x(int x) {
+    return x + offset.x;
+  }
+
+  private static int y(int y) {
+    return y + offset.y;
+  }
+
+  private static int z(int z) {
+    return z + offset.z;
   }
 
   private static Point3i pos(int x, int y, int z) {

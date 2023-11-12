@@ -102,6 +102,11 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     race = null;
   }
 
+  @Override
+  public void miniGameClearItem(Player player) {
+    //TODO:
+  }
+
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerMove(PlayerMoveEvent e) {

@@ -78,7 +78,7 @@ public class Main extends JavaPlugin implements Listener {
 
     miniGames = new ArrayList<>();
     miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
-    miniGames.add(new HoloUpEventListener(world));
+    miniGames.add(new HoloUpEventListener(world, this));
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
@@ -91,6 +91,10 @@ public class Main extends JavaPlugin implements Listener {
       for (var miniGame : miniGames) {
         miniGame.miniGameReset();
       }
+    }
+    var player = e.getPlayer();
+    for (var miniGame : miniGames) {
+      miniGame.miniGameClearItem(player);
     }
   }
 
