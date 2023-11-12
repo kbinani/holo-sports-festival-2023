@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023;
 
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -16,8 +17,17 @@ import java.util.List;
 public class Countdown implements Cancellable {
   private final List<BukkitTask> tasks = new ArrayList<>();
 
-  public Countdown(JavaPlugin plugin, World world, BoundingBox bounds, Component subtitle, long seconds, Runnable then) {
-    var main = Component.text(String.format("スタートまで %d...", seconds)).color(Colors.aqua);
+  public Countdown(
+    JavaPlugin plugin,
+    World world,
+    BoundingBox bounds,
+    Component titlePrefix,
+    TextColor counterColor,
+    Component subtitle,
+    long seconds,
+    Runnable then
+  ) {
+    var main = titlePrefix.append(Component.text(String.format(" %d...", seconds)).color(counterColor));
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(main, subtitle, times);
     Players.Within(world, bounds, (player) -> {
@@ -27,7 +37,7 @@ public class Countdown implements Cancellable {
     var scheduler = Bukkit.getScheduler();
     for (long i = seconds - 1; i >= 1; i--) {
       var t = Title.title(
-        Component.text(String.format("スタートまで %d...", i)).color(Colors.aqua),
+        titlePrefix.append(Component.text(String.format(" %d...", i)).color(counterColor)),
         subtitle,
         times
       );

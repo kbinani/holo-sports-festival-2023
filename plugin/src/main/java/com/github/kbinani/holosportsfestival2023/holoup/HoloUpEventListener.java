@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HoloUpEventListener implements MiniGame {
+public class HoloUpEventListener implements MiniGame, Race.Delegate {
   // 位置をずらしたい場合はここでずらす
   private static final Point3i offset = new Point3i(0, 0, 0);
   private static final Component title = Component.text("[Holoup]").color(Colors.aqua);
@@ -57,6 +57,11 @@ public class HoloUpEventListener implements MiniGame {
   @Override
   public void miniGameClearItem(Player player) {
     clearItems(player);
+  }
+
+  @Override
+  public void raceDidFinish() {
+    reset();
   }
 
   private void reset() {
@@ -139,6 +144,9 @@ public class HoloUpEventListener implements MiniGame {
       countdownTask.cancel();
       countdownTask = null;
     }
+    if (race != null) {
+      race.cleanup();
+    }
     race = null;
   }
 
@@ -148,6 +156,9 @@ public class HoloUpEventListener implements MiniGame {
     if (countdownTask != null) {
       countdownTask.cancel();
       countdownTask = null;
+    }
+    if (race != null) {
+      race.cancel();
     }
     race = null;
   }
@@ -181,16 +192,9 @@ public class HoloUpEventListener implements MiniGame {
           }
         }
       }
-      case COUNTDOWN -> {
+      case COUNTDOWN, ACTIVE -> {
         if (location.equals(abortSign)) {
           abort();
-          broadcast(prefix
-            .append(Component.text("ゲームを中断しました").color(Colors.red)));
-        }
-      }
-      case ACTIVE -> {
-        if (location.equals(abortSign)) {
-          reset();
           broadcast(prefix
             .append(Component.text("ゲームを中断しました").color(Colors.red)));
         }
@@ -204,7 +208,18 @@ public class HoloUpEventListener implements MiniGame {
       countdownTask = null;
     }
     status = Status.COUNTDOWN;
-    countdownTask = new Countdown(owner, world, announceBounds, Component.text("上を目指せ!holoUp!").color(Colors.lime), 10, this::start);
+    var titlePrefix = Component.text("スタートまで").color(Colors.aqua);
+    var subtitle = Component.text("上を目指せ!holoUp!").color(Colors.lime);
+    countdownTask = new Countdown(
+      owner,
+      world,
+      announceBounds,
+      titlePrefix,
+      Colors.aqua,
+      subtitle,
+      10,
+      this::start
+    );
   }
 
   private void start() {
@@ -223,10 +238,14 @@ public class HoloUpEventListener implements MiniGame {
       status = Status.IDLE;
       return;
     }
-    this.race = new Race(registrants);
+    if (this.race != null) {
+      this.race.cancel();
+      this.race = null;
+    }
+    this.race = new Race(owner, world, announceBounds, registrants, this);
     status = Status.ACTIVE;
     broadcast(prefix
-      .append(Component.text("ゲームがスタートしました。")));
+      .append(Component.text("ゲームがスタートしました。").color(Colors.white)));
   }
 
   private void onClickJoin(Player player, TeamColor color) {
@@ -276,7 +295,7 @@ public class HoloUpEventListener implements MiniGame {
       clearItems(player);
       return false;
     }
-    //TODO:
+    //TODO: 他のアイテム
     return true;
   }
 
