@@ -19,6 +19,7 @@ import java.util.Map;
 class Race {
   interface Delegate {
     void raceDidFinish();
+    void raceDidDetectGoal(TeamColor color, Player player);
   }
 
   private final Map<TeamColor, Player> participants;
@@ -32,8 +33,10 @@ class Race {
   private final BoundingBox announceBounds;
   private final long startedMillis;
   private final BukkitTask timerTask;
+  private final HashMap<TeamColor, Long> goaledMillis = new HashMap<>();
 
   private static final long durationSeconds = 300;
+  private static final int groundLevel = 100;
 
   Race(JavaPlugin owner, World world, BoundingBox announceBounds, Map<TeamColor, Player> registrants, Delegate delegate) {
     this.owner = owner;
@@ -43,7 +46,7 @@ class Race {
     this.announceBounds = announceBounds;
     registrants.clear();
     var scheduler = Bukkit.getScheduler();
-    timeoutTask = scheduler.runTaskLater(owner, this::timeout, durationSeconds * 20);
+    timeoutTask = scheduler.runTaskLater(owner, this::finish, durationSeconds * 20);
     startedMillis = System.currentTimeMillis();
     timerTask = scheduler.runTaskTimer(owner, this::tick, 0, 20);
     countdownTask = scheduler.runTaskLater(owner, this::startCountdown, (durationSeconds - 3) * 20);
@@ -73,16 +76,80 @@ class Race {
     bars.clear();
   }
 
+  void onPlayerMove(Player player) {
+    if (!player.isOnGround()) {
+      return;
+    }
+    var score = this.scoreFromAltitude(player);
+    if (score < 200) {
+      return;
+    }
+    for (var entry : participants.entrySet()) {
+      if (entry.getValue() == player) {
+        var color = entry.getKey();
+        if (goaledMillis.containsKey(color)) {
+          return;
+        }
+        goal(color, player);
+        return;
+      }
+    }
+  }
+
+  private void goal(TeamColor color, Player player) {
+    goaledMillis.put(color, System.currentTimeMillis());
+    delegate.raceDidDetectGoal(color, player);
+    boolean ok = true;
+    for (var c : participants.keySet()) {
+      if (!goaledMillis.containsKey(c)) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) {
+      finish();
+    }
+  }
+
+  private void finish() {
+    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+    var title = Title.title(Component.text("ゲームが終了しました！").color(Colors.orange), Component.empty(), times);
+    Players.Within(world, announceBounds, (player) -> player.showTitle(title));
+
+    timeoutTask.cancel();
+    timerTask.cancel();
+    countdownTask.cancel();
+    if (countdown != null) {
+      countdown.cancel();
+    }
+
+    broadcast(Component.empty());
+    for (var color : TeamColor.all) {
+      var player = participants.get(color);
+      if (player == null) {
+        continue;
+      }
+      broadcast(Component.empty()
+        .appendSpace()
+        .append(color.component())
+      );
+      var score = this.score(color);
+      broadcast(Component.empty()
+        .appendSpace()
+        .append(Component.text(String.format(" - %s", player.getName())).color(color.sign))
+        .append(Component.text(String.format(" %dm", score)).color(score >= 200 ? Colors.orange : Colors.white))
+      );
+      broadcast(Component.empty());
+    }
+    delegate.raceDidFinish();
+  }
+
   private void startCountdown() {
     if (countdown != null) {
       countdown.cancel();
     }
     var prefix = Component.text("ゲーム終了まで").color(Colors.lime);
-    countdown = new Countdown(owner, world, announceBounds, prefix, Colors.white, Component.empty(), 3, () -> {
-      var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
-      var title = Title.title(Component.text("ゲームが終了しました！").color(Colors.orange), Component.empty(), times);
-      Players.Within(world, announceBounds, (player) -> player.showTitle(title));
-    });
+    countdown = new Countdown(owner, world, announceBounds, prefix, Colors.white, Component.empty(), 3, this::finish);
   }
 
   private void tick() {
@@ -102,7 +169,11 @@ class Race {
         bar = BossBar.bossBar(Component.empty(), 0, color.barColor, BossBar.Overlay.NOTCHED_6);
         bars.put(color, bar);
       }
-      var score = this.score(player);
+      var score = this.score(color);
+      var goal = goaledMillis.get(color);
+      if (goal != null) {
+        remaining = durationSeconds - (goal - startedMillis) / 1000;
+      }
       bar.progress(score / 200.0f);
       var name = color.component()
         .appendSpace()
@@ -128,30 +199,19 @@ class Race {
     });
   }
 
-  private void timeout() {
-    broadcast(Component.empty());
-    for (var color : TeamColor.all) {
-      var player = participants.get(color);
-      if (player == null) {
-        continue;
-      }
-      broadcast(Component.empty()
-        .appendSpace()
-        .append(color.component())
-      );
-      var score = this.score(player);
-      broadcast(Component.empty()
-        .appendSpace()
-        .append(Component.text(String.format(" - %s", player.getName())).color(color.sign))
-        .append(Component.text(String.format(" %dm", score)).color(score >= 200 ? Colors.orange : Colors.white))
-      );
-      broadcast(Component.empty());
+  private int score(TeamColor color) {
+    var player = participants.get(color);
+    if (player == null) {
+      return 0;
     }
-    delegate.raceDidFinish();
+    if (goaledMillis.containsKey(color)) {
+      return 200;
+    }
+    return scoreFromAltitude(player);
   }
 
-  private int score(Player player) {
-    return Math.min(Math.max(0, player.getLocation().getBlockY() - 100), 200);
+  private int scoreFromAltitude(Player player) {
+    return Math.min(Math.max(0, player.getLocation().getBlockY() - groundLevel), 200);
   }
 
   private void broadcast(Component message) {

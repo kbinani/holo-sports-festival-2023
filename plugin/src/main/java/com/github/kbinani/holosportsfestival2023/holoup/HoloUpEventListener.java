@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -62,6 +63,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @Override
   public void raceDidFinish() {
     reset();
+  }
+
+  @Override
+  public void raceDidDetectGoal(TeamColor color, Player player) {
+    broadcast(prefix
+      .append(Component.text(player.getName()).color(color.sign))
+      .appendSpace()
+      .append(Component.text("がゴールしました！").color(Colors.orange)));
   }
 
   private void reset() {
@@ -200,6 +209,15 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         }
       }
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerMove(PlayerMoveEvent e) {
+    if (race == null) {
+      return;
+    }
+    race.onPlayerMove(e.getPlayer());
   }
 
   private void startCountdown() {
