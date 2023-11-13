@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRiptideEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -195,6 +196,9 @@ class Race {
       return;
     }
     var used = e.getItem();
+    used.editMeta(Damageable.class, damageable -> {
+      damageable.setDamage(0);
+    });
     if (!IsStrongItem(used)) {
       return;
     }
