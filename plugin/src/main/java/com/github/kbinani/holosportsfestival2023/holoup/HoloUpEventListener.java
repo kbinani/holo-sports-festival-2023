@@ -73,6 +73,13 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       .append(Component.text("がゴールしました！").color(Colors.orange)));
   }
 
+  @Override
+  public void raceDidDetectCheckpoint(TeamColor color, Player player, int index) {
+    broadcast(prefix
+      .append(Component.text(player.getName()).color(color.sign))
+      .append(Component.text(String.format(" が%d個目のチェックポイントに到達しました！", index)).color(Colors.white)));
+  }
+
   private void reset() {
     Editor.StandingSign(
       world,
@@ -176,16 +183,16 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @SuppressWarnings("unused")
   public void onPlayerInteract(PlayerInteractEvent e) {
     Player player = e.getPlayer();
-    Block block = e.getClickedBlock();
-    if (block == null) {
-      return;
-    }
-    if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
-      return;
-    }
-    Point3i location = new Point3i(block.getLocation());
     switch (status) {
       case IDLE -> {
+        Block block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+          return;
+        }
+        Point3i location = new Point3i(block.getLocation());
         if (location.equals(joinSignRed)) {
           onClickJoin(player, TeamColor.RED);
         } else if (location.equals(joinSignWhite)) {
@@ -202,6 +209,17 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         }
       }
       case COUNTDOWN, ACTIVE -> {
+        if (race != null) {
+          race.onPlayerInteract(e);
+        }
+        Block block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+          return;
+        }
+        Point3i location = new Point3i(block.getLocation());
         if (location.equals(abortSign)) {
           abort();
           broadcast(prefix
@@ -373,7 +391,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     return x + offset.x;
   }
 
-  private static int y(int y) {
+  static int y(int y) {
     return y + offset.y;
   }
 
