@@ -8,7 +8,10 @@ import org.bukkit.*;
 import org.bukkit.block.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 
@@ -155,6 +158,25 @@ class Race {
           }
         }
       }
+    }
+  }
+
+  void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
+    var player = e.getPlayer();
+    if (playerColor(player) == null) {
+      return;
+    }
+    if (!e.isSneaking() || player.isOnGround()) {
+      player.removePotionEffect(PotionEffectType.SLOW_FALLING);
+    } else {
+      var effect = new PotionEffect(
+        PotionEffectType.SLOW_FALLING,
+        (int) durationSeconds * 20,
+        1,
+        false,
+        false
+      );
+      effect.apply(player);
     }
   }
 

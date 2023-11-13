@@ -13,6 +13,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -20,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nullable;
@@ -253,6 +255,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     }
   }
 
+  @EventHandler
+  public void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
+    if (race == null) {
+      return;
+    }
+    race.onPlayerToggleSneak(e);
+  }
+
   private void startCountdown() {
     if (countdownTask != null) {
       countdownTask.cancel();
@@ -396,6 +406,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         inventory.clear(i);
       }
     }
+    player.removePotionEffect(PotionEffectType.SLOW_FALLING);
   }
 
   private void broadcast(Component message) {
