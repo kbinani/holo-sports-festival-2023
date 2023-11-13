@@ -88,6 +88,15 @@ class Race {
     bars.clear();
   }
 
+  @Nullable TeamColor playerColor(Player player) {
+    for (var entry : participants.entrySet()) {
+      if (entry.getValue() == player) {
+        return entry.getKey();
+      }
+    }
+    return null;
+  }
+
   void onPlayerMove(Player player) {
     if (!player.isOnGround()) {
       return;

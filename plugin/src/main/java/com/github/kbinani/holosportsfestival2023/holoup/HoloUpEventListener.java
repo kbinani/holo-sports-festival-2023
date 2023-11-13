@@ -10,6 +10,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemFlag;
@@ -236,6 +237,24 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       return;
     }
     race.onPlayerMove(e.getPlayer());
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDamage(EntityDamageEvent e) {
+    if (race == null) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (e.getCause() != EntityDamageEvent.DamageCause.FALL) {
+      return;
+    }
+    if (race.playerColor(player) == null) {
+      return;
+    }
+    e.setCancelled(true);
   }
 
   private void startCountdown() {
