@@ -44,7 +44,7 @@ class Race {
   private final Map<TeamColor, Integer> clearedCheckpoint = new HashMap<>();
 
   private static final long durationSeconds = 300;
-  private static final int groundLevel = 100;
+  static final int groundLevel = 100;
 
   Race(JavaPlugin owner, World world, BoundingBox announceBounds, Map<TeamColor, Player> registrants, Delegate delegate) {
     this.owner = owner;

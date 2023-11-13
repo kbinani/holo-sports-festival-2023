@@ -256,6 +256,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   @EventHandler
+  @SuppressWarnings("unused")
   public void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
     if (race == null) {
       return;
@@ -286,7 +287,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private void start() {
     boolean ok = true;
     for (var player : registrants.values()) {
-      if (!giveItems(player)) {
+      if (!prepare(player)) {
         ok = false;
       }
     }
@@ -295,7 +296,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         clearItems(player);
       }
       broadcast(prefix
-        .append(Component.text("インベントリのスロットが空いておらず競技用アイテムが渡せない参加者がいたため中断しました。").color(Colors.red)));
+        .append(Component.text("準備が整っていない参加者がいたため中断しました。").color(Colors.red)));
       status = Status.IDLE;
       return;
     }
@@ -341,7 +342,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     }
   }
 
-  private boolean giveItems(Player player) {
+  private boolean prepare(Player player) {
+    var y = player.getLocation().getBlockY();
+    if (y > Race.groundLevel) {
+      player.sendMessage(prefix
+        .append(Component.text("規定の位置より高い位置に居るためスタートできません。").color(Colors.red))
+      );
+      return false;
+    }
     var inventory = player.getInventory();
     ItemStack weak = ItemBuilder.For(Material.TRIDENT)
       .amount(1)
@@ -387,7 +395,6 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     player.sendMessage(prefix
       .append(Component.text(String.format("インベントリのスロット%dに既にアイテムがあるため競技用アイテムを渡せません", index)).color(Colors.red))
     );
-    clearItems(player);
   }
 
   private void clearItems(Player player) {
