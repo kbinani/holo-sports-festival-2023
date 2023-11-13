@@ -276,7 +276,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       } else {
         registrants.put(color, player);
         broadcast(prefix
-          .append(player.teamDisplayName())
+          .append(Component.text(player.getName()).color(color.sign))
           .append(Component.text("が").color(Colors.white))
           .append(color.component())
           .append(Component.text("にエントリーしました。").color(Colors.white))
@@ -285,8 +285,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     } else if (current == player) {
       registrants.remove(color);
       broadcast(prefix
-        .append(player.teamDisplayName())
-        .append(Component.text("が").color(Colors.white))
+        .append(Component.text(player.getName() + "が").color(Colors.white))
         .append(color.component())
         .append(Component.text("のエントリーを解除しました。").color(Colors.white))
       );
