@@ -242,19 +242,15 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @EventHandler
   @SuppressWarnings("unused")
   public void onEntityDamage(EntityDamageEvent e) {
-    if (race == null) {
-      return;
-    }
     if (!(e.getEntity() instanceof Player player)) {
       return;
     }
     if (e.getCause() != EntityDamageEvent.DamageCause.FALL) {
       return;
     }
-    if (race.playerColor(player) == null) {
-      return;
+    if (announceBounds.contains(player.getLocation().toVector())) {
+      e.setCancelled(true);
     }
-    e.setCancelled(true);
   }
 
   private void startCountdown() {

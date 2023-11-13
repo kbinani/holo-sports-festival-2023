@@ -85,7 +85,7 @@ class Race {
     bars.clear();
   }
 
-  @Nullable TeamColor playerColor(Player player) {
+  private @Nullable TeamColor playerColor(Player player) {
     for (var entry : participants.entrySet()) {
       if (entry.getValue() == player) {
         return entry.getKey();
