@@ -5,6 +5,8 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -67,6 +69,11 @@ class Race {
     for (var player : participants.values()) {
       player.setBedSpawnLocation(player.getLocation(), true);
       player.setGameMode(GameMode.ADVENTURE);
+      AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+      if (maxHealth != null) {
+        player.setHealth(maxHealth.getValue());
+      }
+      player.setFoodLevel(20);
     }
     updateBars();
   }
