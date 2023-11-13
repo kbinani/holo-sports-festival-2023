@@ -4,10 +4,7 @@ import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -122,36 +119,71 @@ class Race {
     switch (e.getAction()) {
       case RIGHT_CLICK_BLOCK -> {
         var block = e.getClickedBlock();
+        var material = e.getMaterial();
         if (block == null) {
+          if (material == Material.RED_BED) {
+            var color = playerColor(player);
+            if (color != null) {
+              onUseBed(player, color);
+            }
+          }
           return;
         }
         if (!(block.getState() instanceof Bed)) {
+          if (material == Material.RED_BED) {
+            var color = playerColor(player);
+            if (color != null) {
+              onUseBed(player, color);
+            }
+          }
           return;
         }
         var location = block.getLocation();
-        for (var entry : participants.entrySet()) {
-          var color = entry.getKey();
-          if (entry.getValue() != player) {
-            continue;
-          }
-          e.setCancelled(true);
-          // 136, 171, 203, 230
-          // 35, 32, 27
-          // 0, 35, 67, 94
-          var index = (int) Math.floor((location.getBlockY() - y(136)) / 24.0) + 1;
-          var cleared = clearedCheckpoint.get(color);
-          if (cleared == null || cleared < index) {
-            clearedCheckpoint.put(color, index);
-            player.setBedSpawnLocation(location, true);
-            player.playSound(location, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-            delegate.raceDidDetectCheckpoint(color, player, index);
+        var color = playerColor(player);
+        if (color == null) {
+          return;
+        }
+        e.setCancelled(true);
+        onClickBed(player, color, location);
+      }
+      case RIGHT_CLICK_AIR -> {
+        var material = e.getMaterial();
+        if (material == Material.RED_BED) {
+          var color = playerColor(player);
+          if (color != null) {
+            onUseBed(player, color);
           }
         }
       }
-      case RIGHT_CLICK_AIR -> {
-        //TODO:
-      }
     }
+  }
+
+  private void onClickBed(Player player, TeamColor color, Location blockLocation) {
+    // 136, 171, 203, 230
+    // 35, 32, 27
+    // 0, 35, 67, 94
+    var index = (int) Math.floor((blockLocation.getBlockY() - y(136)) / 24.0) + 1;
+    var cleared = clearedCheckpoint.get(color);
+    if (cleared == null || cleared < index) {
+      clearedCheckpoint.put(color, index);
+      player.setBedSpawnLocation(blockLocation, true);
+      player.playSound(blockLocation, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+      delegate.raceDidDetectCheckpoint(color, player, index);
+    }
+  }
+
+  private void onUseBed(Player player, TeamColor color) {
+    if (player.isOnGround()) {
+      return;
+    }
+    if (!clearedCheckpoint.containsKey(color)) {
+      return;
+    }
+    var location = player.getBedSpawnLocation();
+    if (location == null) {
+      return;
+    }
+    player.teleport(location);
   }
 
   private void goal(TeamColor color, Player player) {
