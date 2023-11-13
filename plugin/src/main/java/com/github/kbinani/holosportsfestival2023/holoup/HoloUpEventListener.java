@@ -13,6 +13,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRiptideEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -39,7 +40,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private static final Point3i abortSign = pos(-36, 100, -29);
   private static final Point3i startSign = pos(-37, 100, -29);
   private static final BoundingBox announceBounds = new BoundingBox(x(-59), y(99), z(-63), x(12), 500, z(-19));
-  private static final String itemTag = "holo_sports_festival_holoup";
+  static final String itemTag = "holo_sports_festival_holoup";
+  static final String itemTagStrong ="holo_sports_festival_holoup_trident_strong";
 
   private final World world;
   private final JavaPlugin owner;
@@ -264,6 +266,15 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     race.onPlayerToggleSneak(e);
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerRiptide(PlayerRiptideEvent e) {
+    if (race == null) {
+      return;
+    }
+    race.onPlayerRiptide(e);
+  }
+
   private void startCountdown() {
     if (countdownTask != null) {
       countdownTask.cancel();
@@ -364,13 +375,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     }
     inventory.setItem(0, weak);
 
-    ItemStack strong = ItemBuilder.For(Material.TRIDENT)
-      .amount(1)
-      .customByteTag(itemTag, (byte) 1)
-      .enchant(Enchantment.RIPTIDE, 2)
-      .flags(ItemFlag.HIDE_ATTRIBUTES)
-      .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
-      .build();
+    var strong = CreateStrongTrident();
     if (inventory.getItem(1) != null) {
       warnNonEmptySlot(player, 1);
       return false;
@@ -389,6 +394,26 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     inventory.setItem(2, bed);
 
     return true;
+  }
+
+  static ItemStack CreateStrongTrident() {
+    return ItemBuilder.For(Material.TRIDENT)
+      .amount(1)
+      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTagStrong, (byte) 1)
+      .enchant(Enchantment.RIPTIDE, 2)
+      .flags(ItemFlag.HIDE_ATTRIBUTES)
+      .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
+      .build();
+  }
+
+  static boolean IsStrongItem(ItemStack item) {
+    var meta = item.getItemMeta();
+    if (meta == null) {
+      return false;
+    }
+    PersistentDataContainer container = meta.getPersistentDataContainer();
+    return container.has(NamespacedKey.minecraft(itemTagStrong), PersistentDataType.BYTE);
   }
 
   private void warnNonEmptySlot(Player player, int index) {

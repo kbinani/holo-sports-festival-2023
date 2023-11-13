@@ -8,7 +8,9 @@ import org.bukkit.*;
 import org.bukkit.block.Bed;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerRiptideEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -20,12 +22,14 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener.y;
+import static com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener.*;
 
 class Race {
   interface Delegate {
     void raceDidFinish();
+
     void raceDidDetectGoal(TeamColor color, Player player);
+
     void raceDidDetectCheckpoint(TeamColor color, Player player, int index);
   }
 
@@ -42,6 +46,7 @@ class Race {
   private final BukkitTask timerTask;
   private final HashMap<TeamColor, Long> goaledMillis = new HashMap<>();
   private final Map<TeamColor, Integer> clearedCheckpoint = new HashMap<>();
+  private final Map<Player, BukkitTask> tridentCooldownTask = new HashMap<>();
 
   private static final long durationSeconds = 300;
   static final int groundLevel = 100;
@@ -86,6 +91,10 @@ class Race {
       });
     }
     bars.clear();
+    for (var task : tridentCooldownTask.values()) {
+      task.cancel();
+    }
+    tridentCooldownTask.clear();
   }
 
   private @Nullable TeamColor playerColor(Player player) {
@@ -101,7 +110,7 @@ class Race {
     if (!player.isOnGround()) {
       return;
     }
-    var score = this.scoreFromAltitude(player);
+    var score = ScoreFromAltitude(player);
     if (score < 200) {
       return;
     }
@@ -177,6 +186,72 @@ class Race {
         false
       );
       effect.apply(player);
+    }
+  }
+
+  void onPlayerRiptide(PlayerRiptideEvent e) {
+    var player = e.getPlayer();
+    if (playerColor(player) == null) {
+      return;
+    }
+    var used = e.getItem();
+    if (!IsStrongItem(used)) {
+      return;
+    }
+
+    int delay = 8 * 20;
+    player.setCooldown(Material.CLAY_BALL, delay);
+    player.setCooldown(Material.TRIDENT, 2 * 20);
+    var inventory = player.getInventory();
+    var index = -1;
+    for (int i = 0; i < inventory.getSize(); i++) {
+      var item = inventory.getItem(i);
+      if (item == null) {
+        continue;
+      }
+      if (IsStrongItem(item)) {
+        inventory.clear(i);
+        if (index < 0) {
+          index = i;
+        }
+      }
+    }
+    if (index >= 0) {
+      var clayBall = ItemBuilder.For(Material.CLAY_BALL)
+        .amount(1)
+        .customByteTag(itemTag, (byte) 1)
+        .customByteTag(itemTagStrong, (byte) 1)
+        .flags(ItemFlag.HIDE_ATTRIBUTES)
+        .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
+        .build();
+      inventory.setItem(index, clayBall);
+      var scheduler = Bukkit.getScheduler();
+      var task = scheduler.runTaskLater(owner, () -> {
+        RecoverStrongTrident(player);
+        tridentCooldownTask.remove(player);
+      }, delay);
+      tridentCooldownTask.put(player, task);
+    }
+  }
+
+  private static void RecoverStrongTrident(Player player) {
+    var inventory = player.getInventory();
+    var index = -1;
+    for (int i = 0; i < inventory.getSize(); i++) {
+      var item = inventory.getItem(i);
+      if (item == null) {
+        continue;
+      }
+      if (IsStrongItem(item)) {
+        inventory.clear(i);
+        if (index < 0) {
+          index = i;
+        }
+      }
+    }
+    if (index >= 0) {
+      var strong = CreateStrongTrident();
+      inventory.setItem(index, strong);
     }
   }
 
@@ -319,10 +394,10 @@ class Race {
     if (goaledMillis.containsKey(color)) {
       return 200;
     }
-    return scoreFromAltitude(player);
+    return ScoreFromAltitude(player);
   }
 
-  private int scoreFromAltitude(Player player) {
+  private static int ScoreFromAltitude(Player player) {
     return Math.min(Math.max(0, player.getLocation().getBlockY() - groundLevel), 200);
   }
 
