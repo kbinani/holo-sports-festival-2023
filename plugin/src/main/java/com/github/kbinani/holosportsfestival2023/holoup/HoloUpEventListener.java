@@ -252,7 +252,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         clearItems(player);
       }
       broadcast(prefix
-        .append(Component.text("インベントリがいっぱいで競技用アイテムが渡せない参加者がいたため中断しました。").color(Colors.red)));
+        .append(Component.text("インベントリのスロットが空いておらず競技用アイテムが渡せない参加者がいたため中断しました。").color(Colors.red)));
       status = Status.IDLE;
       return;
     }
@@ -300,21 +300,52 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private boolean giveItems(Player player) {
+    var inventory = player.getInventory();
     ItemStack weak = ItemBuilder.For(Material.TRIDENT)
       .amount(1)
       .customByteTag(itemTag, (byte) 1)
       .enchant(Enchantment.RIPTIDE, 1)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
+      .displayName(Component.text("HoloUp用トライデント（弱）").color(Colors.aqua))
       .build();
-    if (!player.getInventory().addItem(weak).isEmpty()) {
-      player.sendMessage(prefix
-        .append(Component.text("インベントリがいっぱいで競技用アイテムが渡せません").color(Colors.red))
-      );
-      clearItems(player);
+    if (inventory.getItem(0) != null) {
+      warnNonEmptySlot(player, 0);
       return false;
     }
-    //TODO: 他のアイテム
+    inventory.setItem(0, weak);
+
+    ItemStack strong = ItemBuilder.For(Material.TRIDENT)
+      .amount(1)
+      .customByteTag(itemTag, (byte) 1)
+      .enchant(Enchantment.RIPTIDE, 2)
+      .flags(ItemFlag.HIDE_ATTRIBUTES)
+      .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
+      .build();
+    if (inventory.getItem(1) != null) {
+      warnNonEmptySlot(player, 1);
+      return false;
+    }
+    inventory.setItem(1, strong);
+
+    ItemStack bed = ItemBuilder.For(Material.RED_BED)
+      .amount(1)
+      .customByteTag(itemTag, (byte) 1)
+      .displayName(Component.text("リスポーン地点に戻る（右クリック）").color(Colors.aqua))
+      .build();
+    if (inventory.getItem(2) != null) {
+      warnNonEmptySlot(player, 2);
+      return false;
+    }
+    inventory.setItem(2, bed);
+
     return true;
+  }
+
+  private void warnNonEmptySlot(Player player, int index) {
+    player.sendMessage(prefix
+      .append(Component.text(String.format("インベントリのスロット%dに既にアイテムがあるため競技用アイテムを渡せません", index)).color(Colors.red))
+    );
+    clearItems(player);
   }
 
   private void clearItems(Player player) {
