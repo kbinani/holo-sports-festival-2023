@@ -369,11 +369,17 @@ class Race {
         .append(color.component())
       );
       var score = this.score(color);
-      broadcast(Component.empty()
+      var line = Component.empty()
         .appendSpace()
         .append(Component.text(String.format(" - %s", player.getName())).color(color.sign))
-        .append(Component.text(String.format(" %dm", score)).color(score >= 200 ? Colors.orange : Colors.white))
-      );
+        .append(Component.text(String.format(" %dm", score)).color(score >= 200 ? Colors.orange : Colors.white));
+      var goal = goaledMillis.get(color);
+      if (goal != null) {
+        //NOTE: 秒数の表示は本家にはない
+        var result = (goal - startedMillis) / 1000.0;
+        line = line.append(Component.text(String.format(" (%.3f秒)", result)).color(Colors.white));
+      }
+      broadcast(line);
       broadcast(Component.empty());
     }
     delegate.raceDidFinish();
