@@ -54,7 +54,7 @@ class Race {
   private final Map<Player, BukkitTask> tridentCooldownTask = new HashMap<>();
 
   private static final long durationSeconds = 300;
-  static final int groundLevel = 100;
+  static final int groundLevel = y(100);
 
   Race(JavaPlugin owner, World world, BoundingBox announceBounds, Map<TeamColor, Player> registrants, Delegate delegate) {
     this.owner = owner;

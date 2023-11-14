@@ -36,6 +36,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private static final Point3i joinSignYellow = pos(-40, 100, -29);
   private static final Point3i abortSign = pos(-36, 100, -29);
   private static final Point3i startSign = pos(-37, 100, -29);
+  private static final Point3i entryListSign = pos(-35, 100, -29);
   private static final BoundingBox announceBounds = new BoundingBox(x(-59), y(99), z(-63), x(12), 500, z(-19));
   static final String itemTag = "holo_sports_festival_holoup";
   static final String itemTagStrong ="holo_sports_festival_holoup_trident_strong";
@@ -146,7 +147,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     );
     Editor.StandingSign(
       world,
-      pos(-35, 100, -29),
+      entryListSign,
       Material.OAK_SIGN,
       0,
       title,
@@ -206,11 +207,33 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
             player.sendMessage(prefix
               .append(Component.text("参加者がいません").color(Colors.red)));
           } else {
+            announceEntryList();
             startCountdown();
           }
+        } else if (location.equals(entryListSign)) {
+          announceEntryList();
         }
       }
-      case COUNTDOWN, ACTIVE -> {
+      case COUNTDOWN -> {
+        Block block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+          return;
+        }
+        Point3i location = new Point3i(block.getLocation());
+        if (location.equals(abortSign)) {
+          abort();
+          broadcast(prefix
+            .append(Component.text("ゲームを中断しました").color(Colors.red)));
+        } else if (location.equals(entryListSign)) {
+          announceEntryList();
+        } else if (location.equals(startSign)) {
+          player.sendMessage(Component.text("ゲームが既に開始しています。").color(Colors.red));
+        }
+      }
+      case ACTIVE -> {
         if (race != null) {
           race.onPlayerInteract(e);
         }
@@ -226,6 +249,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           abort();
           broadcast(prefix
             .append(Component.text("ゲームを中断しました").color(Colors.red)));
+        } else if (location.equals(startSign)) {
+          player.sendMessage(Component.text("ゲームが既に開始しています。").color(Colors.red));
         }
       }
     }
@@ -293,6 +318,28 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     }
     if (race != null) {
       race.onPlayerLeave(player);
+    }
+  }
+
+  private void announceEntryList() {
+    broadcast(Component.text("-".repeat(10)).color(Colors.lime)
+      .appendSpace()
+      .append(prefix)
+      .appendSpace()
+      .append(Component.text("エントリー者 ").color(Colors.aqua))
+      .append(Component.text("-".repeat(10)).color(Colors.lime)));
+    var first = true;
+    for (var color : TeamColor.all) {
+      if (!first) {
+        broadcast(Component.empty());
+      }
+      first = false;
+      var player = registrants.get(color);
+      int count = player == null ? 0 : 1;
+      broadcast(Component.text(String.format(" %s (%d)", color.japanese, count)).color(color.sign));
+      if (player != null) {
+        broadcast(Component.text(String.format("  - %s", player.getName())).color(color.sign));
+      }
     }
   }
 
@@ -370,16 +417,20 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void leave(Player player) {
+    @Nullable TeamColor color = null;
     for (var entry : registrants.entrySet()) {
       if (entry.getValue().getUniqueId().equals(player.getUniqueId())) {
-        var color = entry.getKey();
-        registrants.remove(color);
-        broadcast(prefix
-          .append(Component.text(player.getName() + "が").color(Colors.white))
-          .append(color.component())
-          .append(Component.text("のエントリーを解除しました。").color(Colors.white))
-        );
+        color = entry.getKey();
+        break;
       }
+    }
+    if (color != null) {
+      registrants.remove(color);
+      broadcast(prefix
+        .append(Component.text(player.getName() + "が").color(Colors.white))
+        .append(color.component())
+        .append(Component.text("のエントリーを解除しました。").color(Colors.white))
+      );
     }
     if (registrants.isEmpty() && countdownTask != null) {
       countdownTask.cancel();
