@@ -5,7 +5,7 @@ Subject: [PATCH] Activate riptide even when not in rain/water
 
 
 diff --git a/src/main/java/net/minecraft/world/item/TridentItem.java b/src/main/java/net/minecraft/world/item/TridentItem.java
-index 8078f127ff4b6e0aafb5804b9c02e237f79445b5..03ce2606283fa99eda8fa246cd3e37eb752a9e9d 100644
+index 8078f127ff4b6e0aafb5804b9c02e237f79445b5..e984f2ae9a2f2b3a8f4407bd596032ec588ace55 100644
 --- a/src/main/java/net/minecraft/world/item/TridentItem.java
 +++ b/src/main/java/net/minecraft/world/item/TridentItem.java
 @@ -66,7 +66,7 @@ public class TridentItem extends Item implements Vanishable {
@@ -17,21 +17,35 @@ index 8078f127ff4b6e0aafb5804b9c02e237f79445b5..03ce2606283fa99eda8fa246cd3e37eb
                      if (!world.isClientSide) {
                          // CraftBukkit - moved down
                          /*
-@@ -130,7 +130,12 @@ public class TridentItem extends Item implements Vanishable {
-                         f2 *= f6 / f5;
-                         f3 *= f6 / f5;
-                         f4 *= f6 / f5;
+@@ -127,10 +127,23 @@ public class TridentItem extends Item implements Vanishable {
+                         float f5 = Mth.sqrt(f2 * f2 + f3 * f3 + f4 * f4);
+                         float f6 = 3.0F * ((1.0F + (float) k) / 4.0F);
+ 
+-                        f2 *= f6 / f5;
+-                        f3 *= f6 / f5;
+-                        f4 *= f6 / f5;
 -                        entityhuman.push((double) f2, (double) f3, (double) f4);
 +                        if (entityhuman.isInWaterOrRain()) {
++                            f2 *= f6 / f5;
++                            f3 *= f6 / f5;
++                            f4 *= f6 / f5;
 +                            entityhuman.push((double) f2, (double) f3, (double) f4);
 +                        } else {
++                            if (k == 1) {
++                                f6 = 1.2F;
++                            } else {
++                                f6 = 1.6F;
++                            }
++                            f2 *= f6 / f5;
++                            f3 *= f6 / f5;
++                            f4 *= f6 / f5;
 +                            entityhuman.setDeltaMovement(new Vec3(f2, f3, f4));
 +                            entityhuman.hurtMarked = true;
 +                        }
                          entityhuman.startAutoSpinAttack(20);
                          if (entityhuman.onGround()) {
                              float f7 = 1.1999999F;
-@@ -162,8 +167,8 @@ public class TridentItem extends Item implements Vanishable {
+@@ -162,8 +175,8 @@ public class TridentItem extends Item implements Vanishable {
  
          if (itemstack.getDamageValue() >= itemstack.getMaxDamage() - 1) {
              return InteractionResultHolder.fail(itemstack);
