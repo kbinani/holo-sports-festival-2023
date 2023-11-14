@@ -11,10 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRiptideEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -33,7 +30,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   // 位置をずらしたい場合はここでずらす
   private static final Point3i offset = new Point3i(0, 0, 0);
   private static final Component title = Component.text("[Holoup]").color(Colors.aqua);
-  private static final Component prefix = title.append(Component.text(" ").color(Colors.white));
+  static final Component prefix = title.append(Component.text(" ").color(Colors.white));
   private static final Point3i joinSignRed = pos(-42, 100, -29);
   private static final Point3i joinSignWhite = pos(-41, 100, -29);
   private static final Point3i joinSignYellow = pos(-40, 100, -29);
@@ -275,6 +272,30 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     race.onPlayerRiptide(e);
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerQuit(PlayerQuitEvent e) {
+    var player = e.getPlayer();
+    if (registrants.containsValue(player)) {
+      leave(player);
+    }
+    if (race != null) {
+      race.onPlayerLeave(player);
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerChangedWorld(PlayerChangedWorldEvent e) {
+    var player = e.getPlayer();
+    if (registrants.containsValue(player)) {
+      leave(player);
+    }
+    if (race != null) {
+      race.onPlayerLeave(player);
+    }
+  }
+
   private void startCountdown() {
     if (countdownTask != null) {
       countdownTask.cancel();
@@ -338,18 +359,32 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         );
       }
     } else if (current == player) {
-      registrants.remove(color);
-      broadcast(prefix
-        .append(Component.text(player.getName() + "が").color(Colors.white))
-        .append(color.component())
-        .append(Component.text("のエントリーを解除しました。").color(Colors.white))
-      );
+      leave(player);
     } else {
       player.sendMessage(prefix
         .append(Component.text("既に").color(Colors.red))
         .append(color.component())
         .append(Component.text("のプレイヤーがエントリーしています。").color(Colors.red))
       );
+    }
+  }
+
+  private void leave(Player player) {
+    for (var entry : registrants.entrySet()) {
+      if (entry.getValue().getUniqueId().equals(player.getUniqueId())) {
+        var color = entry.getKey();
+        registrants.remove(color);
+        broadcast(prefix
+          .append(Component.text(player.getName() + "が").color(Colors.white))
+          .append(color.component())
+          .append(Component.text("のエントリーを解除しました。").color(Colors.white))
+        );
+      }
+    }
+    if (registrants.isEmpty() && countdownTask != null) {
+      countdownTask.cancel();
+      countdownTask = null;
+      status = Status.IDLE;
     }
   }
 

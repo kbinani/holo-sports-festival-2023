@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.holoup;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -24,6 +25,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import static com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener.*;
 
@@ -92,9 +94,9 @@ class Race {
     countdownTask.cancel();
     countdown = null;
     for (var bar : bars.values()) {
-      bar.viewers().forEach(viewer -> {
-        if (viewer instanceof Player player) {
-          player.hideBossBar(bar);
+      StreamSupport.stream(bar.viewers().spliterator(), false).toList().forEach(viewer -> {
+        if (viewer instanceof Audience audience) {
+          audience.hideBossBar(bar);
         }
       });
     }
@@ -242,6 +244,41 @@ class Race {
         tridentCooldownTask.remove(player);
       }, delay);
       tridentCooldownTask.put(player, task);
+    }
+  }
+
+  void onPlayerLeave(Player player) {
+    var color = playerColor(player);
+    if (color == null) {
+      return;
+    }
+    broadcast(prefix
+      .append(Component.text(String.format("%sが棄権しました", player.getName())).color(Colors.white)));
+
+    participants.remove(color);
+    goaledMillis.remove(color);
+    clearedCheckpoint.remove(color);
+
+    var bar = bars.get(color);
+    if (bar != null) {
+      StreamSupport.stream(bar.viewers().spliterator(), false).toList().forEach(viewer -> {
+        if (viewer instanceof Audience audience) {
+          audience.hideBossBar(bar);
+        }
+      });
+      bars.remove(color);
+    }
+
+    var task = tridentCooldownTask.get(player);
+    if (task != null) {
+      task.cancel();
+      tridentCooldownTask.remove(player);
+    }
+
+    if (participants.isEmpty()) {
+      broadcast(prefix
+        .append(Component.text("ゲームを中断しました").color(Colors.red)));
+      delegate.raceDidFinish();
     }
   }
 
