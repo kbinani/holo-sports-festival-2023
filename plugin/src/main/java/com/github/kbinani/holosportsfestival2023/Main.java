@@ -41,6 +41,7 @@ public class Main extends JavaPlugin implements Listener {
     Boolean keepInventory = world.getGameRuleValue(GameRule.KEEP_INVENTORY);
     Boolean showDeathMessages = world.getGameRuleValue(GameRule.SHOW_DEATH_MESSAGES);
     Boolean announceAdvancements = world.getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS);
+    Boolean doWeatherCycle = world.getGameRuleValue(GameRule.DO_WEATHER_CYCLE);
     if (mobGriefing != null && mobGriefing) {
       reasons.add("mobGriefing gamerule is set to true");
     }
@@ -54,10 +55,13 @@ public class Main extends JavaPlugin implements Listener {
       warnings.add("announceAdvancements gamerule is set to true");
     }
     if (world.getDifficulty() == Difficulty.PEACEFUL) {
-      reasons.add("the \"himerace\" mini game is not playable as the difficulty is set to peaceful");
+      reasons.add("the \"Himerace\" mini-game is not playable as the difficulty is set to peaceful");
     }
     if (!world.getPVP()) {
       reasons.add("pvp is set to false");
+    }
+    if (doWeatherCycle != null && doWeatherCycle) {
+      reasons.add("the \"Holoup\" mini-game is not playable as the doWeatherCycle gamerule is set to true");
     }
     if (!reasons.isEmpty()) {
       getLogger().log(java.util.logging.Level.SEVERE, "Disabling the plugin because:");
