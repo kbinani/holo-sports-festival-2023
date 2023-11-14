@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.TextColor;
 public class Colors {
   public final static TextColor aqua = TextColor.fromHexString("#00FFFF");
   public final static TextColor darkorange = TextColor.fromHexString("#FF8C00");
+  public final static TextColor gray = TextColor.fromHexString("#808080");
   public final static TextColor hotpink = TextColor.fromHexString("#FF69B4");
   public final static TextColor lightblue = TextColor.fromHexString("#ADD8E6");
   public final static TextColor lightgray = TextColor.fromHexString("#D3D3D3");

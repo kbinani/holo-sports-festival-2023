@@ -235,7 +235,7 @@ class Race {
         .customByteTag(itemTag, (byte) 1)
         .customByteTag(itemTagStrong, (byte) 1)
         .flags(ItemFlag.HIDE_ATTRIBUTES)
-        .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
+        .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.gray))
         .build();
       inventory.setItem(index, clayBall);
       var scheduler = Bukkit.getScheduler();

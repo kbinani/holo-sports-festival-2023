@@ -489,7 +489,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       .customByteTag(itemTagStrong, (byte) 1)
       .enchant(Enchantment.RIPTIDE, 2)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
-      .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.aqua))
+      .displayName(Component.text("HoloUp用トライデント（強）").color(Colors.lime))
       .build();
   }
 
