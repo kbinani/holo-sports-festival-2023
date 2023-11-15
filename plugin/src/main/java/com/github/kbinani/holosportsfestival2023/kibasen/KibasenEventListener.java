@@ -9,11 +9,15 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
+import org.spigotmc.event.entity.EntityDismountEvent;
+import org.spigotmc.event.entity.EntityMountEvent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +80,75 @@ public class KibasenEventListener implements MiniGame {
     }
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
+    var attacker = e.getPlayer();
+    var hand = e.getHand();
+    var inventory = attacker.getInventory();
+    var item = inventory.getItem(hand);
+    if (item.getType() != Material.SADDLE) {
+      return;
+    }
+    if (!(e.getRightClicked() instanceof Player vehicle)) {
+      return;
+    }
+    var meta = item.getItemMeta();
+    if (meta == null) {
+      return;
+    }
+    var store = meta.getPersistentDataContainer();
+    if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+      return;
+    }
+    var p = getParticipation(attacker);
+    if (p == null) {
+      return;
+    }
+    if (!p.isAttacker) {
+      return;
+    }
+    if (p.unit.vehicle != null) {
+      return;
+    }
+    if (!vehicle.addPassenger(attacker)) {
+      return;
+    }
+    p.unit.vehicle = vehicle;
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityMount(EntityMountEvent e) {
+    if (!(e.getMount() instanceof Player vehicle)) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Player attacker)) {
+      return;
+    }
+    var p = getParticipation(attacker);
+    if (p == null) {
+      return;
+    }
+    p.unit.vehicle = vehicle;
+    vehicle.sendMessage(prefix
+      .append(Component.text(String.format("%sの騎馬になりました！", attacker.getName())).color(Colors.white)));
+    attacker.sendMessage(prefix
+      .append(Component.text(String.format("%sを騎馬にしました！", vehicle.getName())).color(Colors.white)));
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDismount(EntityDismountEvent e) {
+    if (!(e.getDismounted() instanceof Player vehicle)) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Player attacker)) {
+      return;
+    }
+    //TODO:
+  }
+
   private void clearItems(Player player) {
     var inventory = player.getInventory();
     for (int i = 0; i < inventory.getSize(); i++) {
@@ -94,8 +167,13 @@ public class KibasenEventListener implements MiniGame {
     }
   }
 
+  // {name}の騎馬になりました！
+  // 他のプレイヤーが選択しています。
+  // {name}を騎馬にしました！
+  // 騎士があなたから降りたため、エントリーが解除されました。
+
   private void onClickJoin(Player player, TeamColor color) {
-    if (isRegistered(player)) {
+    if (getParticipation(player) != null) {
       return;
     }
     var inventory = player.getInventory();
@@ -135,18 +213,19 @@ public class KibasenEventListener implements MiniGame {
     );
   }
 
-  private boolean isRegistered(Player player) {
-    for (var units : registrants.values()) {
-      for (var unit : units) {
+  private @Nullable Participation getParticipation(Player player) {
+    for (var entry : registrants.entrySet()) {
+      for (var unit : entry.getValue()) {
+        var color = entry.getKey();
         if (unit.vehicle == player) {
-          return true;
+          return new Participation(color, unit, false);
         }
-        if (unit.attacker != null && unit.attacker == player) {
-          return true;
+        if (unit.attacker == player) {
+          return new Participation(color, unit, true);
         }
       }
     }
-    return false;
+    return null;
   }
 
   private void reset() {
