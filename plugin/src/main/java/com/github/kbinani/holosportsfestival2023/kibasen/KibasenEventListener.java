@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,6 +14,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Team;
@@ -39,6 +42,7 @@ public class KibasenEventListener implements MiniGame {
   private static final String itemTag = "hololive_sports_festival_2023_kibasen";
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
+  private static final Point3i generalRegistrationBarrel = pos(-30, 63, 53);
 
   private final World world;
   private final JavaPlugin owner;
@@ -66,20 +70,44 @@ public class KibasenEventListener implements MiniGame {
     Player player = e.getPlayer();
     switch (status) {
       case IDLE -> {
-        Block block = e.getClickedBlock();
-        if (block == null) {
-          return;
+        var action = e.getAction();
+        if (action == Action.RIGHT_CLICK_BLOCK) {
+          Block block = e.getClickedBlock();
+          if (block != null) {
+            Point3i location = new Point3i(block.getLocation());
+            if (location.equals(joinRedSign)) {
+              onClickJoin(player, TeamColor.RED);
+              e.setCancelled(true);
+              return;
+            } else if (location.equals(joinWhiteSign)) {
+              onClickJoin(player, TeamColor.WHITE);
+              e.setCancelled(true);
+              return;
+            } else if (location.equals(joinYellowSign)) {
+              onClickJoin(player, TeamColor.YELLOW);
+              e.setCancelled(true);
+              return;
+            }
+          }
         }
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
-          return;
-        }
-        Point3i location = new Point3i(block.getLocation());
-        if (location.equals(joinRedSign)) {
-          onClickJoin(player, TeamColor.RED);
-        } else if (location.equals(joinWhiteSign)) {
-          onClickJoin(player, TeamColor.WHITE);
-        } else if (location.equals(joinYellowSign)) {
-          onClickJoin(player, TeamColor.YELLOW);
+        if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
+          var item = e.getItem();
+          if (item != null) {
+            if (item.getType() == Material.BOOK) {
+              var meta = item.getItemMeta();
+              if (meta != null) {
+                var store = meta.getPersistentDataContainer();
+                if (store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+                  var inventory = openGeneralRegistrationInventory();
+                  if (inventory != null) {
+                    player.openInventory(inventory);
+                    e.setCancelled(true);
+                    return;
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -144,6 +172,10 @@ public class KibasenEventListener implements MiniGame {
     p.unit.vehicle = vehicle;
     var team = ensureTeam(p.color);
     team.addPlayer(vehicle);
+    clearItems(attacker);
+    var book = CreateBook();
+    var inventory = attacker.getInventory();
+    inventory.setItem(0, book);
     vehicle.sendMessage(prefix
       .append(Component.text(String.format("%sの騎馬になりました！", attacker.getName())).color(Colors.white)));
     attacker.sendMessage(prefix
@@ -174,6 +206,10 @@ public class KibasenEventListener implements MiniGame {
     unit.vehicle = null;
     var team = ensureTeam(p.color);
     team.removePlayer(vehicle);
+    clearItems(attacker);
+    var inventory = attacker.getInventory();
+    inventory.setItem(0, CreateSaddle());
+
     // https://youtu.be/D9vmP7Qj4TI?t=1217
     vehicle.sendMessage(prefix
       .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(Colors.white)));
@@ -245,10 +281,7 @@ public class KibasenEventListener implements MiniGame {
       return;
     }
     var inventory = player.getInventory();
-    var saddle = ItemBuilder.For(Material.SADDLE)
-      .displayName(Component.text("自分の馬を右クリックしてください！").color(Colors.orange))
-      .customByteTag(itemTag, (byte) 1)
-      .build();
+    var saddle = CreateSaddle();
     if (inventory.getItem(0) != null) {
       warnNonEmptySlot(player, 0);
       clearItems(player);
@@ -272,6 +305,20 @@ public class KibasenEventListener implements MiniGame {
     var unit = new MutableUnit(player);
     var units = registrants.computeIfAbsent(color, (c) -> new ArrayList<>());
     units.add(unit);
+  }
+
+  private static ItemStack CreateSaddle() {
+    return ItemBuilder.For(Material.SADDLE)
+      .displayName(Component.text("自分の馬を右クリックしてください！").color(Colors.orange))
+      .customByteTag(itemTag, (byte) 1)
+      .build();
+  }
+
+  private static ItemStack CreateBook() {
+    return ItemBuilder.For(Material.BOOK)
+      .displayName(Component.text("大将にエントリー (右クリックで使用)").color(Colors.orange))
+      .customByteTag(itemTag, (byte) 1)
+      .build();
   }
 
   private void broadcast(Component message) {
@@ -366,6 +413,50 @@ public class KibasenEventListener implements MiniGame {
 
     setEnablePhotoSpot(true);
     setEnableWall(false);
+
+    Editor.Set(world, generalRegistrationBarrel, Material.BARREL.createBlockData());
+    var block = world.getBlockAt(generalRegistrationBarrel.toLocation(world));
+    if (block.getState(false) instanceof Barrel barrel) {
+      // https://youtu.be/gp6ABH58SGA?t=2068
+      barrel.customName(prefix.append(Component.text("大将").color(Colors.green)));
+      barrel.update();
+
+      var inventory = barrel.getInventory();
+      inventory.clear();
+      var materials = new Material[]{Material.RED_STAINED_GLASS_PANE, Material.WHITE_STAINED_GLASS_PANE, Material.YELLOW_STAINED_GLASS_PANE};
+      for (var x = 0; x < 3; x++) {
+        var material = materials[x];
+        for (var y = 0; y < 3; y++) {
+          for (var i = 0; i < 3; i++) {
+            var index = x * 3 + i + y * 9;
+            var item = ItemBuilder.For(material)
+              .displayName(Component.empty())
+              .build();
+            inventory.setItem(index, item);
+          }
+        }
+      }
+      var wools = new Material[]{Material.RED_WOOL, Material.WHITE_WOOL, Material.YELLOW_WOOL};
+      for (var x = 0; x < 3; x++) {
+        var material = wools[x];
+        var color = TeamColor.all[x];
+        var wool = ItemBuilder.For(material)
+          .displayName(color.component().append(Component.text(" の大将になる！").color(Colors.white)))
+          .build();
+        var index = 10 + x * 3;
+        inventory.setItem(index, wool);
+      }
+    }
+  }
+
+  private @Nullable Inventory openGeneralRegistrationInventory() {
+    var block = world.getBlockAt(generalRegistrationBarrel.toLocation(world));
+    var state = block.getState(false);
+    if (state instanceof Barrel barrel) {
+      return barrel.getInventory();
+    } else {
+      return null;
+    }
   }
 
   private static int x(int x) {
