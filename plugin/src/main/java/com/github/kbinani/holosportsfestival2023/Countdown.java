@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -42,7 +43,10 @@ public class Countdown implements Cancellable {
         times
       );
       var task = scheduler.runTaskLater(plugin, () -> {
-        Players.Within(world, bounds, (player) -> player.showTitle(t));
+        Players.Within(world, bounds, (player) -> {
+          player.showTitle(t);
+          player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+        });
       }, 20 * (seconds - i));
       tasks.add(task);
     }
