@@ -11,11 +11,14 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Team;
@@ -209,6 +212,15 @@ public class KibasenEventListener implements MiniGame {
     clearItems(attacker);
     var inventory = attacker.getInventory();
     inventory.setItem(0, CreateSaddle());
+    if (unit.isGeneral) {
+      unit.isGeneral = false;
+      broadcast(prefix
+        .append(Component.text(unit.attacker.getName()).color(Colors.orange))
+        .append(Component.text("が").color(Colors.white))
+        .append(p.color.component())
+        .append(Component.text("の大将を辞めました！").color(Colors.white)));
+      updateGeneralRegistrationBarrel();
+    }
 
     // https://youtu.be/D9vmP7Qj4TI?t=1217
     vehicle.sendMessage(prefix
@@ -228,8 +240,110 @@ public class KibasenEventListener implements MiniGame {
     team.removePlayer(player);
   }
 
-  @Nonnull
-  private Team ensureTeam(TeamColor color) {
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onInventoryClick(InventoryClickEvent e) {
+    var inventory = e.getInventory();
+    if (!(inventory.getHolder(false) instanceof Barrel barrel)) {
+      return;
+    }
+    var location = barrel.getLocation();
+    if (location.getWorld() != world) {
+      return;
+    }
+    if (!generalRegistrationBarrel.equals(new Point3i(location))) {
+      return;
+    }
+    if (!(e.getWhoClicked() instanceof Player player)) {
+      return;
+    }
+    e.setCancelled(true);
+    var current = getParticipation(player);
+    if (current == null) {
+      return;
+    }
+    if (e.getAction() != InventoryAction.PICKUP_ALL || !e.isLeftClick()) {
+      return;
+    }
+    var slot = e.getSlot();
+    if (slot != 10 && slot != 13 && slot != 16) {
+      return;
+    }
+    var index = (slot - 10) / 3;
+    var color = TeamColor.all[index];
+    var item = inventory.getItem(slot);
+    if (item == null) {
+      return;
+    }
+    var units = registrants.get(color);
+    if (units == null) {
+      return;
+    }
+    for (var unit : units) {
+      if (unit == current.unit && unit.isGeneral) {
+        unit.isGeneral = false;
+        updateGeneralRegistrationBarrel();
+        broadcast(prefix
+          .append(Component.text(player.getName()).color(Colors.orange))
+          .append(Component.text("が").color(Colors.white))
+          .append(color.component())
+          .append(Component.text("の大将を辞めました！").color(Colors.white)));
+        return;
+      }
+    }
+    if (color.wool != item.getType()) {
+      // https://youtu.be/uEpmE5WJPW8?t=1987
+      player.sendMessage(prefix.append(Component.text("他のプレイヤーが選択しています。").color(Colors.red)));
+      return;
+    }
+    current.unit.isGeneral = true;
+    updateGeneralRegistrationBarrel();
+    broadcast(prefix
+      .append(color.component())
+      .append(Component.text("の大将に").color(Colors.white))
+      .append(Component.text(player.getName()).color(Colors.orange))
+      .append(Component.text("がエントリーしました！").color(Colors.white)));
+  }
+
+  private void updateGeneralRegistrationBarrel() {
+    var inventory = openGeneralRegistrationInventory();
+    if (inventory == null) {
+      return;
+    }
+    for (var color : TeamColor.all) {
+      MutableUnit general = null;
+      var units = registrants.get(color);
+      if (units != null) {
+        for (var unit : units) {
+          if (unit.isGeneral) {
+            general = unit;
+            break;
+          }
+        }
+      }
+      var index = 10 + 3 * color.ordinal();
+      if (general == null) {
+        inventory.setItem(index, CreateWool(color));
+      } else {
+        var attacker = general.attacker;
+        var name = color
+          .component()
+          .appendSpace()
+          .append(Component.text("大将").color(Colors.yellow))
+          .appendSpace()
+          .append(Component.text(attacker.getName()).color(Colors.orange));
+        var head = ItemBuilder.For(Material.PLAYER_HEAD)
+          .displayName(name)
+          .build();
+        head.editMeta(SkullMeta.class, (skull) -> {
+          skull.setOwningPlayer(attacker);
+        });
+        inventory.setItem(index, head);
+      }
+    }
+  }
+
+  private @Nonnull Team ensureTeam(TeamColor color) {
     var server = Bukkit.getServer();
     var manager = server.getScoreboardManager();
     var scoreboard = manager.getMainScoreboard();
@@ -261,7 +375,6 @@ public class KibasenEventListener implements MiniGame {
     }
   }
 
-  // 他のプレイヤーが選択しています。
   // Component.text("{name}に馬が居ないため、ゲームを開始できません。").color(Colors.red)): https://youtu.be/D9vmP7Qj4TI?t=1398
 
   private void onClickJoin(Player player, TeamColor color) {
@@ -275,6 +388,13 @@ public class KibasenEventListener implements MiniGame {
         clearItems(player);
         var team = ensureTeam(current.color);
         team.removePlayer(player);
+        if (current.unit.isGeneral) {
+          var inventory = openGeneralRegistrationInventory();
+          if (inventory != null) {
+            var wool = CreateWool(current.color);
+            inventory.setItem(10 + 3 * current.color.ordinal(), wool);
+          }
+        }
         // https://youtu.be/D9vmP7Qj4TI?t=1462
         player.sendMessage(prefix.append(Component.text("エントリー登録を解除しました。").color(Colors.white)));
       }
@@ -318,6 +438,12 @@ public class KibasenEventListener implements MiniGame {
     return ItemBuilder.For(Material.BOOK)
       .displayName(Component.text("大将にエントリー (右クリックで使用)").color(Colors.orange))
       .customByteTag(itemTag, (byte) 1)
+      .build();
+  }
+
+  private static ItemStack CreateWool(TeamColor color) {
+    return ItemBuilder.For(color.wool)
+      .displayName(color.component().append(Component.text(" の大将になる！").color(Colors.white)))
       .build();
   }
 
@@ -436,13 +562,9 @@ public class KibasenEventListener implements MiniGame {
           }
         }
       }
-      var wools = new Material[]{Material.RED_WOOL, Material.WHITE_WOOL, Material.YELLOW_WOOL};
       for (var x = 0; x < 3; x++) {
-        var material = wools[x];
         var color = TeamColor.all[x];
-        var wool = ItemBuilder.For(material)
-          .displayName(color.component().append(Component.text(" の大将になる！").color(Colors.white)))
-          .build();
+        var wool = CreateWool(color);
         var index = 10 + x * 3;
         inventory.setItem(index, wool);
       }
