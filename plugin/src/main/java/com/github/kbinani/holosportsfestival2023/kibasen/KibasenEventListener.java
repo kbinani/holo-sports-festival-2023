@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -13,10 +14,12 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
 import org.spigotmc.event.entity.EntityMountEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ public class KibasenEventListener implements MiniGame {
   private static final Point3i entryListSign = pos(-30, 80, 56);
   private static final String itemTag = "hololive_sports_festival_2023_kibasen";
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
+  private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
 
   private final World world;
   private final JavaPlugin owner;
@@ -137,6 +141,8 @@ public class KibasenEventListener implements MiniGame {
       return;
     }
     p.unit.vehicle = vehicle;
+    var team = ensureTeam(p.color);
+    team.addPlayer(vehicle);
     vehicle.sendMessage(prefix
       .append(Component.text(String.format("%sの騎馬になりました！", attacker.getName())).color(Colors.white)));
     attacker.sendMessage(prefix
@@ -165,9 +171,26 @@ public class KibasenEventListener implements MiniGame {
       return;
     }
     unit.vehicle = null;
+    var team = ensureTeam(p.color);
+    team.removePlayer(vehicle);
     // https://youtu.be/D9vmP7Qj4TI?t=1217
     vehicle.sendMessage(prefix
       .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(Colors.white)));
+  }
+
+  @Nonnull
+  private Team ensureTeam(TeamColor color) {
+    var server = Bukkit.getServer();
+    var manager = server.getScoreboardManager();
+    var scoreboard = manager.getMainScoreboard();
+    var name = teamNamePrefix + "_" + color.japanese;
+    var team = scoreboard.getTeam(name);
+    if (team == null) {
+      team = scoreboard.registerNewTeam(name);
+    }
+    team.color(color.namedTextColor);
+    team.setAllowFriendlyFire(false);
+    return team;
   }
 
   private void clearItems(Player player) {
@@ -197,6 +220,8 @@ public class KibasenEventListener implements MiniGame {
       if (current.isAttacker) {
         registrants.get(current.color).remove(current.unit);
         clearItems(player);
+        var team = ensureTeam(current.color);
+        team.removePlayer(player);
         // https://youtu.be/D9vmP7Qj4TI?t=1462
         player.sendMessage(prefix.append(Component.text("エントリー登録を解除しました。").color(Colors.white)));
       }
@@ -213,6 +238,9 @@ public class KibasenEventListener implements MiniGame {
       return;
     }
     inventory.setItem(0, saddle);
+
+    var team = ensureTeam(color);
+    team.addPlayer(player);
 
     broadcast(prefix
       .append(Component.text(player.getName() + "が").color(Colors.white))
