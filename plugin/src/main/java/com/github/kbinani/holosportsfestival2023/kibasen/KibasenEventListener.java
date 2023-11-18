@@ -317,69 +317,55 @@ public class KibasenEventListener implements MiniGame {
     }
   }
 
+  private void setEnableWall(boolean enable) {
+    var material = enable ? Material.BARRIER : Material.AIR;
+    Editor.Fill(world, pos(-24, 81, 31), pos(-24, 86, 73), material);
+    Editor.Fill(world, pos(32, 81, 31), pos(32, 86, 73), material);
+    Editor.Fill(world, pos(-23, 81, 31), pos(31, 86, 31), material);
+    Editor.Fill(world, pos(-23, 81, 73), pos(31, 86, 73), material);
+  }
+
   private void reset() {
-    Editor.StandingSign(
-      world,
-      joinRedSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, joinRedSign, Material.OAK_SIGN, 4,
       title,
       TeamColor.RED.component(),
       Component.empty(),
       Component.text("右クリでエントリー！").color(Colors.lime)
     );
-    Editor.StandingSign(
-      world,
-      joinWhiteSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, joinWhiteSign, Material.OAK_SIGN, 4,
       title,
       TeamColor.WHITE.component(),
       Component.empty(),
       Component.text("右クリでエントリー！").color(Colors.lime)
     );
-    Editor.StandingSign(
-      world,
-      joinYellowSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, joinYellowSign, Material.OAK_SIGN, 4,
       title,
       TeamColor.YELLOW.component(),
       Component.empty(),
       Component.text("右クリでエントリー！").color(Colors.lime)
     );
 
-    Editor.StandingSign(
-      world,
-      startSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, startSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
       Component.text("ゲームスタート").color(Colors.lime)
     );
-    Editor.StandingSign(
-      world,
-      abortSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, abortSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
       Component.text("ゲームを中断する").color(Colors.red)
     );
-    Editor.StandingSign(
-      world,
-      entryListSign,
-      Material.OAK_SIGN,
-      4,
+    Editor.StandingSign(world, entryListSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
       Component.text("エントリーリスト").color(Colors.aqua)
     );
+
     setEnablePhotoSpot(true);
+    setEnableWall(false);
   }
 
   private static int x(int x) {
