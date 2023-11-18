@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Team;
@@ -176,6 +177,19 @@ public class KibasenEventListener implements MiniGame {
     // https://youtu.be/D9vmP7Qj4TI?t=1217
     vehicle.sendMessage(prefix
       .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(Colors.white)));
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerQuit(PlayerQuitEvent e) {
+    var player = e.getPlayer();
+    var current = getParticipation(player);
+    if (current == null) {
+      return;
+    }
+    clearItems(player);
+    var team = ensureTeam(current.color);
+    team.removePlayer(player);
   }
 
   @Nonnull
