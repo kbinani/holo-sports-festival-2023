@@ -21,6 +21,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
@@ -46,6 +48,7 @@ public class KibasenEventListener implements MiniGame {
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   private static final Point3i generalRegistrationBarrel = pos(-30, 63, 53);
+  private static final int durationSec = 90;
 
   private final World world;
   private final JavaPlugin owner;
@@ -220,6 +223,8 @@ public class KibasenEventListener implements MiniGame {
         .append(p.color.component())
         .append(Component.text("の大将を辞めました！").color(Colors.white)));
       updateGeneralRegistrationBarrel();
+      vehicle.removePotionEffect(PotionEffectType.GLOWING);
+      attacker.removePotionEffect(PotionEffectType.GLOWING);
     }
 
     // https://youtu.be/D9vmP7Qj4TI?t=1217
@@ -288,6 +293,10 @@ public class KibasenEventListener implements MiniGame {
           .append(Component.text("が").color(Colors.white))
           .append(color.component())
           .append(Component.text("の大将を辞めました！").color(Colors.white)));
+        if (current.unit.vehicle != null) {
+          current.unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+        }
+        current.unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
         return;
       }
     }
@@ -298,6 +307,10 @@ public class KibasenEventListener implements MiniGame {
     }
     current.unit.isGeneral = true;
     updateGeneralRegistrationBarrel();
+    if (current.unit.vehicle != null) {
+      current.unit.vehicle.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
+    }
+    current.unit.attacker.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
     broadcast(prefix
       .append(color.component())
       .append(Component.text("の大将に").color(Colors.white))
