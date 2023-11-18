@@ -236,6 +236,9 @@ public class KibasenEventListener implements MiniGame {
         clearItems(player);
         var team = ensureTeam(current.color);
         team.removePlayer(player);
+        if (current.unit.vehicle != null) {
+          current.unit.vehicle.removePassenger(player);
+        }
         // https://youtu.be/D9vmP7Qj4TI?t=1462
         player.sendMessage(prefix.append(Component.text("エントリー登録を解除しました。").color(Colors.white)));
       }
