@@ -111,7 +111,13 @@ public class KibasenEventListener implements MiniGame {
     if (p.unit.vehicle != null) {
       return;
     }
+    if (getParticipation(vehicle) != null) {
+      // そのプレイヤーは馬にできません。: https://youtu.be/D9vmP7Qj4TI?t=1058
+      attacker.sendMessage(Component.text("そのプレイヤーは馬にできません。").color(Colors.red));
+      return;
+    }
     if (!vehicle.addPassenger(attacker)) {
+      attacker.sendMessage(Component.text("そのプレイヤーは馬にできません。").color(Colors.red));
       return;
     }
     p.unit.vehicle = vehicle;
@@ -146,7 +152,22 @@ public class KibasenEventListener implements MiniGame {
     if (!(e.getEntity() instanceof Player attacker)) {
       return;
     }
-    //TODO:
+    var participation = getParticipation(vehicle);
+    if (participation == null) {
+      return;
+    }
+    var unit = participation.unit;
+    var p = getParticipation(attacker);
+    if (p == null) {
+      return;
+    }
+    if (p.unit != unit) {
+      return;
+    }
+    unit.vehicle = null;
+    // https://youtu.be/D9vmP7Qj4TI?t=1217
+    vehicle.sendMessage(prefix
+      .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(Colors.white)));
   }
 
   private void clearItems(Player player) {
@@ -167,13 +188,18 @@ public class KibasenEventListener implements MiniGame {
     }
   }
 
-  // {name}の騎馬になりました！
   // 他のプレイヤーが選択しています。
-  // {name}を騎馬にしました！
-  // 騎士があなたから降りたため、エントリーが解除されました。
+  // Component.text("{name}に馬が居ないため、ゲームを開始できません。").color(Colors.red)): https://youtu.be/D9vmP7Qj4TI?t=1398
 
   private void onClickJoin(Player player, TeamColor color) {
-    if (getParticipation(player) != null) {
+    var current = getParticipation(player);
+    if (current != null) {
+      if (current.isAttacker) {
+        registrants.get(current.color).remove(current.unit);
+        clearItems(player);
+        // https://youtu.be/D9vmP7Qj4TI?t=1462
+        player.sendMessage(prefix.append(Component.text("エントリー登録を解除しました。").color(Colors.white)));
+      }
       return;
     }
     var inventory = player.getInventory();
