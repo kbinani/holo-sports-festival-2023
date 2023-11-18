@@ -299,6 +299,24 @@ public class KibasenEventListener implements MiniGame {
     return null;
   }
 
+  private void setEnablePhotoSpot(boolean enable) {
+    if (enable) {
+      Editor.Fill(world, pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
+      Editor.Fill(world, pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);
+      Editor.Fill(world, pos(-6, 82, 48), pos(0, 82, 49), Material.WHITE_CONCRETE);
+      Editor.Fill(world, pos(1, 80, 48), pos(7, 80, 53), Material.PINK_CONCRETE);
+      Editor.Fill(world, pos(1, 81, 48), pos(7, 81, 51), Material.PINK_CONCRETE);
+      Editor.Fill(world, pos(1, 82, 48), pos(7, 82, 49), Material.PINK_CONCRETE);
+      Editor.Fill(world, pos(8, 80, 48), pos(14, 80, 53), Material.YELLOW_CONCRETE);
+      Editor.Fill(world, pos(8, 81, 48), pos(14, 81, 51), Material.YELLOW_CONCRETE);
+      Editor.Fill(world, pos(8, 82, 48), pos(14, 82, 49), Material.YELLOW_CONCRETE);
+    } else {
+      Editor.Fill(world, pos(-6, 80, 48), pos(14, 80, 53), Material.AIR);
+      Editor.Fill(world, pos(-6, 81, 48), pos(14, 81, 51), Material.AIR);
+      Editor.Fill(world, pos(-6, 82, 48), pos(14, 82, 49), Material.AIR);
+    }
+  }
+
   private void reset() {
     Editor.StandingSign(
       world,
@@ -361,6 +379,7 @@ public class KibasenEventListener implements MiniGame {
       Component.empty(),
       Component.text("エントリーリスト").color(Colors.aqua)
     );
+    setEnablePhotoSpot(true);
   }
 
   private static int x(int x) {

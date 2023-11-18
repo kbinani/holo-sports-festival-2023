@@ -29,6 +29,12 @@ public class Editor {
     Fill(world, from, to, blockData);
   }
 
+  public static void Fill(@Nonnull World world, Point3i from, Point3i to, Material material) {
+    Server server = Bukkit.getServer();
+    var blockData = material.createBlockData();
+    Fill(world, from, to, blockData);
+  }
+
   public static void Fill(@Nonnull World world, Point3i from, Point3i to, BlockData blockData) {
     Load(world, from, to);
     int x0 = Math.min(from.x, to.x);
