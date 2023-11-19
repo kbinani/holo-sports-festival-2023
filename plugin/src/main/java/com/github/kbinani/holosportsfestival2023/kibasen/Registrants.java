@@ -38,6 +38,37 @@ class Registrants {
     this.delegate = delegate;
   }
 
+  void announceEntryList() {
+    broadcast(
+      Component.text("-".repeat(10)).color(Colors.lime)
+        .appendSpace()
+        .append(prefix)
+        .appendSpace()
+        .append(Component.text("エントリー者 ").color(Colors.aqua))
+        .append(Component.text("-".repeat(10)).color(Colors.lime))
+    );
+    var first = true;
+    for (var color : TeamColor.all) {
+      if (!first) {
+        broadcast(Component.empty());
+      }
+      first = false;
+      var units = registrants.get(color);
+      if (units == null) {
+        broadcast(Component.text(String.format(" %s (0)", color.japanese)).color(color.sign));
+        continue;
+      }
+      broadcast(Component.text(String.format(" %s (%d)", color.japanese, units.size())).color(color.sign));
+      for (var unit : units) {
+        if (unit.vehicle != null) {
+          broadcast(Component.text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName())).color(color.sign));
+        } else {
+          broadcast(Component.text(String.format(" - [騎手] %s", unit.attacker.getName())).color(color.sign));
+        }
+      }
+    }
+  }
+
   void addAttacker(Player player, TeamColor color) {
     if (getParticipation(player) != null) {
       return;
@@ -49,7 +80,7 @@ class Registrants {
     var team = teams.ensure(color);
     team.addPlayer(player);
 
-    delegate.registrantsBroadcast(Component.empty()
+    broadcast(Component.empty()
       .append(Component.text(player.getName() + "が").color(Colors.white))
       .append(color.component())
       .append(Component.text("にエントリーしました。").color(Colors.white))
@@ -127,12 +158,16 @@ class Registrants {
       current.unit.vehicle.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
     }
     current.unit.attacker.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
-    delegate.registrantsBroadcast(prefix
+    broadcast(prefix
       .append(current.color.component())
       .append(Component.text("の大将に").color(Colors.white))
       .append(Component.text(player.getName()).color(Colors.orange))
       .append(Component.text("がエントリーしました！").color(Colors.white))
     );
+  }
+
+  private void broadcast(Component message) {
+    delegate.registrantsBroadcast(message);
   }
 
   private void retireLeader(Player player) {
@@ -145,7 +180,7 @@ class Registrants {
     }
     current.unit.isLeader = false;
     updateLeaderRegistrationBarrel();
-    delegate.registrantsBroadcast(prefix
+    broadcast(prefix
       .append(Component.text(player.getName()).color(Colors.orange))
       .append(Component.text("が").color(Colors.white))
       .append(current.color.component())
@@ -191,7 +226,7 @@ class Registrants {
       registrants.get(current.color).remove(current.unit);
 
       if (current.unit.isLeader) {
-        delegate.registrantsBroadcast(prefix
+        broadcast(prefix
           .append(Component.text(current.unit.attacker.getName()).color(Colors.orange))
           .append(Component.text("が").color(Colors.white))
           .append(current.color.component())

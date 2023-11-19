@@ -84,6 +84,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
               onClickJoin(player, TeamColor.YELLOW);
               e.setCancelled(true);
               return;
+            } else if (location.equals(entryListSign)) {
+              announceEntryList();
+              e.setCancelled(true);
+              return;
             }
           }
         }
@@ -224,6 +228,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
         inventory.clear(i);
       }
     }
+  }
+
+  private void announceEntryList() {
+    registrants.announceEntryList();
   }
 
   // Component.text("{name}に馬が居ないため、ゲームを開始できません。").color(Colors.red)): https://youtu.be/D9vmP7Qj4TI?t=1398
