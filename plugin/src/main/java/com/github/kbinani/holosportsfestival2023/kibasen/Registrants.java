@@ -38,6 +38,34 @@ class Registrants {
     this.delegate = delegate;
   }
 
+  void clear() {
+    registrants.clear();
+  }
+
+  @Nullable Session promote() {
+    if (registrants.isEmpty()) {
+      return null;
+    }
+    var participants = new HashMap<TeamColor, ArrayList<Unit>>();
+    for (var entry : registrants.entrySet()) {
+      var color = entry.getKey();
+      var units = new ArrayList<Unit>();
+      for (var unit : entry.getValue()) {
+        if (!unit.attacker.isOnline()) {
+          continue;
+        }
+        if (unit.vehicle == null || !unit.vehicle.isOnline()) {
+          // https://youtu.be/D9vmP7Qj4TI?t=1398
+          broadcast(Component.text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName())).color(Colors.red));
+          return null;
+        }
+        units.add(new Unit(unit.attacker, unit.vehicle, unit.isLeader));
+      }
+      participants.put(color, units);
+    }
+    return new Session(teams, participants);
+  }
+
   void announceEntryList() {
     broadcast(
       Component.text("-".repeat(10)).color(Colors.lime)

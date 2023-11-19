@@ -45,6 +45,8 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
   private Status status = Status.IDLE;
   private final Teams teams = new Teams(teamNamePrefix);
   private final Registrants registrants = new Registrants(teams, this);
+  private @Nullable Cancellable countdown;
+  private @Nullable Session session;
 
   public KibasenEventListener(World world, JavaPlugin owner) {
     this.owner = owner;
@@ -88,6 +90,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
               announceEntryList();
               e.setCancelled(true);
               return;
+            } else if (location.equals(startSign)) {
+              startCountdown();
+              e.setCancelled(true);
+              return;
             }
           }
         }
@@ -107,6 +113,20 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
                   }
                 }
               }
+            }
+          }
+        }
+      }
+      case COUNTDOWN, ACTIVE -> {
+        var action = e.getAction();
+        if (action == Action.RIGHT_CLICK_BLOCK) {
+          Block block = e.getClickedBlock();
+          if (block != null) {
+            Point3i location = new Point3i(block.getLocation());
+            if (location.equals(abortSign)) {
+              abort();
+              e.setCancelled(true);
+              return;
             }
           }
         }
@@ -230,11 +250,54 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
     }
   }
 
+  private void startCountdown() {
+    if (this.countdown != null) {
+      this.countdown.cancel();
+    }
+    if (registrants.promote() == null) {
+      return;
+    }
+    announceEntryList();
+    var titlePrefix = Component.text("スタートまで").color(Colors.aqua);
+    var subtitle = Component.text("騎馬戦").color(Colors.lime);
+    this.countdown = new Countdown(
+      owner, world, announceBounds,
+      titlePrefix, Colors.aqua,  subtitle,
+      10, this::start);
+    this.status = Status.COUNTDOWN;
+    setEnableWall(true);
+    setEnablePhotoSpot(false);
+  }
+
+  private void start() {
+    this.countdown = null;
+    var session = this.registrants.promote();
+    if (session == null) {
+      abort();
+      return;
+    }
+    this.registrants.clear();
+    this.status = Status.ACTIVE;
+  }
+
+  private void abort() {
+    broadcast(prefix.append(Component.text("ゲームを中断しました。").color(Colors.red)));
+    setEnableWall(false);
+    setEnablePhotoSpot(true);
+    if (this.session != null) {
+      this.session.abort();
+      this.session = null;
+    }
+    if (this.countdown != null) {
+      this.countdown.cancel();
+      this.countdown = null;
+    }
+    this.status = Status.IDLE;
+  }
+
   private void announceEntryList() {
     registrants.announceEntryList();
   }
-
-  // Component.text("{name}に馬が居ないため、ゲームを開始できません。").color(Colors.red)): https://youtu.be/D9vmP7Qj4TI?t=1398
 
   private void onClickJoin(Player player, TeamColor color) {
     var current = registrants.getParticipation(player);

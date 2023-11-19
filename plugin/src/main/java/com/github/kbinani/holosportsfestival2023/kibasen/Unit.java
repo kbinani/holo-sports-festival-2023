@@ -7,9 +7,11 @@ import javax.annotation.Nonnull;
 class Unit {
   final @Nonnull Player attacker;
   final @Nonnull Player vehicle;
+  final boolean isLeader;
 
-  Unit(@Nonnull Player attacker, @Nonnull Player vehicle) {
+  Unit(@Nonnull Player attacker, @Nonnull Player vehicle, boolean isLeader) {
     this.vehicle = vehicle;
     this.attacker = attacker;
+    this.isLeader = isLeader;
   }
 }
