@@ -24,7 +24,7 @@ import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nullable;
 
-public class KibasenEventListener implements MiniGame, Registrants.Delegate {
+public class KibasenEventListener implements MiniGame, Registrants.Delegate, Session.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
   private static final Component title = Component.text("[Kibasen]").color(Colors.aqua);
   static final Component prefix = title.append(Component.text(" ").color(Colors.white));
@@ -38,7 +38,6 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   private static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
-  private static final int durationSec = 90;
 
   private final World world;
   private final JavaPlugin owner;
@@ -232,6 +231,14 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
     return openLeaderRegistrationInventory();
   }
 
+  @Override
+  public void sessionDidFinish() {
+    //NOTE: 本家はゲーム終了しても「ゲームを中断する」をクリックするまでは会場はリセットされない.
+    setEnablePhotoSpot(true);
+    setEnableWall(false);
+    //TODO: 参加者を看板付近に distribute
+  }
+
   static void ClearItems(Player player) {
     var inventory = player.getInventory();
     for (int i = 0; i < inventory.getSize(); i++) {
@@ -254,7 +261,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
     if (this.countdown != null) {
       this.countdown.cancel();
     }
-    if (registrants.promote() == null) {
+    if (!registrants.validate()) {
       return;
     }
     announceEntryList();
@@ -262,7 +269,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
     var subtitle = Component.text("騎馬戦").color(Colors.lime);
     this.countdown = new Countdown(
       owner, world, announceBounds,
-      titlePrefix, Colors.aqua,  subtitle,
+      titlePrefix, Colors.aqua, subtitle,
       10, this::start);
     this.status = Status.COUNTDOWN;
     setEnableWall(true);
@@ -271,12 +278,15 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate {
 
   private void start() {
     this.countdown = null;
-    var session = this.registrants.promote();
+    var session = this.registrants.promote(owner, world, announceBounds, this);
     if (session == null) {
       abort();
       return;
     }
     this.registrants.clear();
+    broadcast(prefix
+      .append(Component.text("ゲームがスタートしました。").color(Colors.white))
+    );
     this.status = Status.ACTIVE;
   }
 

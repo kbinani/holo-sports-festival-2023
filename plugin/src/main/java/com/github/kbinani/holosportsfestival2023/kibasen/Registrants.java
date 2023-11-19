@@ -6,12 +6,15 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.Teams;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,7 +45,16 @@ class Registrants {
     registrants.clear();
   }
 
-  @Nullable Session promote() {
+  boolean validate() {
+    return participantsFromRegistrants() != null;
+  }
+
+  @Nullable Session promote(JavaPlugin owner, World world, BoundingBox announceBounds, Session.Delegate delegate) {
+    var participants = participantsFromRegistrants();
+    return new Session(owner, world, announceBounds, delegate, teams, participants);
+  }
+
+  private @Nullable HashMap<TeamColor, ArrayList<Unit>> participantsFromRegistrants() {
     if (registrants.isEmpty()) {
       return null;
     }
@@ -63,7 +75,7 @@ class Registrants {
       }
       participants.put(color, units);
     }
-    return new Session(teams, participants);
+    return participants;
   }
 
   void announceEntryList() {
