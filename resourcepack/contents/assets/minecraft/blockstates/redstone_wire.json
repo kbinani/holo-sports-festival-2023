@@ -101,7 +101,7 @@
     },
     {
       "apply": {
-        "model": "minecraft:block/redstone_dust_dot"
+        "model": "block/redstone_dust_dot"
       },
       "when": {
         "OR": [
