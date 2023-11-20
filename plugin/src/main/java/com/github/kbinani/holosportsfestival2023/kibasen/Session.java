@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.leaderRegistrationBarrel;
 
 class Session {
@@ -83,6 +84,8 @@ class Session {
         unit.healthDisplay.remove();
         unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
         unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+        ClearItems(unit.vehicle);
+        ClearItems(unit.attacker);
       }
     }
   }

@@ -50,10 +50,12 @@ class Registrants {
       for (var unit : entry.getValue()) {
         team.removePlayer(unit.attacker);
         unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
+        ClearItems(unit.attacker);
         if (unit.vehicle != null) {
           team.removePlayer(unit.vehicle);
           unit.vehicle.removePassenger(unit.attacker);
           unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+          ClearItems(unit.vehicle);
         }
       }
     }
