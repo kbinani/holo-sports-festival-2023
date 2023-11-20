@@ -7,20 +7,20 @@ import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 
 public enum TeamColor {
-  RED("RED", Colors.red, Material.RED_WOOL, BossBar.Color.RED, NamedTextColor.RED, Material.RED_WOOL),
+  RED("RED", NamedTextColor.RED, Material.RED_WOOL, BossBar.Color.RED, NamedTextColor.RED, Material.RED_WOOL),
   WHITE("WHITE", Colors.white, Material.WHITE_WOOL, BossBar.Color.WHITE, NamedTextColor.WHITE, Material.WHITE_WOOL),
   YELLOW("YELLOW", Colors.yellow, Material.YELLOW_WOOL, BossBar.Color.YELLOW, NamedTextColor.YELLOW, Material.YELLOW_WOOL);
 
-  public final String japanese;
-  public final TextColor sign;
+  public final String text;
+  public final TextColor textColor;
   public final Material quizConcealer;
   public final BossBar.Color barColor;
   public final NamedTextColor namedTextColor;
   public final Material wool;
 
-  TeamColor(String japanese, TextColor sign, Material quizConcealer, BossBar.Color barColor, NamedTextColor namedTextColor, Material wool) {
-    this.japanese = japanese;
-    this.sign = sign;
+  TeamColor(String text, TextColor textColor, Material quizConcealer, BossBar.Color barColor, NamedTextColor namedTextColor, Material wool) {
+    this.text = text;
+    this.textColor = textColor;
     this.quizConcealer = quizConcealer;
     this.barColor = barColor;
     this.namedTextColor = namedTextColor;
@@ -28,7 +28,7 @@ public enum TeamColor {
   }
 
   public Component component() {
-    return Component.text(japanese).color(sign);
+    return Component.text(text).color(textColor);
   }
 
   public static final TeamColor[] all = new TeamColor[]{RED, WHITE, YELLOW};

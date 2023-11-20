@@ -371,7 +371,7 @@ class Race {
       var score = this.score(color);
       var line = Component.empty()
         .appendSpace()
-        .append(Component.text(String.format(" - %s", player.getName())).color(color.sign))
+        .append(Component.text(String.format(" - %s", player.getName())).color(color.textColor))
         .append(Component.text(String.format(" %dm", score)).color(score >= 200 ? Colors.orange : Colors.white));
       var goal = goaledMillis.get(color);
       if (goal != null) {

@@ -190,7 +190,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
         Component.text(" ")
           .append(color.component())
           .appendSpace()
-          .append(Component.text(String.format(" (%d) ", team == null ? 0 : team.size())).color(color.sign))
+          .append(Component.text(String.format(" (%d) ", team == null ? 0 : team.size())).color(color.textColor))
       );
       if (team != null) {
         var princess = team.getPrincess();
@@ -320,7 +320,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(Colors.aqua)
         .append(c.component())
         .appendSpace()
-        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.sign))
+        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.textColor))
       );
     });
     broadcast(Component.empty());

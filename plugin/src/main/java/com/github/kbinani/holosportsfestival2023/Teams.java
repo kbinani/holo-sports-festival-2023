@@ -16,7 +16,7 @@ public class Teams {
     var server = Bukkit.getServer();
     var manager = server.getScoreboardManager();
     var scoreboard = manager.getMainScoreboard();
-    var name = prefix + "_" + color.japanese;
+    var name = prefix + "_" + color.text;
     var team = scoreboard.getTeam(name);
     if (team == null) {
       team = scoreboard.registerNewTeam(name);

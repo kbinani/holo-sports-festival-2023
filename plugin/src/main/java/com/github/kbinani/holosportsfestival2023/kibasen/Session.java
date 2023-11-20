@@ -190,14 +190,14 @@ class Session {
     for (var color : TeamColor.all) {
       var units = participants.get(color);
       if (units == null) {
-        broadcast(Component.text(String.format(" %s 総キル数: 0", color.japanese)).color(color.sign));
+        broadcast(Component.text(String.format(" %s 総キル数: 0", color.text)).color(color.textColor));
       } else {
         int count = 0;
         for (var unit : units) {
           count += unit.getKills();
           records.add(new Record(unit, unit.getKills()));
         }
-        broadcast(Component.text(String.format(" %s 総キル数: %d", color.japanese, count)).color(color.sign));
+        broadcast(Component.text(String.format(" %s 総キル数: %d", color.text, count)).color(color.textColor));
       }
       var leaderKills = leaderKillCount.getOrDefault(color, 0);
       broadcast(Component.text(String.format("  - 大将キル数: %d", leaderKills)).color(Colors.aqua));
@@ -229,7 +229,7 @@ class Session {
               record.kills > 1 ? "s" : ""
             )
           )
-          .color(record.unit.color.sign)
+          .color(record.unit.color.textColor)
       );
     }
     broadcast(Component.empty());

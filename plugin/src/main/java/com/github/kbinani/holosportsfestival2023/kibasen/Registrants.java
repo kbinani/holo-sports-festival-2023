@@ -133,15 +133,15 @@ class Registrants {
       first = false;
       var units = registrants.get(color);
       if (units == null) {
-        broadcast(Component.text(String.format(" %s (0)", color.japanese)).color(color.sign));
+        broadcast(Component.text(String.format(" %s (0)", color.text)).color(color.textColor));
         continue;
       }
-      broadcast(Component.text(String.format(" %s (%d)", color.japanese, units.size())).color(color.sign));
+      broadcast(Component.text(String.format(" %s (%d)", color.text, units.size())).color(color.textColor));
       for (var unit : units) {
         if (unit.vehicle != null) {
-          broadcast(Component.text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName())).color(color.sign));
+          broadcast(Component.text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName())).color(color.textColor));
         } else {
-          broadcast(Component.text(String.format(" - [騎手] %s", unit.attacker.getName())).color(color.sign));
+          broadcast(Component.text(String.format(" - [騎手] %s", unit.attacker.getName())).color(color.textColor));
         }
       }
     }

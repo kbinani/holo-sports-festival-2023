@@ -71,7 +71,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @Override
   public void raceDidDetectGoal(TeamColor color, Player player) {
     broadcast(prefix
-      .append(Component.text(player.getName()).color(color.sign))
+      .append(Component.text(player.getName()).color(color.textColor))
       .appendSpace()
       .append(Component.text("がゴールしました！").color(Colors.orange)));
   }
@@ -79,7 +79,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @Override
   public void raceDidDetectCheckpoint(TeamColor color, Player player, int index) {
     broadcast(prefix
-      .append(Component.text(player.getName()).color(color.sign))
+      .append(Component.text(player.getName()).color(color.textColor))
       .append(Component.text(String.format(" が%d個目のチェックポイントに到達しました！", index)).color(Colors.white)));
   }
 
@@ -336,9 +336,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       first = false;
       var player = registrants.get(color);
       int count = player == null ? 0 : 1;
-      broadcast(Component.text(String.format(" %s (%d)", color.japanese, count)).color(color.sign));
+      broadcast(Component.text(String.format(" %s (%d)", color.text, count)).color(color.textColor));
       if (player != null) {
-        broadcast(Component.text(String.format("  - %s", player.getName())).color(color.sign));
+        broadcast(Component.text(String.format("  - %s", player.getName())).color(color.textColor));
       }
     }
   }
@@ -399,7 +399,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       } else {
         registrants.put(color, player);
         broadcast(prefix
-          .append(Component.text(player.getName()).color(color.sign))
+          .append(Component.text(player.getName()).color(color.textColor))
           .append(Component.text("が").color(Colors.white))
           .append(color.component())
           .append(Component.text("にエントリーしました。").color(Colors.white))
