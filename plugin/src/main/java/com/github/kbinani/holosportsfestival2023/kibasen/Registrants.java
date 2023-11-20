@@ -5,9 +5,11 @@ import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.Teams;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -46,15 +48,22 @@ class Registrants {
   }
 
   boolean validate() {
-    return participantsFromRegistrants() != null;
+    for (var entry : registrants.entrySet()) {
+      for (var unit : entry.getValue()) {
+        if (!unit.attacker.isOnline()) {
+          continue;
+        }
+        if (unit.vehicle == null || !unit.vehicle.isOnline()) {
+          // https://youtu.be/D9vmP7Qj4TI?t=1398
+          broadcast(Component.text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName())).color(Colors.red));
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   @Nullable Session promote(JavaPlugin owner, World world, BoundingBox announceBounds, Session.Delegate delegate) {
-    var participants = participantsFromRegistrants();
-    return new Session(owner, world, announceBounds, delegate, teams, participants);
-  }
-
-  private @Nullable HashMap<TeamColor, ArrayList<Unit>> participantsFromRegistrants() {
     if (registrants.isEmpty()) {
       return null;
     }
@@ -71,14 +80,25 @@ class Registrants {
           broadcast(Component.text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName())).color(Colors.red));
           return null;
         }
-        units.add(new Unit(unit.attacker, unit.vehicle, unit.isLeader));
+        var display = world.spawn(unit.attacker.getLocation(), ArmorStand.class, (it) -> {
+          it.customName(Component.text("♥♥♥").color(NamedTextColor.RED));
+          it.setCustomNameVisible(true);
+          it.setSilent(true);
+          it.setAI(false);
+          it.setInvulnerable(true);
+          it.setVisible(false);
+          it.addScoreboardTag(healthDisplayScoreboardTag);
+        });
+        unit.vehicle.addPassenger(display);
+        units.add(new Unit(unit.attacker, unit.vehicle, display, unit.isLeader));
       }
       participants.put(color, units);
     }
-    return participants;
+    return new Session(owner, world, announceBounds, delegate, teams, participants);
   }
 
   void announceEntryList() {
+    // https://youtu.be/uEpmE5WJPW8?t=2680
     broadcast(
       Component.text("-".repeat(10)).color(Colors.lime)
         .appendSpace()
