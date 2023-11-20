@@ -34,6 +34,7 @@ public class Countdown implements Cancellable {
     Players.Within(world, bounds, (player) -> {
       player.clearTitle();
       player.showTitle(title);
+      player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
     });
     var scheduler = Bukkit.getScheduler();
     for (long i = seconds - 1; i >= 1; i--) {
