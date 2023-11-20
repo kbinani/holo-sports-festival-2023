@@ -96,15 +96,16 @@ class Registrants {
         if (unit.vehicle == null || !unit.vehicle.isOnline()) {
           continue;
         }
-        var display = world.spawn(unit.attacker.getLocation(), ArmorStand.class, (it) -> {
+        var location = unit.attacker.getLocation();
+        var display = world.spawn(location, ArmorStand.class, (it) -> {
           it.customName(Component.text("♥♥♥").color(NamedTextColor.RED));
           it.setCustomNameVisible(true);
-          it.setInvulnerable(true);
           it.setVisible(false);
+          it.setInvulnerable(true);
           it.addScoreboardTag(healthDisplayScoreboardTag);
         });
         unit.vehicle.addPassenger(display);
-        units.add(new Unit(unit.attacker, unit.vehicle, display, unit.isLeader));
+        units.add(new Unit(color, unit.attacker, unit.vehicle, display, unit.isLeader));
       }
       participants.put(color, units);
     }

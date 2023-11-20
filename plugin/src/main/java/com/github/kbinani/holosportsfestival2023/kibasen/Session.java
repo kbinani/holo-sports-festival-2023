@@ -3,12 +3,11 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.block.Barrel;
+import org.bukkit.*;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 
@@ -19,8 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.ClearItems;
-import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.leaderRegistrationBarrel;
+import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 
 class Session {
   interface Delegate {
@@ -29,6 +27,7 @@ class Session {
 
   private static final int durationSec = 90;
   private static final int countdownSec = 3;
+  private final Map<TeamColor, Point3i> respawnLocation = new HashMap<>();
 
   private final JavaPlugin owner;
   private final World world;
@@ -38,6 +37,7 @@ class Session {
   private final BukkitTask countdownStarter;
   private @Nullable Cancellable countdown;
   private final @Nonnull Delegate delegate;
+  private final @Nonnull Map<TeamColor, Integer> leaderKillCount = new HashMap<>();
 
   Session(JavaPlugin owner, World world, BoundingBox announceBounds, @Nonnull Delegate delegate, @Nonnull Teams teams, Map<TeamColor, ArrayList<Unit>> participants) {
     this.owner = owner;
@@ -48,26 +48,85 @@ class Session {
     var scheduler = Bukkit.getScheduler();
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
     this.delegate = delegate;
+    respawnLocation.put(TeamColor.RED, pos(4, 80, 69));
+    respawnLocation.put(TeamColor.WHITE, pos(-13, 80, 35));
+    respawnLocation.put(TeamColor.YELLOW, pos(21, 80, 35));
+
+    prepare();
+  }
+
+  void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (!(e.getEntity() instanceof Player defence)) {
+      return;
+    }
+    if (!(e.getDamager() instanceof Player offence)) {
+      return;
+    }
+    var defenceUnit = getUnitByAttacker(defence);
+    if (defenceUnit == null) {
+      return;
+    }
+    var offenceUnit = getUnitByAttacker(offence);
+    if (offenceUnit == null) {
+      return;
+    }
+    e.setCancelled(true);
+    var equipment = offence.getEquipment();
+    var item = equipment.getItemInMainHand();
+    if (item.getType() != Material.WOODEN_SWORD) {
+      return;
+    }
+    var meta = item.getItemMeta();
+    if (meta == null) {
+      return;
+    }
+    var store = meta.getPersistentDataContainer();
+    if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+      return;
+    }
+    if (defenceUnit.damagedBy(offence)) {
+      if (defenceUnit.isLeader) {
+        broadcast(prefix
+          .append(offence.teamDisplayName())
+          .append(Component.text(" --[大将撃破]-> ").color(Colors.orange))
+          .append(defence.teamDisplayName())
+        );
+        var count = leaderKillCount.computeIfAbsent(offenceUnit.color, (c) -> 0);
+        leaderKillCount.put(offenceUnit.color, count + 1);
+      } else {
+        broadcast(prefix
+          .append(offence.teamDisplayName())
+          .append(Component.text(" --[撃破]-> ").color(Colors.gray))
+          .append(defence.teamDisplayName())
+        );
+      }
+      offenceUnit.kill(defenceUnit.attacker);
+      var location = respawnLocation.get(defenceUnit.color);
+      if (location != null) {
+        defenceUnit.teleport(location.toLocation(world));
+      }
+    }
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, announceBounds, player -> player.sendMessage(message));
+  }
+
+  private @Nullable Unit getUnitByAttacker(Player attacker) {
+    for (var entry : participants.entrySet()) {
+      for (var unit : entry.getValue()) {
+        if (unit.attacker == attacker) {
+          return unit;
+        }
+      }
+    }
+    return null;
+  }
+
+  private void prepare() {
     for (var units : this.participants.values()) {
       for (var unit : units) {
-        var view = unit.attacker.getOpenInventory();
-        for (var index = 0; index < view.countSlots(); index++) {
-          var inventory = view.getInventory(index);
-          if (inventory == null) {
-            continue;
-          }
-          var holder = inventory.getHolder();
-          if (holder == null) {
-            continue;
-          }
-          if (holder instanceof Barrel barrel) {
-            var pos = new Point3i(barrel.getLocation());
-            if (pos.equals(leaderRegistrationBarrel)) {
-              view.close();
-              break;
-            }
-          }
-        }
+        unit.prepare();
       }
     }
   }
@@ -79,13 +138,7 @@ class Session {
       for (var unit : entry.getValue()) {
         team.removePlayer(unit.attacker);
         team.removePlayer(unit.vehicle);
-        unit.vehicle.removePassenger(unit.attacker);
-        unit.vehicle.removePassenger(unit.healthDisplay);
-        unit.healthDisplay.remove();
-        unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
-        unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
-        ClearItems(unit.vehicle);
-        ClearItems(unit.attacker);
+        unit.clean();
       }
     }
   }

@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -34,7 +35,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private static final Point3i startSign = pos(-30, 80, 54);
   private static final Point3i abortSign = pos(-30, 80, 55);
   private static final Point3i entryListSign = pos(-30, 80, 56);
-  private static final String itemTag = "hololive_sports_festival_2023_kibasen";
+  static final String itemTag = "hololive_sports_festival_2023_kibasen";
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
@@ -137,41 +138,45 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerInteractEntity(PlayerInteractEntityEvent e) {
-    var attacker = e.getPlayer();
-    var hand = e.getHand();
-    var inventory = attacker.getInventory();
-    var item = inventory.getItem(hand);
-    if (item.getType() != Material.SADDLE) {
-      return;
+    if (status == Status.IDLE) {
+      var attacker = e.getPlayer();
+      var hand = e.getHand();
+      var inventory = attacker.getInventory();
+      var item = inventory.getItem(hand);
+      if (item.getType() != Material.SADDLE) {
+        return;
+      }
+      if (!(e.getRightClicked() instanceof Player vehicle)) {
+        return;
+      }
+      var meta = item.getItemMeta();
+      if (meta == null) {
+        return;
+      }
+      var store = meta.getPersistentDataContainer();
+      if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+        return;
+      }
+      registrants.addPassenger(attacker, vehicle);
     }
-    if (!(e.getRightClicked() instanceof Player vehicle)) {
-      return;
-    }
-    var meta = item.getItemMeta();
-    if (meta == null) {
-      return;
-    }
-    var store = meta.getPersistentDataContainer();
-    if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
-      return;
-    }
-    registrants.addPassenger(attacker, vehicle);
   }
 
   @EventHandler
   @SuppressWarnings("unused")
   public void onEntityDismount(EntityDismountEvent e) {
-    if (!(e.getDismounted() instanceof Player vehicle)) {
-      return;
+    if (status == Status.IDLE) {
+      if (!(e.getDismounted() instanceof Player vehicle)) {
+        return;
+      }
+      if (!(e.getEntity() instanceof Player attacker)) {
+        return;
+      }
+      var participation = registrants.getParticipation(vehicle);
+      if (participation == null) {
+        return;
+      }
+      registrants.dismount(attacker);
     }
-    if (!(e.getEntity() instanceof Player attacker)) {
-      return;
-    }
-    var participation = registrants.getParticipation(vehicle);
-    if (participation == null) {
-      return;
-    }
-    registrants.dismount(attacker);
   }
 
   @EventHandler
@@ -179,47 +184,58 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public void onPlayerQuit(PlayerQuitEvent e) {
     var player = e.getPlayer();
     registrants.remove(player);
+    //TODO: session.onPlayerQuit
   }
 
   @EventHandler
   @SuppressWarnings("unused")
   public void onInventoryClick(InventoryClickEvent e) {
-    var inventory = e.getInventory();
-    if (!(inventory.getHolder(false) instanceof Barrel barrel)) {
-      return;
+    if (status == Status.IDLE) {
+      var inventory = e.getInventory();
+      if (!(inventory.getHolder(false) instanceof Barrel barrel)) {
+        return;
+      }
+      var location = barrel.getLocation();
+      if (location.getWorld() != world) {
+        return;
+      }
+      if (!leaderRegistrationBarrel.equals(new Point3i(location))) {
+        return;
+      }
+      if (!(e.getWhoClicked() instanceof Player player)) {
+        return;
+      }
+      e.setCancelled(true);
+      var current = registrants.getParticipation(player);
+      if (current == null) {
+        return;
+      }
+      if (e.getAction() != InventoryAction.PICKUP_ALL || !e.isLeftClick()) {
+        return;
+      }
+      var slot = e.getSlot();
+      if (slot != 10 && slot != 13 && slot != 16) {
+        return;
+      }
+      var index = (slot - 10) / 3;
+      var color = TeamColor.all[index];
+      var item = inventory.getItem(slot);
+      if (item == null) {
+        return;
+      }
+      if (color != current.color) {
+        return;
+      }
+      registrants.onClickBecomeLeader(player);
     }
-    var location = barrel.getLocation();
-    if (location.getWorld() != world) {
-      return;
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (session != null) {
+      session.onEntityDamageByEntity(e);
     }
-    if (!leaderRegistrationBarrel.equals(new Point3i(location))) {
-      return;
-    }
-    if (!(e.getWhoClicked() instanceof Player player)) {
-      return;
-    }
-    e.setCancelled(true);
-    var current = registrants.getParticipation(player);
-    if (current == null) {
-      return;
-    }
-    if (e.getAction() != InventoryAction.PICKUP_ALL || !e.isLeftClick()) {
-      return;
-    }
-    var slot = e.getSlot();
-    if (slot != 10 && slot != 13 && slot != 16) {
-      return;
-    }
-    var index = (slot - 10) / 3;
-    var color = TeamColor.all[index];
-    var item = inventory.getItem(slot);
-    if (item == null) {
-      return;
-    }
-    if (color != current.color) {
-      return;
-    }
-    registrants.onClickBecomeLeader(player);
   }
 
   @Override
@@ -447,7 +463,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     return z + offset.z;
   }
 
-  private static Point3i pos(int x, int y, int z) {
+  static Point3i pos(int x, int y, int z) {
     return new Point3i(x + offset.x, y + offset.y, z + offset.z);
   }
 }
