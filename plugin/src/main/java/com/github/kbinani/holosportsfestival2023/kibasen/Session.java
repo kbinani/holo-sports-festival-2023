@@ -6,6 +6,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Barrel;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,6 +18,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.leaderRegistrationBarrel;
 
 class Session {
   interface Delegate {
@@ -44,6 +47,28 @@ class Session {
     var scheduler = Bukkit.getScheduler();
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
     this.delegate = delegate;
+    for (var units : this.participants.values()) {
+      for (var unit : units) {
+        var view = unit.attacker.getOpenInventory();
+        for (var index = 0; index < view.countSlots(); index++) {
+          var inventory = view.getInventory(index);
+          if (inventory == null) {
+            continue;
+          }
+          var holder = inventory.getHolder();
+          if (holder == null) {
+            continue;
+          }
+          if (holder instanceof Barrel barrel) {
+            var pos = new Point3i(barrel.getLocation());
+            if (pos.equals(leaderRegistrationBarrel)) {
+              view.close();
+              break;
+            }
+          }
+        }
+      }
+    }
   }
 
   void clear() {

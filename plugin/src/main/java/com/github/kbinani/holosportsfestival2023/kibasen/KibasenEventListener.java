@@ -37,7 +37,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private static final String itemTag = "hololive_sports_festival_2023_kibasen";
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
-  private static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
+  static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
   static final String healthDisplayScoreboardTag = "hololive_sports_festival_2023_kibasen_health_display";
 
   private final World world;
