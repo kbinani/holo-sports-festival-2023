@@ -102,9 +102,11 @@ class Registrants {
           it.setCustomNameVisible(true);
           it.setVisible(false);
           it.setInvulnerable(true);
+          it.setSmall(true);
+          it.setBasePlate(false);
           it.addScoreboardTag(healthDisplayScoreboardTag);
         });
-        unit.vehicle.addPassenger(display);
+        unit.attacker.addPassenger(display);
         units.add(new Unit(color, unit.attacker, unit.vehicle, display, unit.isLeader));
       }
       participants.put(color, units);
