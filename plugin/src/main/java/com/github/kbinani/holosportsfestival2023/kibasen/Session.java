@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -164,6 +165,74 @@ class Session {
       player.showTitle(title);
       player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
     });
+    var separator = "▪"; //TODO: この文字本当は何なのかが分からない
+    broadcast(
+      Component.empty()
+        .appendSpace()
+        .append(Component.text(separator.repeat(32)).color(Colors.lime))
+        .appendSpace()
+        .append(prefix)
+        .append(Component.text(separator.repeat(32)).color(Colors.lime))
+    );
+    broadcast(Component.empty());
+    class Record {
+      final Unit unit;
+      final int kills;
+      int order;
+
+      Record(Unit unit, int kills) {
+        this.unit = unit;
+        this.kills = kills;
+        this.order = -1;
+      }
+    }
+    var records = new ArrayList<Record>();
+    for (var color : TeamColor.all) {
+      var units = participants.get(color);
+      if (units == null) {
+        broadcast(Component.text(String.format(" %s 総キル数: 0", color.japanese)).color(color.sign));
+      } else {
+        int count = 0;
+        for (var unit : units) {
+          count += unit.getKills();
+          records.add(new Record(unit, unit.getKills()));
+        }
+        broadcast(Component.text(String.format(" %s 総キル数: %d", color.japanese, count)).color(color.sign));
+      }
+      var leaderKills = leaderKillCount.getOrDefault(color, 0);
+      broadcast(Component.text(String.format("  - 大将キル数: %d", leaderKills)).color(Colors.aqua));
+      broadcast(Component.empty());
+    }
+    records.sort(Comparator.comparingInt(record -> -record.kills));
+    broadcast(Component.text(" ◆ 個人キルランキング").color(Colors.orange));
+    int last = -1;
+    int order = 1;
+    int nextOrder = 1;
+    for (var record : records) {
+      if (last == record.kills) {
+        nextOrder += 1;
+      } else {
+        order = nextOrder;
+        last = record.kills;
+      }
+      record.order = order;
+    }
+    for (var record : records) {
+      broadcast(
+        Component.text(
+            String.format(
+              "  #%d: %s & %s - %d kill%s",
+              record.order,
+              record.unit.attacker.getName(),
+              record.unit.vehicle.getName(),
+              record.kills,
+              record.kills > 1 ? "s" : ""
+            )
+          )
+          .color(record.unit.color.sign)
+      );
+    }
+    broadcast(Component.empty());
     this.delegate.sessionDidFinish();
   }
 

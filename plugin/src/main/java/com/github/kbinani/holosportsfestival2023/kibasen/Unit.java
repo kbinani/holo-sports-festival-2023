@@ -41,6 +41,10 @@ class Unit {
     this.isLeader = isLeader;
   }
 
+  int getKills() {
+    return kills;
+  }
+
   void kill(Player enemy) {
     kills++;
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
