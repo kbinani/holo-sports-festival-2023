@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 
@@ -43,6 +44,22 @@ class Session {
     var scheduler = Bukkit.getScheduler();
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
     this.delegate = delegate;
+  }
+
+  void clear() {
+    for (var entry : participants.entrySet()) {
+      var color = entry.getKey();
+      var team = teams.ensure(color);
+      for (var unit : entry.getValue()) {
+        team.removePlayer(unit.attacker);
+        team.removePlayer(unit.vehicle);
+        unit.vehicle.removePassenger(unit.attacker);
+        unit.vehicle.removePassenger(unit.healthDisplay);
+        unit.healthDisplay.remove();
+        unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
+        unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+      }
+    }
   }
 
   void abort() {

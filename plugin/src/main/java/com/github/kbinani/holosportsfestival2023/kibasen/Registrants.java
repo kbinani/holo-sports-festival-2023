@@ -44,6 +44,19 @@ class Registrants {
   }
 
   void clear() {
+    for (var entry : registrants.entrySet()) {
+      var color = entry.getKey();
+      var team = teams.ensure(color);
+      for (var unit : entry.getValue()) {
+        team.removePlayer(unit.attacker);
+        unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
+        if (unit.vehicle != null) {
+          team.removePlayer(unit.vehicle);
+          unit.vehicle.removePassenger(unit.attacker);
+          unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+        }
+      }
+    }
     registrants.clear();
   }
 
@@ -67,6 +80,9 @@ class Registrants {
     if (registrants.isEmpty()) {
       return null;
     }
+    if (!validate()) {
+      return null;
+    }
     var participants = new HashMap<TeamColor, ArrayList<Unit>>();
     for (var entry : registrants.entrySet()) {
       var color = entry.getKey();
@@ -76,15 +92,11 @@ class Registrants {
           continue;
         }
         if (unit.vehicle == null || !unit.vehicle.isOnline()) {
-          // https://youtu.be/D9vmP7Qj4TI?t=1398
-          broadcast(Component.text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName())).color(Colors.red));
-          return null;
+          continue;
         }
         var display = world.spawn(unit.attacker.getLocation(), ArmorStand.class, (it) -> {
           it.customName(Component.text("♥♥♥").color(NamedTextColor.RED));
           it.setCustomNameVisible(true);
-          it.setSilent(true);
-          it.setAI(false);
           it.setInvulnerable(true);
           it.setVisible(false);
           it.addScoreboardTag(healthDisplayScoreboardTag);
@@ -94,6 +106,7 @@ class Registrants {
       }
       participants.put(color, units);
     }
+    registrants.clear();
     return new Session(owner, world, announceBounds, delegate, teams, participants);
   }
 

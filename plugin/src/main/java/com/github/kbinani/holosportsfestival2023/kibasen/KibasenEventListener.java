@@ -283,6 +283,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       abort();
       return;
     }
+    this.session = session;
     this.registrants.clear();
     broadcast(prefix
       .append(Component.text("ゲームがスタートしました。").color(Colors.white))
@@ -414,6 +415,12 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     registrants.clearLeaderRegistrationBarrel();
 
     Kill.EntitiesByScoreboardTag(world, healthDisplayScoreboardTag);
+
+    registrants.clear();
+    if (session != null) {
+      session.clear();
+      session = null;
+    }
 
     status = Status.IDLE;
   }
