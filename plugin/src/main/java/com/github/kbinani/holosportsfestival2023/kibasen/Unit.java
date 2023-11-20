@@ -55,6 +55,7 @@ class Unit {
     );
     attacker.showTitle(title);
     vehicle.showTitle(title);
+    updateActionBar();
   }
 
   // health が 0 になったら true を返す
@@ -87,6 +88,7 @@ class Unit {
     setupAttackerItems();
     setupHealth();
     setupGameMode();
+    updateActionBar();
   }
 
   void clean() {
@@ -100,6 +102,16 @@ class Unit {
     ApplyMaxHealth(vehicle);
   }
 
+  void tick() {
+    updateActionBar();
+  }
+
+  private void updateActionBar() {
+    var actionBar = Component.text(String.format("現在のキル数: %d", kills)).color(Colors.lime);
+    attacker.sendActionBar(actionBar);
+    vehicle.sendActionBar(actionBar);
+  }
+
   private void setupGameMode() {
     attacker.setGameMode(GameMode.ADVENTURE);
     vehicle.setGameMode(GameMode.ADVENTURE);
@@ -108,10 +120,12 @@ class Unit {
   private void setupHealth() {
     ApplyMaxHealth(attacker);
     ApplyMaxHealth(vehicle);
+    attacker.setFoodLevel(20);
+    vehicle.setFoodLevel(20);
   }
 
   private static void ApplyMaxHealth(Player player) {
-    AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
     if (maxHealth != null) {
       player.setHealth(maxHealth.getValue());
     }

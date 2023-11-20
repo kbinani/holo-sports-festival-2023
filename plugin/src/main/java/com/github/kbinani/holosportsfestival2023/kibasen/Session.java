@@ -39,6 +39,7 @@ class Session {
   private @Nullable Cancellable countdown;
   private final @Nonnull Delegate delegate;
   private final @Nonnull Map<TeamColor, Integer> leaderKillCount = new HashMap<>();
+  private final BukkitTask tick;
 
   Session(JavaPlugin owner, World world, BoundingBox announceBounds, @Nonnull Delegate delegate, @Nonnull Teams teams, Map<TeamColor, ArrayList<Unit>> participants) {
     this.owner = owner;
@@ -48,6 +49,7 @@ class Session {
     this.participants = new HashMap<>(participants);
     var scheduler = Bukkit.getScheduler();
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
+    this.tick = scheduler.runTaskTimer(owner, this::tick, 0, 20);
     this.delegate = delegate;
     respawnLocation.put(TeamColor.RED, pos(4, 80, 69));
     respawnLocation.put(TeamColor.WHITE, pos(-13, 80, 35));
@@ -109,6 +111,14 @@ class Session {
     }
   }
 
+  private void tick() {
+    for (var units : participants.values()) {
+      for (var unit : units) {
+        unit.tick();
+      }
+    }
+  }
+
   private void broadcast(Component message) {
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
@@ -150,11 +160,13 @@ class Session {
       this.countdown.cancel();
       this.countdown = null;
     }
+    this.tick.cancel();
     this.delegate.sessionDidFinish();
   }
 
   private void timeout() {
     this.countdown = null;
+    this.tick.cancel();
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
       Component.text("ゲームが終了しました！").color(Colors.orange),
