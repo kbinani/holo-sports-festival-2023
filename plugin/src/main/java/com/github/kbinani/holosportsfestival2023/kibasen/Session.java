@@ -1,11 +1,13 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -28,8 +30,8 @@ class Session {
 
   private static final int durationSec = 90;
   private static final int countdownSec = 3;
-  private final Map<TeamColor, Point3i> respawnLocation = new HashMap<>();
 
+  private final Map<TeamColor, Point3i> respawnLocation = new HashMap<>();
   private final JavaPlugin owner;
   private final World world;
   private final BoundingBox announceBounds;
@@ -41,7 +43,14 @@ class Session {
   private final @Nonnull Map<TeamColor, Integer> leaderKillCount = new HashMap<>();
   private final BukkitTask tick;
 
-  Session(JavaPlugin owner, World world, BoundingBox announceBounds, @Nonnull Delegate delegate, @Nonnull Teams teams, Map<TeamColor, ArrayList<Unit>> participants) {
+  Session(
+    JavaPlugin owner,
+    World world,
+    BoundingBox announceBounds,
+    @Nonnull Delegate delegate,
+    @Nonnull Teams teams,
+    Map<TeamColor, ArrayList<Unit>> participants
+  ) {
     this.owner = owner;
     this.world = world;
     this.announceBounds = announceBounds;
@@ -135,14 +144,23 @@ class Session {
   }
 
   private void prepare() {
-    for (var units : this.participants.values()) {
-      for (var unit : units) {
+    for (var entry : this.participants.entrySet()) {
+      var color = entry.getKey();
+      var respawn = respawnLocation.get(color);
+      for (var unit : entry.getValue()) {
         unit.prepare();
+        if (respawn != null) {
+          unit.vehicle.teleport(
+            respawn.toLocation(world),
+            PlayerTeleportEvent.TeleportCause.COMMAND,
+            TeleportFlag.EntityState.RETAIN_PASSENGERS
+          );
+        }
       }
     }
   }
 
-  void clear() {
+  void clear(BoundingBox safeRespawnBounds) {
     for (var entry : participants.entrySet()) {
       var color = entry.getKey();
       var team = teams.ensure(color);
@@ -150,6 +168,8 @@ class Session {
         team.removePlayer(unit.attacker);
         team.removePlayer(unit.vehicle);
         unit.clean();
+        Players.Distribute(world, safeRespawnBounds, unit.vehicle);
+        Players.Distribute(world, safeRespawnBounds, unit.attacker);
       }
     }
   }
@@ -167,16 +187,6 @@ class Session {
   private void timeout() {
     this.countdown = null;
     this.tick.cancel();
-    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
-    var title = Title.title(
-      Component.text("ゲームが終了しました！").color(Colors.orange),
-      Component.empty(),
-      times
-    );
-    Players.Within(world, announceBounds, (player) -> {
-      player.showTitle(title);
-      player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-    });
     var separator = "▪"; //TODO: この文字本当は何なのかが分からない
     broadcast(
       Component.empty()
@@ -246,6 +256,17 @@ class Session {
     }
     broadcast(Component.empty());
     this.delegate.sessionDidFinish();
+
+    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+    var title = Title.title(
+      Component.text("ゲームが終了しました！").color(Colors.orange),
+      Component.empty(),
+      times
+    );
+    Players.Within(world, announceBounds, (player) -> {
+      player.showTitle(title);
+      player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+    });
   }
 
   private void startCountdown() {

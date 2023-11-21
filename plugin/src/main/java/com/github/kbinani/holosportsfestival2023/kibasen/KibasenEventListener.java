@@ -40,6 +40,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
   static final String healthDisplayScoreboardTag = "hololive_sports_festival_2023_kibasen_health_display";
+  private static final BoundingBox safeRespawnBounds = new BoundingBox(x(-41), y(80), z(44), x(-24), y(80), z(64));
 
   private final World world;
   private final JavaPlugin owner;
@@ -252,7 +253,6 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public void sessionDidFinish() {
     //NOTE: 本家はゲーム終了しても「ゲームを中断する」をクリックするまでは会場はリセットされない.
     reset();
-    //TODO: 参加者を看板付近に distribute
   }
 
   static void ClearItems(Player player) {
@@ -434,7 +434,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
     registrants.clear();
     if (session != null) {
-      session.clear();
+      session.clear(safeRespawnBounds);
       session = null;
     }
 
