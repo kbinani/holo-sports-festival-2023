@@ -8,38 +8,50 @@ import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Barrel;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Duration;
 
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 
 class Unit {
+  private final JavaPlugin owner;
   final @Nonnull TeamColor color;
   final @Nonnull Player attacker;
   final @Nonnull Player vehicle;
-  final @Nonnull Entity healthDisplay;
+  private @Nullable Entity healthDisplay;
   final boolean isLeader;
   private int kills = 0;
-  private int health = 3;
+  private int health;
+  private final int maxHealth;
+  private @Nullable BukkitTask delayMountTask;
 
-  Unit(@Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, @Nonnull Entity healthDisplay, boolean isLeader) {
+  Unit(JavaPlugin owner, @Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, boolean isLeader) {
+    this.owner = owner;
     this.color = color;
     this.vehicle = vehicle;
     this.attacker = attacker;
-    this.healthDisplay = healthDisplay;
     this.isLeader = isLeader;
+    if (isLeader) {
+      this.maxHealth = 5;
+    } else {
+      this.maxHealth = 3;
+    }
+    this.health = maxHealth;
   }
 
   int getKills() {
@@ -63,7 +75,7 @@ class Unit {
   boolean damagedBy(Player enemy) {
     health -= 1;
     if (health < 1) {
-      health = 3;
+      health = maxHealth;
       var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
       var title = Title.title(
         Component.empty(),
@@ -73,11 +85,9 @@ class Unit {
       attacker.showTitle(title);
       vehicle.showTitle(title);
     }
-    healthDisplay.customName(
-      Component.text("♥".repeat(health)).color(NamedTextColor.RED)
-        .append(Component.text("♡".repeat(3 - health)).color(NamedTextColor.WHITE))
-    );
-    return health == 3;
+    var display = ensureHealthDisplayEntity();
+    display.customName(createHealthDisplayComponent());
+    return health == maxHealth;
   }
 
   void teleport(Location location) {
@@ -90,11 +100,18 @@ class Unit {
     setupHealth();
     setupGameMode();
     updateActionBar();
+    ensureHealthDisplayEntity();
   }
 
   void clean() {
     vehicle.removePassenger(attacker);
-    healthDisplay.remove();
+    if (delayMountTask != null) {
+      delayMountTask.cancel();
+      delayMountTask = null;
+    }
+    if (healthDisplay != null) {
+      healthDisplay.remove();
+    }
     attacker.removePotionEffect(PotionEffectType.GLOWING);
     vehicle.removePotionEffect(PotionEffectType.GLOWING);
     ClearItems(vehicle);
@@ -105,6 +122,38 @@ class Unit {
 
   void tick() {
     updateActionBar();
+  }
+
+  private Component createHealthDisplayComponent() {
+    return Component.text("♥".repeat(health)).color(NamedTextColor.RED)
+      .append(Component.text("♡".repeat(maxHealth - health)).color(NamedTextColor.WHITE));
+  }
+
+  private @Nonnull Entity ensureHealthDisplayEntity() {
+    if (this.healthDisplay != null) {
+      return this.healthDisplay;
+    }
+    if (this.delayMountTask != null) {
+      this.delayMountTask.cancel();
+    }
+    var location = attacker.getLocation();
+    location.setY(location.getBlockY() - 8);
+    var display = attacker.getWorld().spawn(location, AreaEffectCloud.class, (it) -> {
+      it.setCustomNameVisible(false);
+      it.setInvulnerable(true);
+      it.setDuration(365 * 24 * 60 * 60 * 20);
+      it.setRadius(0);
+      it.addScoreboardTag(healthDisplayScoreboardTag);
+    });
+    this.delayMountTask = Bukkit.getScheduler().runTaskLater(owner, () -> {
+      // particle が出現する瞬間が見えないように ride を遅らせる
+      attacker.addPassenger(display);
+      display.customName(createHealthDisplayComponent());
+      display.setCustomNameVisible(true);
+      this.delayMountTask = null;
+    }, 30);
+    this.healthDisplay = display;
+    return healthDisplay;
   }
 
   private void updateActionBar() {
