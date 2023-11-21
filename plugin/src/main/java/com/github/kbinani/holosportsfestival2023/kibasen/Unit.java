@@ -15,6 +15,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Barrel;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffectType;
@@ -28,12 +29,12 @@ class Unit {
   final @Nonnull TeamColor color;
   final @Nonnull Player attacker;
   final @Nonnull Player vehicle;
-  final @Nonnull ArmorStand healthDisplay;
+  final @Nonnull Entity healthDisplay;
   final boolean isLeader;
   private int kills = 0;
   private int health = 3;
 
-  Unit(@Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, @Nonnull ArmorStand healthDisplay, boolean isLeader) {
+  Unit(@Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, @Nonnull Entity healthDisplay, boolean isLeader) {
     this.color = color;
     this.vehicle = vehicle;
     this.attacker = attacker;

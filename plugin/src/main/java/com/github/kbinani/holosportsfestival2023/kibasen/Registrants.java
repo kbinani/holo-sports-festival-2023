@@ -6,10 +6,11 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.Teams;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -97,16 +98,20 @@ class Registrants {
           continue;
         }
         var location = unit.attacker.getLocation();
-        var display = world.spawn(location, ArmorStand.class, (it) -> {
+        location.setY(location.getBlockY() - 8);
+        var display = world.spawn(location, AreaEffectCloud.class, (it) -> {
           it.customName(Component.text("♥♥♥").color(NamedTextColor.RED));
-          it.setCustomNameVisible(true);
-          it.setVisible(false);
+          it.setCustomNameVisible(false);
           it.setInvulnerable(true);
-          it.setSmall(true);
-          it.setBasePlate(false);
+          it.setDuration(365 * 24 * 60 * 60 * 20);
+          it.setRadius(0);
           it.addScoreboardTag(healthDisplayScoreboardTag);
         });
-        unit.attacker.addPassenger(display);
+        Bukkit.getScheduler().runTaskLater(owner, () -> {
+          // particle が出現する瞬間が見えないように ride を遅らせる
+          unit.attacker.addPassenger(display);
+          display.setCustomNameVisible(true);
+        }, 30);
         units.add(new Unit(color, unit.attacker, unit.vehicle, display, unit.isLeader));
       }
       participants.put(color, units);
