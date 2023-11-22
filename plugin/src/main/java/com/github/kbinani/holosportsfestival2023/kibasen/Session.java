@@ -16,10 +16,7 @@ import org.bukkit.util.BoundingBox;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 
@@ -30,6 +27,8 @@ class Session {
 
   private static final int durationSec = 90;
   private static final int countdownSec = 3;
+  static final UUID maxHealthModifierUUID = UUID.fromString("AEC6C8F7-F4DA-437F-A564-04B146972E7A");
+  static final String maxHealthModifierName = "hololive_sports_festival_2023_kibasen";
 
   private final Map<TeamColor, Point3i> respawnLocation = new HashMap<>();
   private final JavaPlugin owner;

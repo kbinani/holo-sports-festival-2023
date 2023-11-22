@@ -13,6 +13,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Barrel;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
@@ -27,6 +28,8 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
+import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierName;
+import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierUUID;
 
 class Unit {
   private final JavaPlugin owner;
@@ -116,8 +119,8 @@ class Unit {
     vehicle.removePotionEffect(PotionEffectType.GLOWING);
     ClearItems(vehicle);
     ClearItems(attacker);
-    ApplyMaxHealth(attacker);
-    ApplyMaxHealth(vehicle);
+    deactivateHealthModifier(attacker);
+    deactivateHealthModifier(vehicle);
   }
 
   void tick() {
@@ -168,17 +171,33 @@ class Unit {
   }
 
   private void setupHealth() {
-    ApplyMaxHealth(attacker);
-    ApplyMaxHealth(vehicle);
+    activateHealthModifier(attacker);
+    activateHealthModifier(vehicle);
     attacker.setFoodLevel(20);
     vehicle.setFoodLevel(20);
   }
 
-  private static void ApplyMaxHealth(Player player) {
-    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-    if (maxHealth != null) {
-      player.setHealth(maxHealth.getValue());
+  private void activateHealthModifier(Player player) {
+    var attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (attribute == null) {
+      return;
     }
+    player.setHealth(2 * maxHealth);
+    attribute.addModifier(createHealthModifier());
+  }
+
+  private AttributeModifier createHealthModifier() {
+    return new AttributeModifier(
+      maxHealthModifierUUID, maxHealthModifierName, 2 * maxHealth - 20, AttributeModifier.Operation.ADD_NUMBER);
+  }
+
+  private void deactivateHealthModifier(Player player) {
+    var attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (attribute == null) {
+      return;
+    }
+    attribute.removeModifier(createHealthModifier());
+    player.setHealth(attribute.getValue());
   }
 
   private void setupAttackerItems() {
