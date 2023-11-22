@@ -137,7 +137,6 @@ class Session {
         for (var unit : units) {
           count += unit.getKills();
         }
-        count += leaderKillCount.getOrDefault(color, 0);
       }
       name = name.append(color.component())
         .append(Component.text(String.format(": %d", count)).color(Colors.white));
