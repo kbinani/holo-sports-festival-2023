@@ -90,6 +90,8 @@ class Unit {
     }
     var display = ensureHealthDisplayEntity();
     display.customName(createHealthDisplayComponent());
+    attacker.setHealth(2 * health);
+    vehicle.setHealth(2 * health);
     return health == maxHealth;
   }
 

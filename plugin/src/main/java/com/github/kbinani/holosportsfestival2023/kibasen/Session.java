@@ -7,6 +7,8 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityExhaustionEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -127,6 +129,27 @@ class Session {
     }
   }
 
+  void onEntityRegainHealth(EntityRegainHealthEvent e) {
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (!isParticipant(player)) {
+      return;
+    }
+    e.setCancelled(true);
+  }
+
+  void onEntityExhaustion(EntityExhaustionEvent e) {
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (!isParticipant(player)) {
+      return;
+    }
+    e.setCancelled(true);
+    player.setFoodLevel(20);
+  }
+
   private void updateBossBarName() {
     var name = Component.empty();
     for (int i = 0; i < TeamColor.all.length; i++) {
@@ -177,6 +200,20 @@ class Session {
       }
     }
     return null;
+  }
+
+  private boolean isParticipant(Player player) {
+    for (var entry : participants.entrySet()) {
+      for (var unit : entry.getValue()) {
+        if (unit.attacker == player) {
+          return true;
+        }
+        if (unit.vehicle == player) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void prepare() {

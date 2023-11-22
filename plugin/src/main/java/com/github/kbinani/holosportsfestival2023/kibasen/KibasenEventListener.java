@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityExhaustionEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -236,6 +238,22 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
     if (session != null) {
       session.onEntityDamageByEntity(e);
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityRegainHealth(EntityRegainHealthEvent e) {
+    if (session != null) {
+      session.onEntityRegainHealth(e);
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityExhaustion(EntityExhaustionEvent e) {
+    if (session != null) {
+      session.onEntityExhaustion(e);
     }
   }
 
