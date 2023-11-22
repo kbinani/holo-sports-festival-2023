@@ -67,7 +67,7 @@ class Session {
     respawnLocation.put(TeamColor.YELLOW, pos(21, 80, 35));
     this.bossBar = new BossBar(
       owner, world, announceBounds,
-      0, net.kyori.adventure.bossbar.BossBar.Color.RED, net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6
+      0, net.kyori.adventure.bossbar.BossBar.Color.RED
     );
     this.startTimeMillis = System.currentTimeMillis();
 

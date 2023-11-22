@@ -1,8 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.holoup;
 
 import com.github.kbinani.holosportsfestival2023.*;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -25,7 +23,6 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.StreamSupport;
 
 import static com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener.*;
 
@@ -94,11 +91,7 @@ class Race {
     countdownTask.cancel();
     countdown = null;
     for (var bar : bars.values()) {
-      StreamSupport.stream(bar.viewers().spliterator(), false).toList().forEach(viewer -> {
-        if (viewer instanceof Audience audience) {
-          audience.hideBossBar(bar);
-        }
-      });
+      bar.dispose();
     }
     bars.clear();
     for (var task : tridentCooldownTask.values()) {
@@ -261,11 +254,7 @@ class Race {
 
     var bar = bars.get(color);
     if (bar != null) {
-      StreamSupport.stream(bar.viewers().spliterator(), false).toList().forEach(viewer -> {
-        if (viewer instanceof Audience audience) {
-          audience.hideBossBar(bar);
-        }
-      });
+      bar.dispose();
       bars.remove(color);
     }
 
@@ -407,7 +396,7 @@ class Race {
       }
       var bar = bars.get(color);
       if (bar == null) {
-        bar = BossBar.bossBar(Component.empty(), 0, color.barColor, BossBar.Overlay.NOTCHED_6);
+        bar = new BossBar(owner, world, announceBounds, 0, color.barColor);
         bars.put(color, bar);
       }
       var score = this.score(color);
@@ -415,29 +404,15 @@ class Race {
       if (goal != null) {
         remaining = durationSeconds - (goal - startedMillis) / 1000;
       }
-      bar.progress(score / 200.0f);
+      bar.setProgress(score / 200.0f);
       var name = color.component()
         .appendSpace()
         .append(Component.text(player.getName()).color(Colors.white))
         .appendSpace()
         .append(Component.text(String.format("%dm", score)).color(Colors.orange))
         .append(Component.text(String.format("/200m 残り時間: %d秒", remaining)).color(Colors.white));
-      bar.name(name);
+      bar.setName(name);
     }
-    for (var bar : bars.values()) {
-      bar.viewers().forEach(viewer -> {
-        if (viewer instanceof Player player) {
-          if (!announceBounds.contains(player.getLocation().toVector())) {
-            player.hideBossBar(bar);
-          }
-        }
-      });
-    }
-    Players.Within(world, announceBounds, (player) -> {
-      for (var bar : bars.values()) {
-        player.showBossBar(bar);
-      }
-    });
   }
 
   private int score(TeamColor color) {

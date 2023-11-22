@@ -22,12 +22,12 @@ public class BossBar {
     World world,
     BoundingBox bounds,
     float progress,
-    net.kyori.adventure.bossbar.BossBar.Color color,
-    net.kyori.adventure.bossbar.BossBar.Overlay overlay
+    net.kyori.adventure.bossbar.BossBar.Color color
   ) {
     this.world = world;
     this.bounds = bounds;
-    this.instance = net.kyori.adventure.bossbar.BossBar.bossBar(Component.empty(), progress, color, overlay);
+    this.instance = net.kyori.adventure.bossbar.BossBar.bossBar(
+      Component.empty(), progress, color, net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6);
     this.timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 20);
   }
 
@@ -49,7 +49,7 @@ public class BossBar {
   }
 
   private void tick() {
-    instance.viewers().forEach(viewer -> {
+    StreamSupport.stream(instance.viewers().spliterator(), false).toList().forEach(viewer -> {
       if (viewer instanceof Player player) {
         if (!bounds.contains(player.getLocation().toVector())) {
           player.hideBossBar(instance);
