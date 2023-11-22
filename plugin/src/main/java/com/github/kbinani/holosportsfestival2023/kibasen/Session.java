@@ -42,6 +42,8 @@ class Session {
   private final @Nonnull Delegate delegate;
   private final @Nonnull Map<TeamColor, Integer> leaderKillCount = new HashMap<>();
   private final BukkitTask tick;
+  private final BossBar bossBar;
+  private final long startTimeMillis;
 
   Session(
     JavaPlugin owner,
@@ -63,6 +65,11 @@ class Session {
     respawnLocation.put(TeamColor.RED, pos(4, 80, 69));
     respawnLocation.put(TeamColor.WHITE, pos(-13, 80, 35));
     respawnLocation.put(TeamColor.YELLOW, pos(21, 80, 35));
+    this.bossBar = new BossBar(
+      owner, world, announceBounds,
+      0, net.kyori.adventure.bossbar.BossBar.Color.RED, net.kyori.adventure.bossbar.BossBar.Overlay.NOTCHED_6
+    );
+    this.startTimeMillis = System.currentTimeMillis();
 
     prepare();
   }
@@ -113,11 +120,40 @@ class Session {
         );
       }
       offenceUnit.kill(defenceUnit.attacker);
+      updateBossBarName();
       var location = respawnLocation.get(defenceUnit.color);
       if (location != null) {
         defenceUnit.teleport(location.toLocation(world));
       }
     }
+  }
+
+  private void updateBossBarName() {
+    var name = Component.empty();
+    for (int i = 0; i < TeamColor.all.length; i++) {
+      var color = TeamColor.all[i];
+      int count = 0;
+      var units = participants.get(color);
+      if (units != null) {
+        for (var unit : units) {
+          count += unit.getKills();
+        }
+        count += leaderKillCount.getOrDefault(color, 0);
+      }
+      name = name.append(color.component())
+        .append(Component.text(String.format(": %d", count)).color(Colors.white));
+      if (i == 2) {
+        break;
+      }
+      name = name.append(Component.text(" | ").color(Colors.orange));
+    }
+    bossBar.setName(name);
+    bossBar.setProgress(getBossBarProgress());
+  }
+
+  private float getBossBarProgress() {
+    float elapsed = (System.currentTimeMillis() - startTimeMillis) / 1000.0f;
+    return Math.min(Math.max(elapsed / (durationSec), 0.0f), 1.0f);
   }
 
   private void tick() {
@@ -126,6 +162,8 @@ class Session {
         unit.tick();
       }
     }
+    bossBar.setProgress(getBossBarProgress());
+    updateBossBarName();
   }
 
   private void broadcast(Component message) {
@@ -161,6 +199,7 @@ class Session {
   }
 
   void clear(BoundingBox safeRespawnBounds) {
+    this.bossBar.dispose();
     for (var entry : participants.entrySet()) {
       var color = entry.getKey();
       var team = teams.ensure(color);
