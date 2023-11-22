@@ -270,9 +270,10 @@ class Session {
     int nextOrder = 1;
     for (var record : records) {
       if (last == record.kills) {
-        nextOrder += 1;
+        nextOrder++;
       } else {
         order = nextOrder;
+        nextOrder++;
         last = record.kills;
       }
       record.order = order;
