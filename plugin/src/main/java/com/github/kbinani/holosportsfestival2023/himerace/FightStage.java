@@ -8,7 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 
-class FightStage extends Stage {
+class FightStage extends AbstractStage {
   interface Delegate {
     void fightStageDidFinish();
   }
@@ -46,5 +46,11 @@ class FightStage extends Stage {
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
 
+  }
+
+  @Override
+  protected float getProgress() {
+    //TODO:
+    return 0;
   }
 }

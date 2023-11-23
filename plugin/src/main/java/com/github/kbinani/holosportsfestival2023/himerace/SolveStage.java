@@ -24,7 +24,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ThreadLocalRandom;
 
-class SolveStage extends Stage {
+class SolveStage extends AbstractStage {
   interface Delegate {
     void solveStageDidFinish();
   }
@@ -174,6 +174,12 @@ class SolveStage extends Stage {
         }
       }
     }
+  }
+
+  @Override
+  protected float getProgress() {
+    //TODO:
+    return 0;
   }
 
   private void setGateOpened(boolean open) {

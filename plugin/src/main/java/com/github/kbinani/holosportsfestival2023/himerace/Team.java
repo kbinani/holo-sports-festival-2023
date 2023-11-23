@@ -1,5 +1,8 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Colors;
+import com.github.kbinani.holosportsfestival2023.TeamColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
@@ -7,9 +10,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 class Team {
+  private final TeamColor color;
   private @Nullable Player princess;
   private final List<Player> knights = new LinkedList<>();
   private static final int kMaxKnightPlayers = 2;
+  private final Level level;
+
+  Team(TeamColor color, Level level) {
+    this.color = color;
+    this.level = level;
+  }
 
   boolean add(Player player, Role role) {
     if (getCurrentRole(player) != null) {
@@ -63,5 +73,14 @@ class Team {
       i++;
     }
     return i;
+  }
+
+  Component getBossBarName() {
+    var stage = level.getActive();
+    return color.component().append(Component.text(String.format(" %s", stage.description)).color(Colors.white));
+  }
+
+  float getProgress() {
+    return level.getProgress();
   }
 }

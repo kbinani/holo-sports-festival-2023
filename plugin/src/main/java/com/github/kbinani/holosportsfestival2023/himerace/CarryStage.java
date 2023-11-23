@@ -18,7 +18,7 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.util.*;
 
-class CarryStage extends Stage {
+class CarryStage extends AbstractStage {
   private final Region2D[] firstFloorRegions;
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
@@ -135,6 +135,13 @@ class CarryStage extends Stage {
     if (delegate != null) {
       delegate.carryStageDidFinish();
     }
+  }
+
+
+  @Override
+  protected float getProgress() {
+    //TODO:
+    return 0;
   }
 
   void setOpenFirstGate(boolean open) {

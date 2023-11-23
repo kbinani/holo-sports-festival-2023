@@ -10,7 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 
-class GoalStage extends Stage {
+class GoalStage extends AbstractStage {
   interface Delegate {
     void goalStageDidFinish();
   }
@@ -59,6 +59,12 @@ class GoalStage extends Stage {
     if (location.equals(pos(-94, 82, 96))) {
       setFinished(true);
     }
+  }
+
+  @Override
+  protected float getProgress() {
+    //TODO:
+    return 0;
   }
 
   private int x(int x) {

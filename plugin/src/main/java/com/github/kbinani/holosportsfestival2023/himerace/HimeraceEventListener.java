@@ -18,13 +18,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HimeraceEventListener implements MiniGame, Level.Delegate {
+  private static final Point3i offset = new Point3i(0, 0, 0);
+  static final Component title = Component.text("[Himerace]").color(Colors.aqua);
+  static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
+
   private final World world;
   private final JavaPlugin owner;
   private final Map<TeamColor, Level> levels = new HashMap<>();
   private final Map<TeamColor, Team> teams = new HashMap<>();
   private Status status = Status.IDLE;
-  static final Component title = Component.text("[Himerace]").color(Colors.aqua);
-  private final BoundingBox announceBounds;
   private @Nullable Race race;
   private @Nullable Cancellable countdown;
 
@@ -34,10 +36,9 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     }
     this.world = world;
     this.owner = owner;
-    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, pos(-100, 80, -61), mapIDs[0], this));
-    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, pos(-116, 80, -61), mapIDs[1], this));
-    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, pos(-132, 80, -61), mapIDs[2], this));
-    this.announceBounds = new BoundingBox(-152, -64, -81, -72, 448, 120);
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, Pos(-100, 80, -61), mapIDs[0], this));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, Pos(-116, 80, -61), mapIDs[1], this));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, Pos(-132, 80, -61), mapIDs[2], this));
   }
 
   private void setStatus(Status s) {
@@ -48,7 +49,6 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     switch (status) {
       case IDLE -> {
         miniGameReset();
-        race = null;
       }
       case COUNTDOWN -> {
 
@@ -75,7 +75,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     teams.clear();
     Editor.StandingSign(
       world,
-      pos(-89, 80, -65),
+      Pos(-89, 80, -65),
       Material.OAK_SIGN,
       8,
       title,
@@ -85,7 +85,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     );
     Editor.StandingSign(
       world,
-      pos(-90, 80, -65),
+      Pos(-90, 80, -65),
       Material.OAK_SIGN,
       8,
       title,
@@ -95,7 +95,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     );
     Editor.StandingSign(
       world,
-      pos(-91, 80, -65),
+      Pos(-91, 80, -65),
       Material.OAK_SIGN,
       8,
       title,
@@ -103,7 +103,10 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       Component.empty(),
       Component.text("エントリーリスト").color(Colors.lime)
     );
-    race = null;
+    if (race != null) {
+      race.dispose();
+      race = null;
+    }
     if (countdown != null) {
       countdown.cancel();
       countdown = null;
@@ -143,30 +146,30 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
         return;
       }
       Point3i location = new Point3i(block.getLocation());
-      if (location.equals(pos(-93, 80, -65))) {
+      if (location.equals(Pos(-93, 80, -65))) {
         join(player, TeamColor.RED, Role.PRINCESS);
-      } else if (location.equals(pos(-95, 80, -65))) {
+      } else if (location.equals(Pos(-95, 80, -65))) {
         join(player, TeamColor.RED, Role.KNIGHT);
-      } else if (location.equals(pos(-109, 80, -65))) {
+      } else if (location.equals(Pos(-109, 80, -65))) {
         join(player, TeamColor.WHITE, Role.PRINCESS);
-      } else if (location.equals(pos(-111, 80, -65))) {
+      } else if (location.equals(Pos(-111, 80, -65))) {
         join(player, TeamColor.WHITE, Role.KNIGHT);
-      } else if (location.equals(pos(-125, 80, -65))) {
+      } else if (location.equals(Pos(-125, 80, -65))) {
         join(player, TeamColor.YELLOW, Role.PRINCESS);
-      } else if (location.equals(pos(-127, 80, -65))) {
+      } else if (location.equals(Pos(-127, 80, -65))) {
         join(player, TeamColor.YELLOW, Role.KNIGHT);
-      } else if (location.equals(pos(-89, 80, -65))) {
+      } else if (location.equals(Pos(-89, 80, -65))) {
         startCountdown();
-      } else if (location.equals(pos(-90, 80, -65))) {
+      } else if (location.equals(Pos(-90, 80, -65))) {
         stop();
-      } else if (location.equals(pos(-91, 80, -65))) {
+      } else if (location.equals(Pos(-91, 80, -65))) {
         announceParticipants();
       } else {
         return;
       }
       e.setCancelled(true);
     } else {
-      if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK && pos(-90, 80, -65).equals(new Point3i(block.getLocation()))) {
+      if (block != null && e.getAction() == Action.RIGHT_CLICK_BLOCK && Pos(-90, 80, -65).equals(new Point3i(block.getLocation()))) {
         stop();
         return;
       }
@@ -225,7 +228,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     }
     Team team = teams.get(color);
     if (team == null) {
-      team = new Team();
+      team = new Team(color, levels.get(color));
       teams.put(color, team);
     }
     if (team.add(player, role)) {
@@ -265,7 +268,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     if (status != Status.COUNTDOWN) {
       return;
     }
-    var race = new Race(teams);
+    var race = new Race(owner, world, teams);
     if (race.isEmpty()) {
       return;
     }
@@ -304,8 +307,11 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     return null;
   }
 
-  private static Point3i pos(int x, int y, int z) {
-    return new Point3i(x, y, z);
+  private static int X(int x) { return x + offset.x; }
+  private static int Y(int y) { return y + offset.y; }
+  private static int Z(int z) { return z + offset.z; }
+  private static Point3i Pos(int x, int y, int z) {
+    return new Point3i(x + offset.x, y + offset.y, z + offset.z);
   }
 
   @Override

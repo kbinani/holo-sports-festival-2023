@@ -11,18 +11,22 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Delegate, SolveStage.Delegate, FightStage.Delegate, GoalStage.Delegate {
   private final World world;
   private final JavaPlugin owner;
   private final Point3i origin;
   private final TeamColor color;
-  private final Stage[] stages;
+  private final Map<Stage, AbstractStage> stages = new HashMap<>();
   private final CarryStage carryStage;
   private final BuildStage buildStage;
   private final CookStage cookStage;
   private final SolveStage solveStage;
   private final FightStage fightStage;
   private final GoalStage goalStage;
+  private Stage active = Stage.CARRY;
 
   interface Delegate {
     void levelDidFinish(TeamColor color);
@@ -47,24 +51,31 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     this.solveStage = new SolveStage(world, owner, pos(-100, 80, 22), color.quizConcealer, mapId, this);
     this.fightStage = new FightStage(world, owner, pos(-100, 80, 49), this);
     this.goalStage = new GoalStage(world, owner, pos(-100, 80, 84), this);
-    this.stages = new Stage[]{
-      this.carryStage,
-      this.buildStage,
-      this.cookStage,
-      this.solveStage,
-      this.fightStage,
-      this.goalStage,
-    };
+    this.stages.put(Stage.CARRY, this.carryStage);
+    this.stages.put(Stage.BUILD, this.buildStage);
+    this.stages.put(Stage.COOK, this.cookStage);
+    this.stages.put(Stage.SOLVE, this.solveStage);
+    this.stages.put(Stage.FIGHT, this.fightStage);
+    this.stages.put(Stage.GOAL, this.goalStage);
+  }
+
+  Stage getActive() {
+    return active;
+  }
+
+  float getProgress() {
+    var stage = this.stages.get(active);
+    return active.progressOffset + active.progressWeight * stage.getProgress();
   }
 
   void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-    for (var stage : stages) {
+    for (var stage : stages.values()) {
       stage.playerMove(e, participation);
     }
   }
 
   void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
-    for (var stage : stages) {
+    for (var stage : stages.values()) {
       stage.playerInteract(e, participation);
     }
   }
@@ -90,9 +101,10 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       Role.KNIGHT.component(),
       Component.text("右クリでエントリー！").color(Colors.aqua));
 
-    for (var stage : this.stages) {
+    for (var stage : this.stages.values()) {
       stage.reset();
     }
+    active = Stage.CARRY;
   }
 
   void start() {
@@ -106,26 +118,31 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   @Override
   public void carryStageDidFinish() {
+    this.active = Stage.BUILD;
     this.buildStage.start();
   }
 
   @Override
   public void buildStageDidFinish() {
+    this.active = Stage.COOK;
     this.cookStage.start();
   }
 
   @Override
   public void cookStageDidFinish() {
+    this.active = Stage.SOLVE;
     this.solveStage.start();
   }
 
   @Override
   public void solveStageDidFinish() {
+    this.active = Stage.FIGHT;
     this.fightStage.start();
   }
 
   @Override
   public void fightStageDidFinish() {
+    this.active = Stage.GOAL;
     this.goalStage.start();
   }
 
