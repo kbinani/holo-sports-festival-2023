@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
-import com.github.kbinani.holosportsfestival2023.Editor;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -30,22 +27,21 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   private Stage active = Stage.CARRY;
 
   interface Delegate {
-    void levelDidFinish(TeamColor color);
+    void levelDidFinish();
   }
 
-  private Delegate delegate;
+  final WeakReference<Delegate> delegate = new WeakReference<>(null);
 
   /**
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
    *
    * @param origin
    */
-  Level(World world, JavaPlugin owner, TeamColor color, Point3i origin, int mapId, Delegate delegate) {
+  Level(World world, JavaPlugin owner, TeamColor color, Point3i origin, int mapId) {
     this.world = world;
     this.owner = owner;
     this.color = color;
     this.origin = origin;
-    this.delegate = delegate;
     this.carryStage = new CarryStage(world, owner, origin, this);
     this.buildStage = new BuildStage(world, owner, pos(-100, 80, -18), this);
     this.cookStage = new CookStage(world, owner, pos(-100, 80, 1), this);
@@ -154,8 +150,6 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   @Override
   public void goalStageDidFinish() {
-    if (delegate != null) {
-      delegate.levelDidFinish(color);
-    }
+    this.delegate.use(Delegate::levelDidFinish);
   }
 }

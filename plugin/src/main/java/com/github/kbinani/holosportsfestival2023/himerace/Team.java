@@ -9,16 +9,29 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 
-class Team {
+class Team implements Level.Delegate {
+  interface Delegate {
+    void teamDidFinish(TeamColor color);
+  }
+
   private final TeamColor color;
   private @Nullable Player princess;
   private final List<Player> knights = new LinkedList<>();
   private static final int kMaxKnightPlayers = 2;
   private final Level level;
+  @Nullable Delegate delegate;
 
   Team(TeamColor color, Level level) {
     this.color = color;
+    level.delegate.set(this);
     this.level = level;
+  }
+
+  @Override
+  public void levelDidFinish() {
+    if (delegate != null) {
+      delegate.teamDidFinish(color);
+    }
   }
 
   boolean add(Player player, Role role) {

@@ -17,9 +17,10 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HimeraceEventListener implements MiniGame, Level.Delegate {
+public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
   static final Component title = Component.text("[Himerace]").color(Colors.aqua);
+  static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
 
   private final World world;
@@ -36,9 +37,9 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     }
     this.world = world;
     this.owner = owner;
-    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, Pos(-100, 80, -61), mapIDs[0], this));
-    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, Pos(-116, 80, -61), mapIDs[1], this));
-    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, Pos(-132, 80, -61), mapIDs[2], this));
+    this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, Pos(-100, 80, -61), mapIDs[0]));
+    this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, Pos(-116, 80, -61), mapIDs[1]));
+    this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, Pos(-132, 80, -61), mapIDs[2]));
   }
 
   private void setStatus(Status s) {
@@ -268,7 +269,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     if (status != Status.COUNTDOWN) {
       return;
     }
-    var race = new Race(owner, world, teams);
+    var race = new Race(owner, world, teams, this);
     if (race.isEmpty()) {
       return;
     }
@@ -315,47 +316,11 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
   }
 
   @Override
-  public void levelDidFinish(TeamColor color) {
+  public void raceDidFinish() {
     var race = this.race;
     if (race == null) {
       return;
     }
-    if (!race.finish(color)) {
-      return;
-    }
-    broadcast(title
-      .appendSpace()
-      .append(color.component())
-      .append(Component.text("がゴールしました！").color(Colors.white)));
-    if (!race.isAllTeamsFinished()) {
-      return;
-    }
-    broadcast(title
-      .appendSpace()
-      .append(Component.text("ゲームが終了しました！").color(Colors.white)));
-    broadcast(Component.empty());
-    var separator = "▪"; //TODO: この文字本当は何なのかが分からない
-    broadcast(
-      Component.text(separator.repeat(32)).color(Colors.lightgray)
-        .appendSpace()
-        .append(title)
-        .appendSpace()
-        .append(Component.text(separator.repeat(32)).color(Colors.lightgray))
-    );
-    broadcast(Component.empty());
-    race.result((i, c, durationMillis) -> {
-      long seconds = durationMillis / 1000;
-      long millis = durationMillis - seconds * 1000;
-      long minutes = seconds / 60;
-      seconds = seconds - minutes * 60;
-      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(Colors.aqua)
-        .append(c.component())
-        .appendSpace()
-        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.textColor))
-      );
-    });
-    broadcast(Component.empty());
-    //TODO: ステージ内に人が残っていた場合
     setStatus(Status.IDLE);
   }
 }

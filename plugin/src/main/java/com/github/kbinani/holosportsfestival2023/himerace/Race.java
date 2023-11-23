@@ -1,22 +1,30 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.BossBar;
+import com.github.kbinani.holosportsfestival2023.Colors;
+import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
+import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.announceBounds;
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.*;
 
-class Race {
+class Race implements Team.Delegate {
+  interface Delegate {
+    void raceDidFinish();
+  }
+
   private final JavaPlugin owner;
   private final World world;
   final Map<TeamColor, Team> teams;
@@ -24,15 +32,59 @@ class Race {
   private final Map<TeamColor, Long> finishTimeMillis = new HashMap<>();
   private final Map<TeamColor, BossBar> bossBars = new HashMap<>();
   private final BukkitTask timer;
+  private final @Nonnull Delegate delegate;
 
-  Race(JavaPlugin owner, World world, Map<TeamColor, Team> teams) {
+  Race(JavaPlugin owner, World world, Map<TeamColor, Team> teams, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.world = world;
+    for (var team : teams.values()) {
+      team.delegate = this;
+    }
     this.teams = new HashMap<>(teams);
+    this.delegate = delegate;
     teams.clear();
     startTimeMillis = System.currentTimeMillis();
     timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 20);
     start();
+  }
+
+  @Override
+  public void teamDidFinish(TeamColor color) {
+    if (!finish(color)) {
+      return;
+    }
+    broadcast(prefix
+      .append(color.component())
+      .append(Component.text("がゴールしました！").color(Colors.white)));
+    if (!isAllTeamsFinished()) {
+      return;
+    }
+    broadcast(prefix
+      .append(Component.text("ゲームが終了しました！").color(Colors.white)));
+    broadcast(Component.empty());
+    var separator = "▪"; //TODO: この文字本当は何なのかが分からない
+    broadcast(
+      Component.text(separator.repeat(32)).color(Colors.lightgray)
+        .appendSpace()
+        .append(title)
+        .appendSpace()
+        .append(Component.text(separator.repeat(32)).color(Colors.lightgray))
+    );
+    broadcast(Component.empty());
+    result((i, c, durationMillis) -> {
+      long seconds = durationMillis / 1000;
+      long millis = durationMillis - seconds * 1000;
+      long minutes = seconds / 60;
+      seconds = seconds - minutes * 60;
+      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(Colors.aqua)
+        .append(c.component())
+        .appendSpace()
+        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.textColor))
+      );
+    });
+    broadcast(Component.empty());
+    //TODO: ステージ内に人が残っていた場合
+    delegate.raceDidFinish();
   }
 
   void dispose() {
@@ -102,7 +154,7 @@ class Race {
     return goal - startTimeMillis;
   }
 
-  boolean isAllTeamsFinished() {
+  private boolean isAllTeamsFinished() {
     for (var color : teams.keySet()) {
       if (!finishTimeMillis.containsKey(color)) {
         return false;
@@ -111,7 +163,7 @@ class Race {
     return true;
   }
 
-  void result(TriConsumer<Integer, TeamColor, Long> callback) {
+  private void result(TriConsumer<Integer, TeamColor, Long> callback) {
     record Entry(TeamColor color, long durationMillis) {
     }
     var records = new ArrayList<Entry>();
@@ -129,5 +181,9 @@ class Race {
       callback.accept(i, record.color, record.durationMillis);
       i++;
     }
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
 }
