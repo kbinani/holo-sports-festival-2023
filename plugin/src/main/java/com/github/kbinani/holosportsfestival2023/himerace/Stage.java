@@ -9,10 +9,10 @@ enum Stage {
   GOAL("Stage.5 姫と一緒にモンスターを倒そう！", "hololive_sports_festival_2023_himerace_goal_stage");
 
   final String description;
-  final String itemTag;
+  final String tag;
 
-  Stage(String description, String itemTag) {
+  Stage(String description, String tag) {
     this.description = description;
-    this.itemTag = itemTag;
+    this.tag = tag;
   }
 }

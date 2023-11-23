@@ -39,10 +39,10 @@ class Team implements Level.Delegate {
     switch (stage) {
       case CARRY -> {
         if (princess != null) {
-          ClearItems(princess, stage.itemTag);
+          ClearItems(princess, stage.tag);
           var book = ItemBuilder.For(Material.BOOK)
             .customByteTag(itemTag, (byte) 1)
-            .customByteTag(Stage.BUILD.itemTag, (byte) 1)
+            .customByteTag(Stage.BUILD.tag, (byte) 1)
             .displayName(Component.text("回答する！(右クリックで開く) / Answer Book (Right click to open)").color(Colors.aqua))
             .build();
           var inventory = princess.getInventory();

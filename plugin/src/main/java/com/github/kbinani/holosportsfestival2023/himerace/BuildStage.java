@@ -120,7 +120,7 @@ class BuildStage extends AbstractStage {
       return;
     }
     var store = meta.getPersistentDataContainer();
-    if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.itemTag), PersistentDataType.BYTE))) {
+    if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.tag), PersistentDataType.BYTE))) {
       return;
     }
     e.setCancelled(true);

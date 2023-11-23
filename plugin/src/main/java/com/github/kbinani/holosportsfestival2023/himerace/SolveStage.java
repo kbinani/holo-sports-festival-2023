@@ -87,7 +87,6 @@ class SolveStage extends AbstractStage {
   private boolean quizStarted = false;
   private @Nullable ItemFrame itemFrame;
   private final int mapId;
-  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.solve_stage";
 
   SolveStage(World world, JavaPlugin owner, Point3i origin, Material quizConcealer, int mapId, Delegate delegate) {
     super(world, owner, origin);
@@ -120,7 +119,7 @@ class SolveStage extends AbstractStage {
     Quiz.Conceal(world, quizOrigin, quizConcealer);
     setGateOpened(false);
     quiz = Quiz.Create(ThreadLocalRandom.current());
-    Kill.EntitiesByScoreboardTag(world, scoreboardTag);
+    Kill.EntitiesByScoreboardTag(world, Stage.SOLVE.tag);
     summonItemFrame();
   }
 
@@ -230,7 +229,7 @@ class SolveStage extends AbstractStage {
       itemFrame.remove();
     }
     itemFrame = world.spawn(pos(-91, 87, 35).toLocation(world).add(0.5, 0.5, 0.96875), ItemFrame.class, CreatureSpawnEvent.SpawnReason.COMMAND, (it) -> {
-      it.addScoreboardTag(scoreboardTag);
+      it.addScoreboardTag(Stage.SOLVE.tag);
       var item = new ItemStack(Material.FILLED_MAP, 1);
       if (!(item.getItemMeta() instanceof MapMeta meta)) {
         return;
