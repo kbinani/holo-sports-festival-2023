@@ -32,59 +32,30 @@ class BuildStage extends AbstractStage {
     void buildStageSendTitle(Title title);
   }
 
-  enum Option {
-    // 1
-    REFRIGERATOR("冷蔵庫 / Refrigerator"),
-    WASHING_MACHINE("洗濯機 / Washing machine"),
-    TELEVISION("テレビ / Television"),
-    TOMATO("トマト / Tomato"),
-    APPLE("りんご / Apple"),
-
-    PAPRIKA("パプリカ / Paprika"),
-    POLICE_CAR("パトカー / Police car"),
-    AMBULANCE("救急車 / Ambulance"),
-    CAT("猫 / Cat"),
-    RABBIT("うさぎ / Rabbit"),
-
-    // 2
-    OOZORA_SUBARU("大空スバル / Oozora Subaru"),
-    OOKAMI_MIO("大神ミオ / Ookami Mio"),
-    SAKURA_MIKO("さくらみこ / Sakura Miko"),
-    MINATO_AQUA("湊あくあ / Minato Aqua"),
-    LAPLUS_DARKNESSS("ラプラス・ダークネス / La+ Darknesss"),
-
-    HOUSHOU_MARINE("宝鐘マリン / Houshou Marine"),
-    INUGAMI_KORONE("戌神ころね / Inugami Korone"),
-    NEKOMATA_OKAYU("猫又おかゆ / Nekomata Okayu"),
-    SHIRAKAMI_FUBUKI("白上フブキ / Shirakami Fubuki"),
-    HIMEMORI_LUNA("姫森ルーナ / Himemori Luna");
-
-    final String description;
-
-    Option(String description) {
-      this.description = description;
-    }
-  }
-
   static class Question {
-    final Option answer;
-    final Option[] options;
+    final String answer;
+    final String[] options;
 
-    private Question(Option[] options) {
+    private Question(String[] options) {
       this.options = options;
+      if (options.length != 10) {
+        throw new IllegalArgumentException();
+      }
       var index = ThreadLocalRandom.current().nextInt(options.length);
       this.answer = options[index];
     }
 
-    static final Option[] first = new Option[]{
-      Option.REFRIGERATOR, Option.WASHING_MACHINE, Option.TELEVISION, Option.TOMATO, Option.APPLE,
-      Option.PAPRIKA, Option.POLICE_CAR, Option.AMBULANCE, Option.CAT, Option.RABBIT
+    static final String[] first = new String[]{
+      "冷蔵庫 / Refrigerator", "洗濯機 / Washing machine", "テレビ / Television", "トマト / Tomato", "りんご / Apple",
+      "パプリカ / Paprika", "パトカー / Police car", "救急車 / Ambulance", "猫 / Cat", "うさぎ / Rabbit",
     };
-    static final Option[] second = new Option[]{
-      Option.OOZORA_SUBARU, Option.OOKAMI_MIO, Option.SAKURA_MIKO, Option.MINATO_AQUA, Option.LAPLUS_DARKNESSS,
-      Option.HOUSHOU_MARINE, Option.INUGAMI_KORONE, Option.NEKOMATA_OKAYU, Option.SHIRAKAMI_FUBUKI, Option.HIMEMORI_LUNA,
+    static final String[] second = new String[]{
+      "大空スバル / Oozora Subaru", "大神ミオ / Ookami Mio", "さくらみこ / Sakura Miko", "湊あくあ / Minato Aqua", "ラプラス・ダークネス / La+ Darknesss",
+      "宝鐘マリン / Houshou Marine", "戌神ころね / Inugami Korone", "猫又おかゆ / Nekomata Okayu", "白上フブキ / Shirakami Fubuki", "姫森ルーナ / Himemori Luna",
     };
   }
+
+  private static final int sPenaltySeconds = 5;
 
   private final @Nonnull Delegate delegate;
   private @Nullable Question first;
@@ -126,54 +97,56 @@ class BuildStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
     var action = e.getAction();
     var item = e.getItem();
     var player = e.getPlayer();
-    switch (participation.role) {
-      case PRINCESS -> {
-        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
-          return;
-        }
-        if (item == null) {
-          return;
-        }
-        if (item.getType() != Material.BOOK) {
-          return;
-        }
-        var meta = item.getItemMeta();
-        if (meta == null) {
-          return;
-        }
-        var store = meta.getPersistentDataContainer();
-        if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.itemTag), PersistentDataType.BYTE))) {
-          return;
-        }
-        e.setCancelled(true);
-        Question question;
-        if (step == 0) {
-          question = first;
-        } else {
-          question = second;
-        }
-        if (question == null) {
-          return;
-        }
-        var inventory = Bukkit.createInventory(null, 18, Component.text("解答する！").color(NamedTextColor.BLUE));
-        for (int slot = 0; slot < 18; slot++) {
-          var index = OptionIndexFromAnswerInventorySlot(slot);
-          if (index < 0) {
-            inventory.setItem(slot, ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).build());
-          } else {
-            var option = question.options[index];
-            var paper = ItemBuilder.For(Material.PAPER)
-              .displayName(Component.text(option.description))
-              .build();
-            inventory.setItem(slot, paper);
-          }
-        }
-        player.openInventory(inventory);
+    if (participation.role != Role.PRINCESS) {
+      return;
+    }
+    if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    if (item == null) {
+      return;
+    }
+    if (item.getType() != Material.BOOK) {
+      return;
+    }
+    var meta = item.getItemMeta();
+    if (meta == null) {
+      return;
+    }
+    var store = meta.getPersistentDataContainer();
+    if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.itemTag), PersistentDataType.BYTE))) {
+      return;
+    }
+    e.setCancelled(true);
+    Question question;
+    if (step == 0) {
+      question = first;
+    } else {
+      question = second;
+    }
+    if (question == null) {
+      return;
+    }
+    var inventory = Bukkit.createInventory(null, 18, Component.text("解答する！").color(NamedTextColor.BLUE));
+    for (int slot = 0; slot < 18; slot++) {
+      var index = OptionIndexFromAnswerInventorySlot(slot);
+      if (index < 0) {
+        inventory.setItem(slot, ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).build());
+      } else {
+        var option = question.options[index];
+        var paper = ItemBuilder.For(Material.PAPER)
+          .displayName(Component.text(option))
+          .build();
+        inventory.setItem(slot, paper);
       }
     }
+    player.openInventory(inventory);
   }
 
   private static int OptionIndexFromAnswerInventorySlot(int slot) {
@@ -206,7 +179,7 @@ class BuildStage extends AbstractStage {
       if (first == null) {
         return;
       }
-      if (first.options[index] == first.answer) {
+      if (first.options[index].equals(first.answer)) {
         delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
         delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
         step = 1;
@@ -219,7 +192,7 @@ class BuildStage extends AbstractStage {
       if (second == null) {
         return;
       }
-      if (second.options[index] == second.answer) {
+      if (second.options[index].equals(second.answer)) {
         delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
         delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
         setFinished(true);
@@ -229,7 +202,7 @@ class BuildStage extends AbstractStage {
       }
     }
     delegate.buildStageSignalActionBarUpdate();
-    var title = CreatePenaltyTitle(5);
+    var title = CreatePenaltyTitle(sPenaltySeconds);
     delegate.buildStageSendTitle(title);
     delegate.buildStagePlaySound(Sound.ENTITY_ITEM_BREAK);
     if (penaltyCooldown != null) {
@@ -238,8 +211,8 @@ class BuildStage extends AbstractStage {
     final var count = new AtomicInteger(0);
     penaltyCooldown = Bukkit.getScheduler().runTaskTimer(owner, () -> {
       var c = count.incrementAndGet();
-      if (c < 5) {
-        delegate.buildStageSendTitle(CreatePenaltyTitle(5 - c));
+      if (c < sPenaltySeconds) {
+        delegate.buildStageSendTitle(CreatePenaltyTitle(sPenaltySeconds - c));
       } else {
         if (this.penaltyCooldown != null) {
           this.penaltyCooldown.cancel();
@@ -298,12 +271,12 @@ class BuildStage extends AbstractStage {
       case KNIGHT -> {
         var question = step == 0 ? first : second;
         if (question == null) {
-          //NOTE: 本家では解答が間違いだった時の出題クールタイム中も, 間違えた問題のお題が action bar に出ている.
+          //NOTE: 本家では解答が間違いだった時の出題クールタイム中も, 間違えた問題のお題が action bar に出たままになっている.
           // いったん action bar はクリアした方が分かりやすいはず.
           yield Component.empty();
         }
         yield Component.text("建築で『").color(Colors.lime)
-          .append(Component.text(question.answer.description).color(Colors.orange))
+          .append(Component.text(question.answer).color(Colors.orange))
           .append(Component.text("』を姫に伝えよう！").color(Colors.lime));
       }
     };
