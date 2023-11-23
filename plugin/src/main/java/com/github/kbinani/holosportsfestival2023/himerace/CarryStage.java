@@ -131,6 +131,7 @@ class CarryStage extends Stage {
 
   @Override
   protected void onFinish() {
+    Kill.EntitiesByScoreboardTag(world, scoreboardTag);
     if (delegate != null) {
       delegate.carryStageDidFinish();
     }
@@ -188,19 +189,18 @@ class CarryStage extends Stage {
       }
     }
 
-    var material = "barrier";
     int y = this.y(82);
     for (var p : blocks) {
       if (activeFloorBlocks.contains(p)) {
         continue;
       }
-      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), material);
+      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.BARRIER);
     }
     for (var p : activeFloorBlocks) {
       if (blocks.contains(p)) {
         continue;
       }
-      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), "air");
+      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.AIR);
     }
     this.activeFloorBlocks = blocks;
   }
