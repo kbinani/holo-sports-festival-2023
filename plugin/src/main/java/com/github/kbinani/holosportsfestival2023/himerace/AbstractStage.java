@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 abstract class AbstractStage {
@@ -63,6 +65,8 @@ abstract class AbstractStage {
   protected abstract void onFinish();
 
   protected abstract float getProgress();
+
+  protected abstract @Nonnull Component getActionBar(Role role);
 
   protected final void setFinished(boolean v) {
     if (finished == v) {

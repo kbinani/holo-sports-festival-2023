@@ -1,6 +1,7 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -148,6 +149,14 @@ class CarryStage extends AbstractStage {
     } else {
       return progress;
     }
+  }
+
+  @Override
+  protected @Nonnull Component getActionBar(Role role) {
+    return switch (role) {
+      case PRINCESS -> Component.text("騎士達に向こうの足場まで運んでもらいましょう！").color(Colors.lime);
+      case KNIGHT -> Component.text("向こうの足場までお姫様を運んであげましょう！").color(Colors.lime);
+    };
   }
 
   void setOpenFirstGate(boolean open) {

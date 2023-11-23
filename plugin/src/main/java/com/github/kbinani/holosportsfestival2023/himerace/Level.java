@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +67,11 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   float getProgress() {
     var stage = this.stages.get(active);
     return active.progressOffset + active.progressWeight * stage.getProgress();
+  }
+
+  @Nonnull Component getActionBar(Role role) {
+    var stage = stages.get(active);
+    return stage.getActionBar(role);
   }
 
   void onPlayerMove(PlayerMoveEvent e, Participation participation) {

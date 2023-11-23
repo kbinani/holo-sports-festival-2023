@@ -1,11 +1,14 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class CookStage extends AbstractStage {
@@ -52,5 +55,16 @@ class CookStage extends AbstractStage {
   protected float getProgress() {
     //TODO:
     return 0;
+  }
+
+  @Override
+  protected @Nonnull Component getActionBar(Role role) {
+    return switch (role) {
+      case KNIGHT -> Component.text("姫が食べたいものをプレゼントしてあげよう！").color(Colors.lime);
+      case PRINCESS -> {
+        //TODO:
+        yield Component.empty();
+      }
+    };
   }
 }

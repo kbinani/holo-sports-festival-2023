@@ -73,6 +73,9 @@ class Race {
   }
 
   private void tick() {
+    for (var team : teams.values()) {
+      team.tick();
+    }
     updateBossBar();
   }
 

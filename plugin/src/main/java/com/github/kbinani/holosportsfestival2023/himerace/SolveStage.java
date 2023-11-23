@@ -1,8 +1,10 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -19,6 +21,7 @@ import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -180,6 +183,20 @@ class SolveStage extends AbstractStage {
   protected float getProgress() {
     //TODO:
     return 0;
+  }
+
+  @Override
+  protected @Nonnull Component getActionBar(Role role) {
+    return switch (role) {
+      case KNIGHT -> Component.text("姫と一緒に問題に答えよう！").color(Colors.lime);
+      case PRINCESS -> {
+        if (quizStarted) {
+          yield Component.text("騎士と一緒に問題に答えよう！").color(Colors.lime);
+        } else {
+          yield Component.text("感圧板を踏んだらスタート！").color(Colors.lime);
+        }
+      }
+    };
   }
 
   private void setGateOpened(boolean open) {

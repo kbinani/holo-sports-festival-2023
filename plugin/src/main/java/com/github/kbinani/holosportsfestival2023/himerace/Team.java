@@ -83,4 +83,13 @@ class Team {
   float getProgress() {
     return level.getProgress();
   }
+
+  void tick() {
+    if (princess != null) {
+      princess.sendActionBar(level.getActionBar(Role.PRINCESS));
+    }
+    for (var knight : knights) {
+      knight.sendActionBar(level.getActionBar(Role.KNIGHT));
+    }
+  }
 }
