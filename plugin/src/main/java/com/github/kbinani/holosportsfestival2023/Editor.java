@@ -30,7 +30,6 @@ public class Editor {
   }
 
   public static void Fill(@Nonnull World world, Point3i from, Point3i to, Material material) {
-    Server server = Bukkit.getServer();
     var blockData = material.createBlockData();
     Fill(world, from, to, blockData);
   }
@@ -50,6 +49,10 @@ public class Editor {
         }
       }
     }
+  }
+
+  public static void Set(@Nonnull World world, Point3i pos, Material material) {
+    Fill(world, pos, pos, material);
   }
 
   public static void Set(@Nonnull World world, Point3i pos, String blockDataString) {

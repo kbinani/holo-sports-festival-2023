@@ -15,40 +15,40 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.util.*;
 
 class CarryStage extends AbstractStage {
-  private final Region2D[] firstFloorRegions;
-  private final Region2D[] secondFloorRegions;
-  private Set<Point2i> activeFloorBlocks = new HashSet<>();
-  private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
-  private final BoundingBox boundingBox;
-  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.carry_stage";
-  private boolean firstGateOpen = false;
-  private boolean secondGateOpen = false;
-
   interface Delegate {
     void carryStageDidFinish();
   }
 
-  @Nullable
-  Delegate delegate;
-
-  enum PrincessStatus {
+  private enum PrincessStatus {
     STATIONAL,
     FALL,
   }
 
-  private PrincessStatus princessStatus = PrincessStatus.FALL;
-
+  static final String scoreboardTag = "hololive_sports_festival_2023.himerace.carry_stage";
   private static final Material[] kHeadBlockMaterials = new Material[]{
     Material.MANGROVE_PLANKS,
     Material.BIRCH_PLANKS,
     Material.CHERRY_PLANKS,
   };
 
-  CarryStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
+  private final Region2D[] firstFloorRegions;
+  private final Region2D[] secondFloorRegions;
+  private Set<Point2i> activeFloorBlocks = new HashSet<>();
+  private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
+  private final BoundingBox boundingBox;
+  private boolean firstGateOpen = false;
+  private boolean secondGateOpen = false;
+  private final @Nonnull Delegate delegate;
+  private PrincessStatus princessStatus = PrincessStatus.FALL;
+  private float progress = 0;
+  private final double startZ = z(-57);
+  private final double goalZ = z(-23);
+
+  CarryStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
     this.firstFloorRegions = new Region2D[]{
@@ -86,6 +86,7 @@ class CarryStage extends AbstractStage {
     princessStatus = PrincessStatus.FALL;
     setOpenFirstGate(false);
     setOpenSecondGate(false);
+    progress = 0;
   }
 
   @Override
@@ -104,6 +105,10 @@ class CarryStage extends AbstractStage {
       }
       case PRINCESS -> {
         setPrincessStatus(isPrincessOnHeadBlock(player) ? PrincessStatus.STATIONAL : PrincessStatus.FALL, team);
+        if (!finished) {
+          var z = player.getLocation().getZ();
+          progress = Math.min(Math.max((float) ((z - startZ) / (goalZ - startZ)), 0.0f), 1.0f);
+        }
       }
     }
   }
@@ -132,16 +137,17 @@ class CarryStage extends AbstractStage {
   @Override
   protected void onFinish() {
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);
-    if (delegate != null) {
-      delegate.carryStageDidFinish();
-    }
+    delegate.carryStageDidFinish();
   }
 
 
   @Override
   protected float getProgress() {
-    //TODO:
-    return 0;
+    if (finished) {
+      return 1;
+    } else {
+      return progress;
+    }
   }
 
   void setOpenFirstGate(boolean open) {

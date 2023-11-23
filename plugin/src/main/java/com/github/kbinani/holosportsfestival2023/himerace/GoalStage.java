@@ -8,17 +8,19 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 class GoalStage extends AbstractStage {
   interface Delegate {
     void goalStageDidFinish();
   }
 
-  @Nullable
-  Delegate delegate;
+  private final @Nonnull Delegate delegate;
+  private final double startZ = z(86);
+  private final double goalZ = z(96);
+  private float progress = 0;
 
-  GoalStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
+  GoalStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
   }
@@ -29,18 +31,21 @@ class GoalStage extends AbstractStage {
 
   @Override
   protected void onFinish() {
-    if (delegate != null) {
-      delegate.goalStageDidFinish();
-    }
+    delegate.goalStageDidFinish();
   }
 
   @Override
   protected void onReset() {
+    progress = 0;
   }
 
   @Override
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-
+    if (participation.role == Role.PRINCESS) {
+      var player = e.getPlayer();
+      var z = player.getLocation().getZ();
+      progress = Math.min(Math.max((float) ((z - startZ) / (goalZ - startZ)), 0), 1);
+    }
   }
 
   @Override
@@ -63,8 +68,11 @@ class GoalStage extends AbstractStage {
 
   @Override
   protected float getProgress() {
-    //TODO:
-    return 0;
+    if (finished) {
+      return 1;
+    } else {
+      return progress;
+    }
   }
 
   private int x(int x) {
