@@ -66,7 +66,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   float getProgress() {
     var stage = this.stages.get(active);
-    return active.progressOffset + active.progressWeight * stage.getProgress();
+    return stage.getProgress();
   }
 
   @Nonnull Component getActionBar(Role role) {

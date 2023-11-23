@@ -20,7 +20,6 @@ class GoalStage extends AbstractStage {
   private final @Nonnull Delegate delegate;
   private final double startZ = z(86);
   private final double goalZ = z(96);
-  private float progress = 0;
 
   GoalStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
@@ -38,16 +37,11 @@ class GoalStage extends AbstractStage {
 
   @Override
   protected void onReset() {
-    progress = 0;
   }
 
   @Override
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-    if (participation.role == Role.PRINCESS) {
-      var player = e.getPlayer();
-      var z = player.getLocation().getZ();
-      progress = Math.min(Math.max((float) ((z - startZ) / (goalZ - startZ)), 0), 1);
-    }
+
   }
 
   @Override
@@ -70,11 +64,7 @@ class GoalStage extends AbstractStage {
 
   @Override
   protected float getProgress() {
-    if (finished) {
-      return 1;
-    } else {
-      return progress;
-    }
+    return 1;
   }
 
   @Override
