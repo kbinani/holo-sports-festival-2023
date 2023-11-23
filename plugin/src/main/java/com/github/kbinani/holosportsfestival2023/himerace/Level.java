@@ -2,8 +2,11 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,15 +30,16 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   private Stage active = Stage.CARRY;
 
   interface Delegate {
-    void levelDidFinish();
+    void levelSignalActionBarUpdate();
+    void levelSendTitle(Title title);
+    void levelPlaySound(Sound sound);
+    void levelDidClearStage(Stage stage);
   }
 
   final WeakReference<Delegate> delegate = new WeakReference<>(null);
 
   /**
    * 入口の門向かって右下の reinforced_deepslate ブロックの座標を原点として初期化する
-   *
-   * @param origin
    */
   Level(World world, JavaPlugin owner, TeamColor color, Point3i origin, int mapId) {
     this.world = world;
@@ -82,6 +86,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     }
   }
 
+  void onInventoryClick(InventoryClickEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.onInventoryClick(e, participation);
+    }
+  }
+
   void reset() {
     Editor.StandingSign(
       world,
@@ -121,35 +131,71 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   @Override
   public void carryStageDidFinish() {
     this.active = Stage.BUILD;
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.CARRY);
+    });
     this.buildStage.start();
   }
 
   @Override
   public void buildStageDidFinish() {
     this.active = Stage.COOK;
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.BUILD);
+    });
     this.cookStage.start();
+  }
+
+  @Override
+  public void buildStageSignalActionBarUpdate() {
+    this.delegate.use(Delegate::levelSignalActionBarUpdate);
+  }
+
+  @Override
+  public void buildStageSendTitle(Title title) {
+    this.delegate.use(d -> {
+      d.levelSendTitle(title);
+    });
+  }
+
+  @Override
+  public void buildStagePlaySound(Sound sound) {
+    this.delegate.use(d -> {
+      d.levelPlaySound(sound);
+    });
   }
 
   @Override
   public void cookStageDidFinish() {
     this.active = Stage.SOLVE;
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.COOK);
+    });
     this.solveStage.start();
   }
 
   @Override
   public void solveStageDidFinish() {
     this.active = Stage.FIGHT;
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.SOLVE);
+    });
     this.fightStage.start();
   }
 
   @Override
   public void fightStageDidFinish() {
     this.active = Stage.GOAL;
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.FIGHT);
+    });
     this.goalStage.start();
   }
 
   @Override
   public void goalStageDidFinish() {
-    this.delegate.use(Delegate::levelDidFinish);
+    this.delegate.use((delegate) -> {
+      delegate.levelDidClearStage(Stage.GOAL);
+    });
   }
 }

@@ -11,6 +11,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -177,6 +178,11 @@ class SolveStage extends AbstractStage {
         }
       }
     }
+  }
+
+  @Override
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+
   }
 
   @Override

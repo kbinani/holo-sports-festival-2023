@@ -6,6 +6,7 @@ import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -60,6 +61,11 @@ class GoalStage extends AbstractStage {
     if (location.equals(pos(-94, 82, 96))) {
       setFinished(true);
     }
+  }
+
+  @Override
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+
   }
 
   @Override

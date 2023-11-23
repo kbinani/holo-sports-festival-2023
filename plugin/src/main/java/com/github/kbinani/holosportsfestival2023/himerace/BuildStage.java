@@ -1,19 +1,35 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.Colors;
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
-import org.bukkit.World;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
+import org.bukkit.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class BuildStage extends AbstractStage {
   interface Delegate {
+    void buildStageSignalActionBarUpdate();
+
     void buildStageDidFinish();
+
+    void buildStagePlaySound(Sound sound);
+
+    void buildStageSendTitle(Title title);
   }
 
   enum Option {
@@ -71,20 +87,20 @@ class BuildStage extends AbstractStage {
   }
 
   private final @Nonnull Delegate delegate;
-  private Question first;
-  private Question second;
+  private @Nullable Question first;
+  private @Nullable Question second;
   private int step = 0;
+  private @Nullable BukkitTask penaltyCooldown;
 
   BuildStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
-    this.first = new Question(Question.first);
-    this.second = new Question(Question.second);
   }
 
   @Override
   protected void onStart() {
     openGate();
+    this.first = new Question(Question.first);
   }
 
   @Override
@@ -95,8 +111,12 @@ class BuildStage extends AbstractStage {
   @Override
   protected void onReset() {
     step = 0;
-    first = new Question(Question.first);
-    second = new Question(Question.second);
+    first = null;
+    second = null;
+    if (penaltyCooldown != null) {
+      penaltyCooldown.cancel();
+      penaltyCooldown = null;
+    }
   }
 
   @Override
@@ -106,7 +126,156 @@ class BuildStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
+    var action = e.getAction();
+    var item = e.getItem();
+    var player = e.getPlayer();
+    switch (participation.role) {
+      case PRINCESS -> {
+        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+          return;
+        }
+        if (item == null) {
+          return;
+        }
+        if (item.getType() != Material.BOOK) {
+          return;
+        }
+        var meta = item.getItemMeta();
+        if (meta == null) {
+          return;
+        }
+        var store = meta.getPersistentDataContainer();
+        if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.itemTag), PersistentDataType.BYTE))) {
+          return;
+        }
+        e.setCancelled(true);
+        Question question;
+        if (step == 0) {
+          question = first;
+        } else {
+          question = second;
+        }
+        if (question == null) {
+          return;
+        }
+        var inventory = Bukkit.createInventory(null, 18, Component.text("解答する！").color(NamedTextColor.BLUE));
+        for (int slot = 0; slot < 18; slot++) {
+          var index = OptionIndexFromAnswerInventorySlot(slot);
+          if (index < 0) {
+            inventory.setItem(slot, ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).build());
+          } else {
+            var option = question.options[index];
+            var paper = ItemBuilder.For(Material.PAPER)
+              .displayName(Component.text(option.description))
+              .build();
+            inventory.setItem(slot, paper);
+          }
+        }
+        player.openInventory(inventory);
+      }
+    }
+  }
 
+  private static int OptionIndexFromAnswerInventorySlot(int slot) {
+    if (2 <= slot && slot <= 6) {
+      return slot - 2;
+    } else if (11 <= slot && slot <= 15) {
+      return slot - 11 + 5;
+    } else {
+      return -1;
+    }
+  }
+
+  @Override
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
+    if (participation.role != Role.PRINCESS) {
+      return;
+    }
+    e.setCancelled(true);
+    var index = OptionIndexFromAnswerInventorySlot(e.getSlot());
+    if (index < 0) {
+      return;
+    }
+    // 「はずれ」の時の様子
+    //    - 騎士側: https://youtu.be/uEpmE5WJPW8?t=3342
+    //    - 姫側: https://youtu.be/vHk29E_TIDc?t=3027
+    if (step == 0) {
+      if (first == null) {
+        return;
+      }
+      if (first.options[index] == first.answer) {
+        delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
+        delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+        step = 1;
+        nextQuiz(1);
+        return;
+      } else {
+        first = null;
+      }
+    } else {
+      if (second == null) {
+        return;
+      }
+      if (second.options[index] == second.answer) {
+        delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
+        delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+        setFinished(true);
+        return;
+      } else {
+        second = null;
+      }
+    }
+    delegate.buildStageSignalActionBarUpdate();
+    var title = CreatePenaltyTitle(5);
+    delegate.buildStageSendTitle(title);
+    delegate.buildStagePlaySound(Sound.ENTITY_ITEM_BREAK);
+    if (penaltyCooldown != null) {
+      penaltyCooldown.cancel();
+    }
+    final var count = new AtomicInteger(0);
+    penaltyCooldown = Bukkit.getScheduler().runTaskTimer(owner, () -> {
+      var c = count.incrementAndGet();
+      if (c < 5) {
+        delegate.buildStageSendTitle(CreatePenaltyTitle(5 - c));
+      } else {
+        if (this.penaltyCooldown != null) {
+          this.penaltyCooldown.cancel();
+          this.penaltyCooldown = null;
+        }
+        nextQuiz(step);
+        delegate.buildStageSendTitle(CreateQuestionChangedTitle());
+      }
+    }, 0, 20);
+  }
+
+  private static Title CreateCorrectAnswerTitle() {
+    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+    return Title.title(
+      Component.text("正解！").color(NamedTextColor.GREEN),
+      Component.empty(),
+      times
+    );
+  }
+
+  private static Title CreateQuestionChangedTitle() {
+    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+    return Title.title(
+      Component.text("お題が変更されました。").color(NamedTextColor.GOLD),
+      Component.empty(),
+      times
+    );
+  }
+
+  private static Title CreatePenaltyTitle(int seconds) {
+    var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+    return Title.title(
+      Component.text("はずれ！").color(NamedTextColor.RED),
+      Component.text(String.format("%d秒後にお題が変更されます。", seconds)).color(NamedTextColor.GREEN),
+      times
+    );
   }
 
   @Override
@@ -128,10 +297,41 @@ class BuildStage extends AbstractStage {
       case PRINCESS -> Component.text("騎士達が作っているものを答えよう！").color(Colors.lime);
       case KNIGHT -> {
         var question = step == 0 ? first : second;
+        if (question == null) {
+          //NOTE: 本家では解答が間違いだった時の出題クールタイム中も, 間違えた問題のお題が action bar に出ている.
+          // いったん action bar はクリアした方が分かりやすいはず.
+          yield Component.empty();
+        }
         yield Component.text("建築で『").color(Colors.lime)
           .append(Component.text(question.answer.description).color(Colors.orange))
           .append(Component.text("』を姫に伝えよう！").color(Colors.lime));
       }
     };
+  }
+
+  private void nextQuiz(int step) {
+    if (step == 0) {
+      this.first = new Question(Question.first);
+    } else {
+      this.second = new Question(Question.second);
+    }
+    delegate.buildStageSignalActionBarUpdate();
+  }
+
+  private int x(int x) {
+    return x + 100 + origin.x;
+  }
+
+  private int y(int y) {
+    return y - 80 + origin.y;
+  }
+
+  private int z(int z) {
+    return z + 18 + origin.z;
+  }
+
+  private Point3i pos(int x, int y, int z) {
+    // [-100, 80, -18] は赤チーム用 Level の origin
+    return new Point3i(x(x), y(y), z(z));
   }
 }

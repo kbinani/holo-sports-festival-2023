@@ -10,6 +10,7 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -133,6 +134,11 @@ class CarryStage extends AbstractStage {
       setOpenSecondGate(true);
       setFinished(true);
     }
+  }
+
+  @Override
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+
   }
 
   @Override

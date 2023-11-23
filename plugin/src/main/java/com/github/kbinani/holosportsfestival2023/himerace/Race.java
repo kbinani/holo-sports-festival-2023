@@ -93,6 +93,10 @@ class Race implements Team.Delegate {
       bar.dispose();
     }
     bossBars.clear();
+    for (var team : teams.values()) {
+      team.dispose();
+    }
+    teams.clear();
   }
 
   boolean isEmpty() {

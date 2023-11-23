@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,6 +58,8 @@ abstract class AbstractStage {
   protected abstract void onPlayerMove(PlayerMoveEvent e, Participation participation);
 
   protected abstract void onPlayerInteract(PlayerInteractEvent e, Participation participation);
+
+  protected abstract void onInventoryClick(InventoryClickEvent e, Participation participation);
 
   protected abstract void onStart();
 

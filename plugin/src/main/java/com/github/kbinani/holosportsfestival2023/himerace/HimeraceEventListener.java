@@ -3,13 +3,16 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 
@@ -22,6 +25,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   static final Component title = Component.text("[Himerace]").color(Colors.aqua);
   static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
+  static final String itemTag = "hololive_sports_festival_2023_himerace";
 
   private final World world;
   private final JavaPlugin owner;
@@ -116,7 +120,25 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
 
   @Override
   public void miniGameClearItem(Player player) {
-    //TODO:
+    ClearItems(player, itemTag);
+  }
+
+  static void ClearItems(Player player, String tag) {
+    var inventory = player.getInventory();
+    for (int i = 0; i < inventory.getSize(); i++) {
+      var item = inventory.getItem(i);
+      if (item == null) {
+        continue;
+      }
+      var meta = item.getItemMeta();
+      if (meta == null) {
+        continue;
+      }
+      var container = meta.getPersistentDataContainer();
+      if (container.has(NamespacedKey.minecraft(tag), PersistentDataType.BYTE)) {
+        inventory.clear(i);
+      }
+    }
   }
 
   @EventHandler
@@ -180,6 +202,23 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         level.onPlayerInteract(e, participation);
       }
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onInventoryClick(InventoryClickEvent e) {
+    if (status == Status.IDLE) {
+      return;
+    }
+    if (!(e.getWhoClicked() instanceof Player player)) {
+      return;
+    }
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onInventoryClick(e, participation);
   }
 
   private void announceParticipants() {

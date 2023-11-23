@@ -1,13 +1,20 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.Colors;
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 
 class Team implements Level.Delegate {
   interface Delegate {
@@ -28,9 +35,59 @@ class Team implements Level.Delegate {
   }
 
   @Override
-  public void levelDidFinish() {
-    if (delegate != null) {
-      delegate.teamDidFinish(color);
+  public void levelDidClearStage(Stage stage) {
+    switch (stage) {
+      case CARRY -> {
+        if (princess != null) {
+          ClearItems(princess, stage.itemTag);
+          var book = ItemBuilder.For(Material.BOOK)
+            .customByteTag(itemTag, (byte) 1)
+            .customByteTag(Stage.BUILD.itemTag, (byte) 1)
+            .displayName(Component.text("回答する！(右クリックで開く) / Answer Book (Right click to open)").color(Colors.aqua))
+            .build();
+          var inventory = princess.getInventory();
+          inventory.setItem(0, book);
+        }
+      }
+      case GOAL -> {
+        if (delegate != null) {
+          delegate.teamDidFinish(color);
+        }
+      }
+    }
+  }
+
+  @Override
+  public void levelSignalActionBarUpdate() {
+    updateActionBar();
+  }
+
+  @Override
+  public void levelSendTitle(Title title) {
+    if (princess != null) {
+      princess.showTitle(title);
+    }
+    for (var knight : knights) {
+      knight.showTitle(title);
+    }
+  }
+
+  @Override
+  public void levelPlaySound(Sound sound) {
+    if (princess != null) {
+      princess.playSound(princess.getLocation(), sound, 1, 1);
+    }
+    for (var knight : knights) {
+      knight.playSound(knight.getLocation(), sound, 1, 1);
+    }
+  }
+
+  void dispose() {
+    if (princess != null) {
+      ClearItems(princess, itemTag);
+    }
+    for (var knight : knights) {
+      ClearItems(knight, itemTag);
     }
   }
 
@@ -98,6 +155,10 @@ class Team implements Level.Delegate {
   }
 
   void tick() {
+    updateActionBar();
+  }
+
+  private void updateActionBar() {
     if (princess != null) {
       princess.sendActionBar(level.getActionBar(Role.PRINCESS));
     }
