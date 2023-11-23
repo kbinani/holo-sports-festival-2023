@@ -26,6 +26,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
   static final Component title = Component.text("[Himerace]").color(Colors.aqua);
   private final BoundingBox announceBounds;
   private @Nullable Race race;
+  private @Nullable Cancellable countdown;
 
   public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs) {
     if (mapIDs.length < 3) {
@@ -49,7 +50,10 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
         miniGameReset();
         race = null;
       }
-      case CARRY_STAGE -> {
+      case COUNTDOWN -> {
+
+      }
+      case ACTIVE -> {
         if (this.race == null) {
           miniGameReset();
           status = Status.IDLE;
@@ -100,6 +104,10 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       Component.text("エントリーリスト").color(Colors.lime)
     );
     race = null;
+    if (countdown != null) {
+      countdown.cancel();
+      countdown = null;
+    }
   }
 
   @Override
@@ -148,7 +156,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       } else if (location.equals(pos(-127, 80, -65))) {
         join(player, TeamColor.YELLOW, Role.KNIGHT);
       } else if (location.equals(pos(-89, 80, -65))) {
-        start();
+        startCountdown();
       } else if (location.equals(pos(-90, 80, -65))) {
         stop();
       } else if (location.equals(pos(-91, 80, -65))) {
@@ -235,8 +243,26 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
 
-  private void start() {
+  private void startCountdown() {
     if (status != Status.IDLE) {
+      return;
+    }
+    if (countdown != null) {
+      countdown.cancel();
+    }
+    var titlePrefix = Component.text("スタートまで").color(Colors.aqua);
+    var subtitle = Component.text("姫護衛レース").color(Colors.lime);
+    countdown = new Countdown(
+      owner, world, announceBounds,
+      titlePrefix, Colors.aqua, subtitle,
+      10, this::start
+    );
+    announceParticipants();
+    setStatus(Status.COUNTDOWN);
+  }
+
+  private void start() {
+    if (status != Status.COUNTDOWN) {
       return;
     }
     var race = new Race(teams);
@@ -244,8 +270,7 @@ public class HimeraceEventListener implements MiniGame, Level.Delegate {
       return;
     }
     this.race = race;
-    //TODO: カウントダウン
-    setStatus(Status.CARRY_STAGE);
+    setStatus(Status.ACTIVE);
   }
 
   private void stop() {
