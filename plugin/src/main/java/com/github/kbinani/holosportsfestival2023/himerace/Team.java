@@ -54,6 +54,11 @@ class Team implements Level.Delegate {
           inventory.setItem(0, book);
         }
       }
+      case BUILD -> {
+        if (princess != null) {
+          princess.chat("お腹が空いてきちゃった・・・(I'm so hungry...)");
+        }
+      }
       case GOAL -> {
         if (delegate != null) {
           delegate.teamDidFinish(color);
