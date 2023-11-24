@@ -1,6 +1,7 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -163,6 +164,64 @@ class CookStage extends AbstractStage {
           .displayName(Component.text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      it.setRecipes(recipes);
+    });
+
+    world.spawn(pos(-98, 81, 15).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
+      it.customName(Component.text("精肉屋").color(NamedTextColor.GOLD));
+      it.addScoreboardTag(Stage.COOK.tag);
+      it.setProfession(Villager.Profession.BUTCHER);
+      it.setVillagerLevel(5);
+      var recipes = new ArrayList<MerchantRecipe>();
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.CHICKEN).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.BEEF).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.MUTTON).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.RABBIT).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.CHICKEN).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.BEEF).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.MUTTON).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.RABBIT).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      it.setRecipes(recipes);
+    });
+
+    world.spawn(pos(-98, 81, 17).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
+      it.customName(Component.text("雑貨屋").color(NamedTextColor.GOLD));
+      it.addScoreboardTag(Stage.COOK.tag);
+      it.setProfession(Villager.Profession.SHEPHERD);
+      it.setVillagerLevel(5);
+      var recipes = new ArrayList<MerchantRecipe>();
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.COAL).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.COAL).customByteTag(Stage.COOK.tag, (byte) 1).build(),
         ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
       ));
       it.setRecipes(recipes);
