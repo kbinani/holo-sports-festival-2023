@@ -178,6 +178,7 @@ class BuildStage extends AbstractStage {
       if (first == null) {
         return;
       }
+      e.getInventory().close();
       if (first.options[index].equals(first.answer)) {
         delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
         delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
@@ -191,6 +192,7 @@ class BuildStage extends AbstractStage {
       if (second == null) {
         return;
       }
+      e.getInventory().close();
       if (second.options[index].equals(second.answer)) {
         delegate.buildStageSendTitle(CreateCorrectAnswerTitle());
         delegate.buildStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
