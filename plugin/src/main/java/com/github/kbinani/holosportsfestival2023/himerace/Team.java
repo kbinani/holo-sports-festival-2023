@@ -36,10 +36,15 @@ class Team implements Level.Delegate {
 
   @Override
   public void levelDidClearStage(Stage stage) {
+    if (princess != null) {
+      ClearItems(princess, stage.tag);
+    }
+    for (var knight : knights) {
+      ClearItems(knight, stage.tag);
+    }
     switch (stage) {
       case CARRY -> {
         if (princess != null) {
-          ClearItems(princess, stage.tag);
           var book = ItemBuilder.For(Material.BOOK)
             .customByteTag(itemTag, (byte) 1)
             .customByteTag(Stage.BUILD.tag, (byte) 1)
