@@ -21,7 +21,7 @@ public class Teams {
     if (team == null) {
       team = scoreboard.registerNewTeam(name);
     }
-    team.color(color.namedTextColor);
+    team.color(color.textColor);
     team.setAllowFriendlyFire(false);
     return team;
   }

@@ -1,9 +1,9 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -76,8 +76,8 @@ class GoalStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Component.text("騎士と一緒にモンスターを倒そう！").color(Colors.lime);
-      case KNIGHT -> Component.text("姫と一緒にモンスターを倒そう！").color(Colors.lime);
+      case PRINCESS -> Component.text("騎士と一緒にモンスターを倒そう！").color(NamedTextColor.GREEN);
+      case KNIGHT -> Component.text("姫と一緒にモンスターを倒そう！").color(NamedTextColor.GREEN);
     };
   }
 

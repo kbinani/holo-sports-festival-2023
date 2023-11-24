@@ -1,6 +1,5 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
@@ -66,7 +65,7 @@ class Unit {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
       Component.empty(),
-      enemy.teamDisplayName().append(Component.text("を倒しました！").color(Colors.orange)),
+      enemy.teamDisplayName().append(Component.text("を倒しました！").color(NamedTextColor.GOLD)),
       times
     );
     attacker.showTitle(title);
@@ -82,7 +81,7 @@ class Unit {
       var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
       var title = Title.title(
         Component.empty(),
-        enemy.teamDisplayName().append(Component.text("に倒されました...").color(Colors.orange)),
+        enemy.teamDisplayName().append(Component.text("に倒されました...").color(NamedTextColor.GOLD)),
         times
       );
       attacker.showTitle(title);
@@ -162,7 +161,7 @@ class Unit {
   }
 
   private void updateActionBar() {
-    var actionBar = Component.text(String.format("現在のキル数: %d", kills)).color(Colors.lime);
+    var actionBar = Component.text(String.format("現在のキル数: %d", kills)).color(NamedTextColor.GREEN);
     attacker.sendActionBar(actionBar);
     vehicle.sendActionBar(actionBar);
   }

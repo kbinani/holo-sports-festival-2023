@@ -1,6 +1,5 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
@@ -267,7 +266,7 @@ class BuildStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Component.text("騎士達が作っているものを答えよう！").color(Colors.lime);
+      case PRINCESS -> Component.text("騎士達が作っているものを答えよう！").color(NamedTextColor.GREEN);
       case KNIGHT -> {
         var question = step == 0 ? first : second;
         if (question == null) {
@@ -275,9 +274,9 @@ class BuildStage extends AbstractStage {
           // いったん action bar はクリアした方が分かりやすいはず.
           yield Component.empty();
         }
-        yield Component.text("建築で『").color(Colors.lime)
-          .append(Component.text(question.answer).color(Colors.orange))
-          .append(Component.text("』を姫に伝えよう！").color(Colors.lime));
+        yield Component.text("建築で『").color(NamedTextColor.GREEN)
+          .append(Component.text(question.answer).color(NamedTextColor.GOLD))
+          .append(Component.text("』を姫に伝えよう！").color(NamedTextColor.GREEN));
       }
     };
   }

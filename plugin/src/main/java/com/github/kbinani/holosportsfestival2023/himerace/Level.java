@@ -1,7 +1,11 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.*;
+import com.github.kbinani.holosportsfestival2023.Editor;
+import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.WeakReference;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -101,7 +105,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.PRINCESS.component(),
-      Component.text("右クリでエントリー！").color(Colors.aqua));
+      Component.text("右クリでエントリー！").color(NamedTextColor.AQUA));
 
     Editor.StandingSign(
       world,
@@ -111,7 +115,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.KNIGHT.component(),
-      Component.text("右クリでエントリー！").color(Colors.aqua));
+      Component.text("右クリでエントリー！").color(NamedTextColor.AQUA));
 
     for (var stage : this.stages.values()) {
       stage.reset();

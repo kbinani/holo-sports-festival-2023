@@ -1,10 +1,10 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.BossBar;
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -55,20 +55,20 @@ class Race implements Team.Delegate {
     }
     broadcast(prefix
       .append(color.component())
-      .append(Component.text("がゴールしました！").color(Colors.white)));
+      .append(Component.text("がゴールしました！").color(NamedTextColor.WHITE)));
     if (!isAllTeamsFinished()) {
       return;
     }
     broadcast(prefix
-      .append(Component.text("ゲームが終了しました！").color(Colors.white)));
+      .append(Component.text("ゲームが終了しました！").color(NamedTextColor.WHITE)));
     broadcast(Component.empty());
     var separator = "▪"; //TODO: この文字本当は何なのかが分からない
     broadcast(
-      Component.text(separator.repeat(32)).color(Colors.lightgray)
+      Component.text(separator.repeat(32)).color(NamedTextColor.GRAY)
         .appendSpace()
         .append(title)
         .appendSpace()
-        .append(Component.text(separator.repeat(32)).color(Colors.lightgray))
+        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GRAY))
     );
     broadcast(Component.empty());
     result((i, c, durationMillis) -> {
@@ -76,7 +76,7 @@ class Race implements Team.Delegate {
       long millis = durationMillis - seconds * 1000;
       long minutes = seconds / 60;
       seconds = seconds - minutes * 60;
-      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(Colors.aqua)
+      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(NamedTextColor.AQUA)
         .append(c.component())
         .appendSpace()
         .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.textColor))

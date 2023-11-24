@@ -1,9 +1,9 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -43,7 +43,7 @@ class Team implements Level.Delegate {
           var book = ItemBuilder.For(Material.BOOK)
             .customByteTag(itemTag, (byte) 1)
             .customByteTag(Stage.BUILD.tag, (byte) 1)
-            .displayName(Component.text("回答する！(右クリックで開く) / Answer Book (Right click to open)").color(Colors.aqua))
+            .displayName(Component.text("回答する！(右クリックで開く) / Answer Book (Right click to open)").color(NamedTextColor.AQUA))
             .build();
           var inventory = princess.getInventory();
           inventory.setItem(0, book);
@@ -147,7 +147,7 @@ class Team implements Level.Delegate {
 
   Component getBossBarName() {
     var stage = level.getActive();
-    return color.component().append(Component.text(String.format(" %s", stage.description)).color(Colors.white));
+    return color.component().append(Component.text(String.format(" %s", stage.description)).color(NamedTextColor.WHITE));
   }
 
   float getProgress() {

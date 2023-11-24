@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -29,8 +30,8 @@ import javax.annotation.Nullable;
 
 public class KibasenEventListener implements MiniGame, Registrants.Delegate, Session.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
-  private static final Component title = Component.text("[Kibasen]").color(Colors.aqua);
-  static final Component prefix = title.append(Component.text(" ").color(Colors.white));
+  private static final Component title = Component.text("[Kibasen]").color(NamedTextColor.AQUA);
+  static final Component prefix = title.append(Component.text(" ").color(NamedTextColor.WHITE));
   private static final Point3i joinRedSign = pos(-30, 80, 50);
   private static final Point3i joinWhiteSign = pos(-30, 80, 51);
   private static final Point3i joinYellowSign = pos(-30, 80, 52);
@@ -299,11 +300,11 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       return;
     }
     announceEntryList();
-    var titlePrefix = Component.text("スタートまで").color(Colors.aqua);
-    var subtitle = Component.text("騎馬戦").color(Colors.lime);
+    var titlePrefix = Component.text("スタートまで").color(NamedTextColor.AQUA);
+    var subtitle = Component.text("騎馬戦").color(NamedTextColor.GREEN);
     this.countdown = new Countdown(
       owner, world, announceBounds,
-      titlePrefix, Colors.aqua, subtitle,
+      titlePrefix, NamedTextColor.AQUA, subtitle,
       10, this::start);
     this.status = Status.COUNTDOWN;
     setEnableWall(true);
@@ -320,13 +321,13 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     this.session = session;
     this.registrants.clear();
     broadcast(prefix
-      .append(Component.text("ゲームがスタートしました。").color(Colors.white))
+      .append(Component.text("ゲームがスタートしました。").color(NamedTextColor.WHITE))
     );
     this.status = Status.ACTIVE;
   }
 
   private void abort() {
-    broadcast(prefix.append(Component.text("ゲームを中断しました。").color(Colors.red)));
+    broadcast(prefix.append(Component.text("ゲームを中断しました。").color(NamedTextColor.RED)));
     setEnableWall(false);
     setEnablePhotoSpot(true);
     if (this.session != null) {
@@ -355,21 +356,21 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
   static ItemStack CreateSaddle() {
     return ItemBuilder.For(Material.SADDLE)
-      .displayName(Component.text("自分の馬を右クリックしてください！").color(Colors.orange))
+      .displayName(Component.text("自分の馬を右クリックしてください！").color(NamedTextColor.GOLD))
       .customByteTag(itemTag, (byte) 1)
       .build();
   }
 
   static ItemStack CreateBook() {
     return ItemBuilder.For(Material.BOOK)
-      .displayName(Component.text("大将にエントリー (右クリックで使用)").color(Colors.orange))
+      .displayName(Component.text("大将にエントリー (右クリックで使用)").color(NamedTextColor.GOLD))
       .customByteTag(itemTag, (byte) 1)
       .build();
   }
 
   static ItemStack CreateWool(TeamColor color) {
     return ItemBuilder.For(color.wool)
-      .displayName(color.component().append(Component.text(" の大将になる！").color(Colors.white)))
+      .displayName(color.component().append(Component.text(" の大将になる！").color(NamedTextColor.WHITE)))
       .build();
   }
 
@@ -408,38 +409,38 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       title,
       TeamColor.RED.component(),
       Component.empty(),
-      Component.text("右クリでエントリー！").color(Colors.lime)
+      Component.text("右クリでエントリー！").color(NamedTextColor.GREEN)
     );
     Editor.StandingSign(world, joinWhiteSign, Material.OAK_SIGN, 4,
       title,
       TeamColor.WHITE.component(),
       Component.empty(),
-      Component.text("右クリでエントリー！").color(Colors.lime)
+      Component.text("右クリでエントリー！").color(NamedTextColor.GREEN)
     );
     Editor.StandingSign(world, joinYellowSign, Material.OAK_SIGN, 4,
       title,
       TeamColor.YELLOW.component(),
       Component.empty(),
-      Component.text("右クリでエントリー！").color(Colors.lime)
+      Component.text("右クリでエントリー！").color(NamedTextColor.GREEN)
     );
 
     Editor.StandingSign(world, startSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("ゲームスタート").color(Colors.lime)
+      Component.text("ゲームスタート").color(NamedTextColor.GREEN)
     );
     Editor.StandingSign(world, abortSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("ゲームを中断する").color(Colors.red)
+      Component.text("ゲームを中断する").color(NamedTextColor.RED)
     );
     Editor.StandingSign(world, entryListSign, Material.OAK_SIGN, 4,
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("エントリーリスト").color(Colors.aqua)
+      Component.text("エントリーリスト").color(NamedTextColor.AQUA)
     );
 
     setEnablePhotoSpot(true);

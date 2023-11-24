@@ -1,8 +1,8 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -66,7 +66,7 @@ class CookStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case KNIGHT -> Component.text("姫が食べたいものをプレゼントしてあげよう！").color(Colors.lime);
+      case KNIGHT -> Component.text("姫が食べたいものをプレゼントしてあげよう！").color(NamedTextColor.GREEN);
       case PRINCESS -> {
         //TODO:
         yield Component.empty();

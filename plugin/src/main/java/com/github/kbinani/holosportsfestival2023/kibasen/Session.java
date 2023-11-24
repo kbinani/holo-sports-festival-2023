@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 import com.github.kbinani.holosportsfestival2023.*;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -108,7 +109,7 @@ class Session {
       if (defenceUnit.isLeader) {
         broadcast(prefix
           .append(offence.teamDisplayName())
-          .append(Component.text(" --[大将撃破]-> ").color(Colors.orange))
+          .append(Component.text(" --[大将撃破]-> ").color(NamedTextColor.GOLD))
           .append(defence.teamDisplayName())
         );
         var count = leaderKillCount.computeIfAbsent(offenceUnit.color, (c) -> 0);
@@ -116,7 +117,7 @@ class Session {
       } else {
         broadcast(prefix
           .append(offence.teamDisplayName())
-          .append(Component.text(" --[撃破]-> ").color(Colors.gray))
+          .append(Component.text(" --[撃破]-> ").color(NamedTextColor.GRAY))
           .append(defence.teamDisplayName())
         );
       }
@@ -162,11 +163,11 @@ class Session {
         }
       }
       name = name.append(color.component())
-        .append(Component.text(String.format(": %d", count)).color(Colors.white));
+        .append(Component.text(String.format(": %d", count)).color(NamedTextColor.WHITE));
       if (i == 2) {
         break;
       }
-      name = name.append(Component.text(" | ").color(Colors.orange));
+      name = name.append(Component.text(" | ").color(NamedTextColor.GOLD));
     }
     bossBar.setName(name);
     bossBar.setProgress(getBossBarProgress());
@@ -265,10 +266,10 @@ class Session {
     broadcast(
       Component.empty()
         .appendSpace()
-        .append(Component.text(separator.repeat(32)).color(Colors.lime))
+        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GREEN))
         .appendSpace()
         .append(prefix)
-        .append(Component.text(separator.repeat(32)).color(Colors.lime))
+        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GREEN))
     );
     broadcast(Component.empty());
     class Record {
@@ -296,11 +297,11 @@ class Session {
         broadcast(Component.text(String.format(" %s 総キル数: %d", color.text, count)).color(color.textColor));
       }
       var leaderKills = leaderKillCount.getOrDefault(color, 0);
-      broadcast(Component.text(String.format("  - 大将キル数: %d", leaderKills)).color(Colors.aqua));
+      broadcast(Component.text(String.format("  - 大将キル数: %d", leaderKills)).color(NamedTextColor.AQUA));
       broadcast(Component.empty());
     }
     records.sort(Comparator.comparingInt(record -> -record.kills));
-    broadcast(Component.text(" ◆ 個人キルランキング").color(Colors.orange));
+    broadcast(Component.text(" ◆ 個人キルランキング").color(NamedTextColor.GOLD));
     int last = -1;
     int order = 1;
     int nextOrder = 1;
@@ -334,7 +335,7 @@ class Session {
 
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
-      Component.text("ゲームが終了しました！").color(Colors.orange),
+      Component.text("ゲームが終了しました！").color(NamedTextColor.GOLD),
       Component.empty(),
       times
     );
@@ -345,10 +346,10 @@ class Session {
   }
 
   private void startCountdown() {
-    var title = Component.text("ゲーム終了まで").color(Colors.lime);
+    var title = Component.text("ゲーム終了まで").color(NamedTextColor.GREEN);
     this.countdown = new Countdown(
       owner, world, announceBounds,
-      title, Colors.white, Component.empty(),
+      title, NamedTextColor.WHITE, Component.empty(),
       countdownSec, this::timeout
     );
   }
