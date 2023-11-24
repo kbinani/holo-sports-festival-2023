@@ -136,7 +136,10 @@ class BuildStage extends AbstractStage {
     for (int slot = 0; slot < 18; slot++) {
       var index = OptionIndexFromAnswerInventorySlot(slot);
       if (index < 0) {
-        inventory.setItem(slot, ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).build());
+        var glassPane = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE)
+          .displayName(Component.empty())
+          .build();
+        inventory.setItem(slot, glassPane);
       } else {
         var option = question.options[index];
         var paper = ItemBuilder.For(Material.PAPER)
