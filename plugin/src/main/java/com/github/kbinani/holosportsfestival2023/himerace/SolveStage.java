@@ -97,12 +97,9 @@ class SolveStage extends AbstractStage {
     this.mapId = mapId;
   }
 
-  private Quiz getCurrentQuiz() {
-    return quiz;
-  }
-
   @Override
   protected void onStart() {
+    summonItemFrame();
   }
 
   @Override
@@ -119,8 +116,11 @@ class SolveStage extends AbstractStage {
     Quiz.Conceal(world, quizOrigin, quizConcealer);
     setGateOpened(false);
     quiz = Quiz.Create(ThreadLocalRandom.current());
+    if (itemFrame != null) {
+      itemFrame.remove();
+      itemFrame = null;
+    }
     Kill.EntitiesByScoreboardTag(world, Stage.SOLVE.tag);
-    summonItemFrame();
   }
 
   @Override
@@ -130,6 +130,9 @@ class SolveStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
     if (participation.role != Role.PRINCESS) {
       return;
     }
@@ -186,8 +189,11 @@ class SolveStage extends AbstractStage {
 
   @Override
   protected float getProgress() {
-    //TODO:
-    return 0;
+    if (finished) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 
   @Override
