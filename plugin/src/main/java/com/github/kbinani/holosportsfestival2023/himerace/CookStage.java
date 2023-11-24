@@ -5,13 +5,17 @@ import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Container;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
@@ -20,23 +24,47 @@ import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 class CookStage extends AbstractStage {
   interface Delegate {
     void cookStageDidFinish();
   }
 
-  private final @Nonnull  Delegate delegate;
+  private final @Nonnull Delegate delegate;
+  private @Nullable Inventory cuttingBoard;
+  private @Nullable Inventory servingTable;
+  private @Nullable Inventory cauldron;
+  private @Nullable Inventory hotPlate;
+  private final List<Point3i> cuttingBoardBlocks;
+  private final Point3i servingTablePos = pos(-99, 81, 8);
+  private final Point3i cauldronPos = pos(-99, 81, 9);
+  private final List<Point3i> hotPlateBlocks;
+  private final Point3i furnacePos = pos(-99, 81, 10);
 
   CookStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
+    this.cuttingBoardBlocks = Arrays.stream(new Point3i[]{
+      pos(-98, 82, 6),
+      pos(-97, 82, 6),
+      pos(-98, 81, 6),
+      pos(-97, 81, 6),
+    }).collect(Collectors.toList());
+    this.hotPlateBlocks = Arrays.stream(new Point3i[]{
+      pos(-98, 82, 11),
+      pos(-97, 82, 11),
+      pos(-98, 81, 11),
+      pos(-97, 81, 11),
+    }).collect(Collectors.toList());
     this.delegate = delegate;
   }
 
   @Override
   protected void onStart() {
-    setFinished(true);
     prepare();
   }
 
@@ -48,6 +76,27 @@ class CookStage extends AbstractStage {
   @Override
   protected void onReset() {
     Kill.EntitiesByScoreboardTag(world, Stage.COOK.tag);
+    if (cauldron != null) {
+      cauldron.close();
+      cauldron = null;
+    }
+    if (cuttingBoard != null) {
+      cuttingBoard.close();
+      cuttingBoard = null;
+    }
+    if (servingTable != null) {
+      servingTable.close();
+      servingTable = null;
+    }
+    if (hotPlate != null) {
+      hotPlate.close();
+      hotPlate = null;
+    }
+    var furnace = world.getBlockAt(furnacePos.toLocation(world));
+    if (furnace.getState(false) instanceof Container container) {
+      var inventory = container.getInventory();
+      inventory.clear();
+    }
   }
 
   @Override
@@ -57,7 +106,31 @@ class CookStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
-
+    if (finished || !started) {
+      return;
+    }
+    var action = e.getAction();
+    if (action != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
+    var block = e.getClickedBlock();
+    if (block == null) {
+      return;
+    }
+    var player = e.getPlayer();
+    var location = new Point3i(block.getLocation());
+    if (location.equals(cauldronPos)) {
+      player.openInventory(ensureCauldronInventory());
+    } else if (location.equals(servingTablePos)) {
+      player.openInventory(ensureServingTableInventory());
+    } else if (cuttingBoardBlocks.stream().anyMatch(p -> p.equals(location))) {
+      player.openInventory(ensureCuttingBoardInventory());
+    } else if (hotPlateBlocks.stream().anyMatch(p -> p.equals(location))) {
+      player.openInventory(ensureHotPlateInventory());
+    } else {
+      return;
+    }
+    e.setCancelled(true);
   }
 
   @Override
@@ -226,6 +299,42 @@ class CookStage extends AbstractStage {
       ));
       it.setRecipes(recipes);
     });
+  }
+
+  private @Nonnull Inventory ensureCuttingBoardInventory() {
+    if (cuttingBoard != null) {
+      return cuttingBoard;
+    }
+    var inventory = Bukkit.createInventory(null, 36, Component.text("まな板").color(NamedTextColor.GREEN));
+    cuttingBoard = inventory;
+    return inventory;
+  }
+
+  private @Nonnull Inventory ensureServingTableInventory() {
+    if (servingTable != null) {
+      return servingTable;
+    }
+    var inventory = Bukkit.createInventory(null, 54, Component.text("盛り付け台").color(NamedTextColor.GREEN));
+    servingTable = inventory;
+    return inventory;
+  }
+
+  private @Nonnull Inventory ensureCauldronInventory() {
+    if (cauldron != null) {
+      return cauldron;
+    }
+    var inventory = Bukkit.createInventory(null, 54, Component.text("鍋").color(NamedTextColor.GREEN));
+    cauldron = inventory;
+    return inventory;
+  }
+
+  private @Nonnull Inventory ensureHotPlateInventory() {
+    if (hotPlate != null) {
+      return hotPlate;
+    }
+    var inventory = Bukkit.createInventory(null, 54, Component.text("鉄板").color(NamedTextColor.GREEN));
+    hotPlate = inventory;
+    return inventory;
   }
 
   private static MerchantRecipe CreateOffer(ItemStack from, ItemStack to) {
