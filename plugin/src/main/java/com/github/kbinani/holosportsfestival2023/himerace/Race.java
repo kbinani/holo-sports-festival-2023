@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.*;
 
 class Race implements Team.Delegate {
@@ -55,20 +56,20 @@ class Race implements Team.Delegate {
     }
     broadcast(prefix
       .append(color.component())
-      .append(Component.text("がゴールしました！").color(NamedTextColor.WHITE)));
+      .append(Text("がゴールしました！")));
     if (!isAllTeamsFinished()) {
       return;
     }
     broadcast(prefix
-      .append(Component.text("ゲームが終了しました！").color(NamedTextColor.WHITE)));
+      .append(Text("ゲームが終了しました！")));
     broadcast(Component.empty());
     var separator = "▪"; //TODO: この文字本当は何なのかが分からない
     broadcast(
-      Component.text(separator.repeat(32)).color(NamedTextColor.GRAY)
+      Text(separator.repeat(32), NamedTextColor.GRAY)
         .appendSpace()
         .append(title)
         .appendSpace()
-        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GRAY))
+        .append(Text(separator.repeat(32), NamedTextColor.GRAY))
     );
     broadcast(Component.empty());
     result((i, c, durationMillis) -> {
@@ -76,10 +77,10 @@ class Race implements Team.Delegate {
       long millis = durationMillis - seconds * 1000;
       long minutes = seconds / 60;
       seconds = seconds - minutes * 60;
-      broadcast(Component.text(String.format(" - %d位 ", i + 1)).color(NamedTextColor.AQUA)
+      broadcast(Text(String.format(" - %d位 ", i + 1), NamedTextColor.AQUA)
         .append(c.component())
         .appendSpace()
-        .append(Component.text(String.format("(%d:%02d:%03d)", minutes, seconds, millis)).color(c.textColor))
+        .append(Text(String.format("(%d:%02d:%03d)", minutes, seconds, millis), c.textColor))
       );
     });
     broadcast(Component.empty());

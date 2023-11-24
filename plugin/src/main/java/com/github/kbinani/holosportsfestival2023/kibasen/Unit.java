@@ -26,6 +26,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierName;
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierUUID;
@@ -65,7 +66,7 @@ class Unit {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
       Component.empty(),
-      enemy.teamDisplayName().append(Component.text("を倒しました！").color(NamedTextColor.GOLD)),
+      enemy.teamDisplayName().append(Text("を倒しました！", NamedTextColor.GOLD)),
       times
     );
     attacker.showTitle(title);
@@ -81,7 +82,7 @@ class Unit {
       var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
       var title = Title.title(
         Component.empty(),
-        enemy.teamDisplayName().append(Component.text("に倒されました...").color(NamedTextColor.GOLD)),
+        enemy.teamDisplayName().append(Text("に倒されました...", NamedTextColor.GOLD)),
         times
       );
       attacker.showTitle(title);
@@ -129,8 +130,8 @@ class Unit {
   }
 
   private Component createHealthDisplayComponent() {
-    return Component.text("♥".repeat(health)).color(NamedTextColor.RED)
-      .append(Component.text("♡".repeat(maxHealth - health)).color(NamedTextColor.WHITE));
+    return Text("♥".repeat(health), NamedTextColor.RED)
+      .append(Text("♡".repeat(maxHealth - health)));
   }
 
   private @Nonnull Entity ensureHealthDisplayEntity() {
@@ -161,7 +162,7 @@ class Unit {
   }
 
   private void updateActionBar() {
-    var actionBar = Component.text(String.format("現在のキル数: %d", kills)).color(NamedTextColor.GREEN);
+    var actionBar = Text(String.format("現在のキル数: %d", kills), NamedTextColor.GREEN);
     attacker.sendActionBar(actionBar);
     vehicle.sendActionBar(actionBar);
   }

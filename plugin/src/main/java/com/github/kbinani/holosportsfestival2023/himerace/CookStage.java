@@ -30,6 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class CookStage extends AbstractStage {
   interface Delegate {
     void cookStageDidFinish();
@@ -147,7 +149,7 @@ class CookStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case KNIGHT -> Component.text("姫が食べたいものをプレゼントしてあげよう！").color(NamedTextColor.GREEN);
+      case KNIGHT -> Text("姫が食べたいものをプレゼントしてあげよう！", NamedTextColor.GREEN);
       case PRINCESS -> {
         //TODO:
         yield Component.empty();
@@ -157,50 +159,50 @@ class CookStage extends AbstractStage {
 
   private void prepare() {
     world.spawn(pos(-97, 82, 11).toLocation(world).add(0, -0.34, -0.02), TextDisplay.class, it -> {
-      it.text(Component.text("鉄板").color(NamedTextColor.GREEN));
+      it.text(Text("鉄板", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (Math.PI)));
     });
     world.spawn(pos(-97, 82, 11).toLocation(world).add(0, -0.5, -0.02), TextDisplay.class, it -> {
-      it.text(Component.text("Hot Plate").color(NamedTextColor.GREEN));
+      it.text(Text("Hot Plate", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-98, 82, 9).toLocation(world).add(0.02, -0.34, 0.5), TextDisplay.class, it -> {
-      it.text(Component.text("鍋").color(NamedTextColor.GREEN));
+      it.text(Text("鍋", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)));
     });
     world.spawn(pos(-98, 82, 9).toLocation(world).add(0.02, -0.5, 0.5), TextDisplay.class, it -> {
-      it.text(Component.text("Cauldron").color(NamedTextColor.GREEN));
+      it.text(Text("Cauldron", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-98, 82, 8).toLocation(world).add(0.02, -0.34, 0.5), TextDisplay.class, it -> {
-      it.text(Component.text("盛り付け台").color(NamedTextColor.GREEN));
+      it.text(Text("盛り付け台", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)));
     });
     world.spawn(pos(-98, 82, 8).toLocation(world).add(0.02, -0.5, 0.5), TextDisplay.class, it -> {
-      it.text(Component.text("Serving Table").color(NamedTextColor.GREEN));
+      it.text(Text("Serving Table", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-97, 82, 7).toLocation(world).add(0, -0.34, 0.02), TextDisplay.class, it -> {
-      it.text(Component.text("まな板").color(NamedTextColor.GREEN));
+      it.text(Text("まな板", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
     });
     world.spawn(pos(-97, 82, 7).toLocation(world).add(0, -0.5, 0.02), TextDisplay.class, it -> {
-      it.text(Component.text("Cutting Board").color(NamedTextColor.GREEN));
+      it.text(Text("Cutting Board", NamedTextColor.GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().scale(0.6f));
     });
 
     world.spawn(pos(-98, 81, 13).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Component.text("八百屋").color(NamedTextColor.GOLD));
+      it.customName(Text("八百屋", NamedTextColor.GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.FARMER);
       it.setVillagerLevel(5);
@@ -218,7 +220,7 @@ class CookStage extends AbstractStage {
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
           .customByteTag(Stage.COOK.tag, (byte) 1)
-          .displayName(Component.text("油 / Oil"))
+          .displayName(Text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build()
       ));
@@ -234,7 +236,7 @@ class CookStage extends AbstractStage {
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
           .customByteTag(Stage.COOK.tag, (byte) 1)
-          .displayName(Component.text("油 / Oil"))
+          .displayName(Text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build(),
         ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
@@ -243,7 +245,7 @@ class CookStage extends AbstractStage {
     });
 
     world.spawn(pos(-98, 81, 15).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Component.text("精肉屋").color(NamedTextColor.GOLD));
+      it.customName(Text("精肉屋", NamedTextColor.GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.BUTCHER);
       it.setVillagerLevel(5);
@@ -284,7 +286,7 @@ class CookStage extends AbstractStage {
     });
 
     world.spawn(pos(-98, 81, 17).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Component.text("雑貨屋").color(NamedTextColor.GOLD));
+      it.customName(Text("雑貨屋", NamedTextColor.GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.SHEPHERD);
       it.setVillagerLevel(5);
@@ -305,7 +307,7 @@ class CookStage extends AbstractStage {
     if (cuttingBoard != null) {
       return cuttingBoard;
     }
-    var inventory = Bukkit.createInventory(null, 36, Component.text("まな板").color(NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, 36, Text("まな板", NamedTextColor.GREEN));
     cuttingBoard = inventory;
     return inventory;
   }
@@ -314,7 +316,7 @@ class CookStage extends AbstractStage {
     if (servingTable != null) {
       return servingTable;
     }
-    var inventory = Bukkit.createInventory(null, 54, Component.text("盛り付け台").color(NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, 54, Text("盛り付け台", NamedTextColor.GREEN));
     servingTable = inventory;
     return inventory;
   }
@@ -323,7 +325,7 @@ class CookStage extends AbstractStage {
     if (cauldron != null) {
       return cauldron;
     }
-    var inventory = Bukkit.createInventory(null, 54, Component.text("鍋").color(NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, 54, Text("鍋", NamedTextColor.GREEN));
     cauldron = inventory;
     return inventory;
   }
@@ -332,7 +334,7 @@ class CookStage extends AbstractStage {
     if (hotPlate != null) {
       return hotPlate;
     }
-    var inventory = Bukkit.createInventory(null, 54, Component.text("鉄板").color(NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, 54, Text("鉄板", NamedTextColor.GREEN));
     hotPlate = inventory;
     return inventory;
   }

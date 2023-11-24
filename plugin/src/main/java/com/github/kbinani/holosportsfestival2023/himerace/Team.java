@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 
@@ -48,7 +49,7 @@ class Team implements Level.Delegate {
           var book = ItemBuilder.For(Material.BOOK)
             .customByteTag(itemTag, (byte) 1)
             .customByteTag(Stage.BUILD.tag, (byte) 1)
-            .displayName(Component.text("回答する！(右クリックで開く) / Answer Book (Right click to open)").color(NamedTextColor.AQUA))
+            .displayName(Text("回答する！(右クリックで開く) / Answer Book (Right click to open)", NamedTextColor.AQUA))
             .build();
           var inventory = princess.getInventory();
           inventory.setItem(0, book);
@@ -157,7 +158,7 @@ class Team implements Level.Delegate {
 
   Component getBossBarName() {
     var stage = level.getActive();
-    return color.component().append(Component.text(String.format(" %s", stage.description)).color(NamedTextColor.WHITE));
+    return color.component().append(Text(String.format(" %s", stage.description), NamedTextColor.WHITE));
   }
 
   float getProgress() {

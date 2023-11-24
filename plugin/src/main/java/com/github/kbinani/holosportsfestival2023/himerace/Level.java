@@ -19,6 +19,8 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Delegate, SolveStage.Delegate, FightStage.Delegate, GoalStage.Delegate {
   private final World world;
   private final JavaPlugin owner;
@@ -105,7 +107,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.PRINCESS.component(),
-      Component.text("右クリでエントリー！").color(NamedTextColor.AQUA));
+      Text("右クリでエントリー！", NamedTextColor.AQUA));
 
     Editor.StandingSign(
       world,
@@ -115,7 +117,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.KNIGHT.component(),
-      Component.text("右クリでエントリー！").color(NamedTextColor.AQUA));
+      Text("右クリでエントリー！", NamedTextColor.AQUA));
 
     for (var stage : this.stages.values()) {
       stage.reset();

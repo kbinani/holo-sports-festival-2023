@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 
 class Registrants {
@@ -68,7 +69,7 @@ class Registrants {
         }
         if (unit.vehicle == null || !unit.vehicle.isOnline()) {
           // https://youtu.be/D9vmP7Qj4TI?t=1398
-          broadcast(Component.text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName())).color(NamedTextColor.RED));
+          broadcast(Text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName()), NamedTextColor.RED));
           return false;
         }
       }
@@ -105,12 +106,12 @@ class Registrants {
   void announceEntryList() {
     // https://youtu.be/uEpmE5WJPW8?t=2680
     broadcast(
-      Component.text("-".repeat(10)).color(NamedTextColor.GREEN)
+      Text("-".repeat(10), NamedTextColor.GREEN)
         .appendSpace()
         .append(prefix)
         .appendSpace()
-        .append(Component.text("エントリー者 ").color(NamedTextColor.AQUA))
-        .append(Component.text("-".repeat(10)).color(NamedTextColor.GREEN))
+        .append(Text("エントリー者 ", NamedTextColor.AQUA))
+        .append(Text("-".repeat(10), NamedTextColor.GREEN))
     );
     var first = true;
     for (var color : TeamColor.all) {
@@ -120,15 +121,15 @@ class Registrants {
       first = false;
       var units = registrants.get(color);
       if (units == null) {
-        broadcast(Component.text(String.format(" %s (0)", color.text)).color(color.textColor));
+        broadcast(Text(String.format(" %s (0)", color.text), color.textColor));
         continue;
       }
-      broadcast(Component.text(String.format(" %s (%d)", color.text, units.size())).color(color.textColor));
+      broadcast(Text(String.format(" %s (%d)", color.text, units.size()), color.textColor));
       for (var unit : units) {
         if (unit.vehicle != null) {
-          broadcast(Component.text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName())).color(color.textColor));
+          broadcast(Text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName()), color.textColor));
         } else {
-          broadcast(Component.text(String.format(" - [騎手] %s", unit.attacker.getName())).color(color.textColor));
+          broadcast(Text(String.format(" - [騎手] %s", unit.attacker.getName()), color.textColor));
         }
       }
     }
@@ -146,13 +147,13 @@ class Registrants {
     team.addPlayer(player);
 
     broadcast(Component.empty()
-      .append(Component.text(player.getName() + "が").color(NamedTextColor.WHITE))
+      .append(Text(player.getName() + "が"))
       .append(color.component())
-      .append(Component.text("にエントリーしました。").color(NamedTextColor.WHITE))
+      .append(Text("にエントリーしました。"))
     );
 
     player.sendMessage(prefix
-      .append(Component.text("Right-click with the saddle on the player you want to make your horse!").color(NamedTextColor.WHITE))
+      .append(Text("Right-click with the saddle on the player you want to make your horse!"))
     );
 
     var unit = new MutableUnit(player);
@@ -173,11 +174,11 @@ class Registrants {
     }
     if (getParticipation(vehicle) != null) {
       // https://youtu.be/D9vmP7Qj4TI?t=1058
-      attacker.sendMessage(Component.text("そのプレイヤーは馬にできません。").color(NamedTextColor.RED));
+      attacker.sendMessage(Text("そのプレイヤーは馬にできません。", NamedTextColor.RED));
       return;
     }
     if (!vehicle.addPassenger(attacker)) {
-      attacker.sendMessage(Component.text("そのプレイヤーは馬にできません。").color(NamedTextColor.RED));
+      attacker.sendMessage(Text("そのプレイヤーは馬にできません。", NamedTextColor.RED));
       return;
     }
     p.unit.vehicle = vehicle;
@@ -189,10 +190,10 @@ class Registrants {
     var inventory = attacker.getInventory();
     inventory.setItem(0, book);
     vehicle.sendMessage(prefix
-      .append(Component.text(String.format("%sの騎馬になりました！", attacker.getName())).color(NamedTextColor.WHITE))
+      .append(Text(String.format("%sの騎馬になりました！", attacker.getName())))
     );
     attacker.sendMessage(prefix
-      .append(Component.text(String.format("%sを騎馬にしました！", vehicle.getName())).color(NamedTextColor.WHITE))
+      .append(Text(String.format("%sを騎馬にしました！", vehicle.getName())))
     );
   }
 
@@ -214,7 +215,7 @@ class Registrants {
         return;
       }
       // https://youtu.be/uEpmE5WJPW8?t=1987
-      player.sendMessage(prefix.append(Component.text("他のプレイヤーが選択しています。").color(NamedTextColor.RED)));
+      player.sendMessage(prefix.append(Text("他のプレイヤーが選択しています。", NamedTextColor.RED)));
       return;
     }
     current.unit.isLeader = true;
@@ -225,9 +226,9 @@ class Registrants {
     current.unit.attacker.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
     broadcast(prefix
       .append(current.color.component())
-      .append(Component.text("の大将に").color(NamedTextColor.WHITE))
-      .append(Component.text(player.getName()).color(NamedTextColor.GOLD))
-      .append(Component.text("がエントリーしました！").color(NamedTextColor.WHITE))
+      .append(Text("の大将に"))
+      .append(Text(player.getName(), NamedTextColor.GOLD))
+      .append(Text("がエントリーしました！"))
     );
   }
 
@@ -246,10 +247,10 @@ class Registrants {
     current.unit.isLeader = false;
     updateLeaderRegistrationBarrel();
     broadcast(prefix
-      .append(Component.text(player.getName()).color(NamedTextColor.GOLD))
-      .append(Component.text("が").color(NamedTextColor.WHITE))
+      .append(Text(player.getName(), NamedTextColor.GOLD))
+      .append(Text("が"))
       .append(current.color.component())
-      .append(Component.text("の大将を辞めました！").color(NamedTextColor.WHITE))
+      .append(Text("の大将を辞めました！"))
     );
     if (current.unit.vehicle != null) {
       current.unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
@@ -292,10 +293,10 @@ class Registrants {
 
       if (current.unit.isLeader) {
         broadcast(prefix
-          .append(Component.text(current.unit.attacker.getName()).color(NamedTextColor.GOLD))
-          .append(Component.text("が").color(NamedTextColor.WHITE))
+          .append(Text(current.unit.attacker.getName(), NamedTextColor.GOLD))
+          .append(Text("が"))
           .append(current.color.component())
-          .append(Component.text("の大将を辞めました！").color(NamedTextColor.WHITE))
+          .append(Text("の大将を辞めました！"))
         );
         updateLeaderRegistrationBarrel();
         if (current.unit.vehicle != null) {
@@ -305,14 +306,14 @@ class Registrants {
 
       // https://youtu.be/D9vmP7Qj4TI?t=1462
       player.sendMessage(prefix
-        .append(Component.text("エントリー登録を解除しました。").color(NamedTextColor.WHITE))
+        .append(Text("エントリー登録を解除しました。"))
       );
 
       if (current.unit.vehicle != null) {
         team.removePlayer(current.unit.vehicle);
         current.unit.vehicle.removePassenger(player);
         current.unit.vehicle.sendMessage(prefix
-          .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(NamedTextColor.WHITE))
+          .append(Text("騎士があなたから降りたため、エントリーが解除されました。"))
         );
       }
     } else {
@@ -320,7 +321,7 @@ class Registrants {
 
       if (player.removePassenger(current.unit.attacker)) {
         player.sendMessage(prefix
-          .append(Component.text("エントリー登録を解除しました。").color(NamedTextColor.WHITE))
+          .append(Text("エントリー登録を解除しました。"))
         );
         retireLeader(current.unit.attacker);
         var inventory = current.unit.attacker.getInventory();
@@ -328,7 +329,7 @@ class Registrants {
       } else {
         // https://youtu.be/D9vmP7Qj4TI?t=1217
         player.sendMessage(prefix
-          .append(Component.text("騎士があなたから降りたため、エントリーが解除されました。").color(NamedTextColor.WHITE))
+          .append(Text("騎士があなたから降りたため、エントリーが解除されました。"))
         );
       }
     }
@@ -361,7 +362,7 @@ class Registrants {
       return;
     }
       // https://youtu.be/gp6ABH58SGA?t=2068
-      barrel.customName(prefix.append(Component.text("大将").color(NamedTextColor.DARK_GREEN)));
+      barrel.customName(prefix.append(Text("大将", NamedTextColor.DARK_GREEN)));
       barrel.update();
 
       var materials = new Material[]{Material.RED_STAINED_GLASS_PANE, Material.WHITE_STAINED_GLASS_PANE, Material.YELLOW_STAINED_GLASS_PANE};
@@ -409,9 +410,9 @@ class Registrants {
         var name = color
           .component()
           .appendSpace()
-          .append(Component.text("大将").color(NamedTextColor.YELLOW))
+          .append(Text("大将", NamedTextColor.YELLOW))
           .appendSpace()
-          .append(Component.text(attacker.getName()).color(NamedTextColor.GOLD));
+          .append(Text(attacker.getName(), NamedTextColor.GOLD));
         var head = ItemBuilder.For(Material.PLAYER_HEAD)
           .displayName(name)
           .build();

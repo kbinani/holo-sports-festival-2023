@@ -21,6 +21,8 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 import java.util.*;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class CarryStage extends AbstractStage {
   interface Delegate {
     void carryStageDidFinish();
@@ -161,8 +163,8 @@ class CarryStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Component.text("騎士達に向こうの足場まで運んでもらいましょう！").color(NamedTextColor.GREEN);
-      case KNIGHT -> Component.text("向こうの足場までお姫様を運んであげましょう！").color(NamedTextColor.GREEN);
+      case PRINCESS -> Text("騎士達に向こうの足場まで運んでもらいましょう！", NamedTextColor.GREEN);
+      case KNIGHT -> Text("向こうの足場までお姫様を運んであげましょう！", NamedTextColor.GREEN);
     };
   }
 

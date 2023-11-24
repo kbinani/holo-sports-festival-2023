@@ -13,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class GoalStage extends AbstractStage {
   interface Delegate {
     void goalStageDidFinish();
@@ -76,8 +78,8 @@ class GoalStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Component.text("騎士と一緒にモンスターを倒そう！").color(NamedTextColor.GREEN);
-      case KNIGHT -> Component.text("姫と一緒にモンスターを倒そう！").color(NamedTextColor.GREEN);
+      case PRINCESS -> Text("騎士と一緒にモンスターを倒そう！", NamedTextColor.GREEN);
+      case KNIGHT -> Text("姫と一緒にモンスターを倒そう！", NamedTextColor.GREEN);
     };
   }
 

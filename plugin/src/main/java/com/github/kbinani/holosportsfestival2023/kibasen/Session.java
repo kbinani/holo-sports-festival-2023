@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.*;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 
 class Session {
@@ -109,7 +110,7 @@ class Session {
       if (defenceUnit.isLeader) {
         broadcast(prefix
           .append(offence.teamDisplayName())
-          .append(Component.text(" --[大将撃破]-> ").color(NamedTextColor.GOLD))
+          .append(Text(" --[大将撃破]-> ", NamedTextColor.GOLD))
           .append(defence.teamDisplayName())
         );
         var count = leaderKillCount.computeIfAbsent(offenceUnit.color, (c) -> 0);
@@ -117,7 +118,7 @@ class Session {
       } else {
         broadcast(prefix
           .append(offence.teamDisplayName())
-          .append(Component.text(" --[撃破]-> ").color(NamedTextColor.GRAY))
+          .append(Text(" --[撃破]-> ", NamedTextColor.GRAY))
           .append(defence.teamDisplayName())
         );
       }
@@ -163,11 +164,11 @@ class Session {
         }
       }
       name = name.append(color.component())
-        .append(Component.text(String.format(": %d", count)).color(NamedTextColor.WHITE));
+        .append(Text(String.format(": %d", count)));
       if (i == 2) {
         break;
       }
-      name = name.append(Component.text(" | ").color(NamedTextColor.GOLD));
+      name = name.append(Text(" | ", NamedTextColor.GOLD));
     }
     bossBar.setName(name);
     bossBar.setProgress(getBossBarProgress());
@@ -266,10 +267,10 @@ class Session {
     broadcast(
       Component.empty()
         .appendSpace()
-        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GREEN))
+        .append(Text(separator.repeat(32), NamedTextColor.GREEN))
         .appendSpace()
         .append(prefix)
-        .append(Component.text(separator.repeat(32)).color(NamedTextColor.GREEN))
+        .append(Text(separator.repeat(32), NamedTextColor.GREEN))
     );
     broadcast(Component.empty());
     class Record {
@@ -287,21 +288,21 @@ class Session {
     for (var color : TeamColor.all) {
       var units = participants.get(color);
       if (units == null) {
-        broadcast(Component.text(String.format(" %s 総キル数: 0", color.text)).color(color.textColor));
+        broadcast(Text(String.format(" %s 総キル数: 0", color.text), color.textColor));
       } else {
         int count = 0;
         for (var unit : units) {
           count += unit.getKills();
           records.add(new Record(unit, unit.getKills()));
         }
-        broadcast(Component.text(String.format(" %s 総キル数: %d", color.text, count)).color(color.textColor));
+        broadcast(Text(String.format(" %s 総キル数: %d", color.text, count), color.textColor));
       }
       var leaderKills = leaderKillCount.getOrDefault(color, 0);
-      broadcast(Component.text(String.format("  - 大将キル数: %d", leaderKills)).color(NamedTextColor.AQUA));
+      broadcast(Text(String.format("  - 大将キル数: %d", leaderKills), NamedTextColor.AQUA));
       broadcast(Component.empty());
     }
     records.sort(Comparator.comparingInt(record -> -record.kills));
-    broadcast(Component.text(" ◆ 個人キルランキング").color(NamedTextColor.GOLD));
+    broadcast(Text(" ◆ 個人キルランキング", NamedTextColor.GOLD));
     int last = -1;
     int order = 1;
     int nextOrder = 1;
@@ -317,17 +318,14 @@ class Session {
     }
     for (var record : records) {
       broadcast(
-        Component.text(
-            String.format(
-              "  #%d: %s & %s - %d kill%s",
-              record.order,
-              record.unit.attacker.getName(),
-              record.unit.vehicle.getName(),
-              record.kills,
-              record.kills > 1 ? "s" : ""
-            )
-          )
-          .color(record.unit.color.textColor)
+        Text(String.format(
+          "  #%d: %s & %s - %d kill%s",
+          record.order,
+          record.unit.attacker.getName(),
+          record.unit.vehicle.getName(),
+          record.kills,
+          record.kills > 1 ? "s" : ""
+        ), record.unit.color.textColor)
       );
     }
     broadcast(Component.empty());
@@ -335,7 +333,7 @@ class Session {
 
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
-      Component.text("ゲームが終了しました！").color(NamedTextColor.GOLD),
+      Text("ゲームが終了しました！", NamedTextColor.GOLD),
       Component.empty(),
       times
     );
@@ -346,7 +344,7 @@ class Session {
   }
 
   private void startCountdown() {
-    var title = Component.text("ゲーム終了まで").color(NamedTextColor.GREEN);
+    var title = Text("ゲーム終了まで", NamedTextColor.GREEN);
     this.countdown = new Countdown(
       owner, world, announceBounds,
       title, NamedTextColor.WHITE, Component.empty(),

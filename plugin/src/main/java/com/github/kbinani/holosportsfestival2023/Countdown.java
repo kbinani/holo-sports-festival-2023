@@ -15,6 +15,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 public class Countdown implements Cancellable {
   private final List<BukkitTask> tasks = new ArrayList<>();
 
@@ -28,7 +30,7 @@ public class Countdown implements Cancellable {
     long seconds,
     Runnable then
   ) {
-    var main = titlePrefix.append(Component.text(String.format(" %d...", seconds)).color(counterColor));
+    var main = titlePrefix.append(Text(String.format(" %d...", seconds), counterColor));
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(main, subtitle, times);
     Players.Within(world, bounds, (player) -> {
@@ -39,7 +41,7 @@ public class Countdown implements Cancellable {
     var scheduler = Bukkit.getScheduler();
     for (long i = seconds - 1; i >= 1; i--) {
       var t = Title.title(
-        titlePrefix.append(Component.text(String.format(" %d...", i)).color(counterColor)),
+        titlePrefix.append(Text(String.format(" %d...", i), counterColor)),
         subtitle,
         times
       );

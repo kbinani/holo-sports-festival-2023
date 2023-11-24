@@ -28,6 +28,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class SolveStage extends AbstractStage {
   interface Delegate {
     void solveStageDidFinish();
@@ -199,12 +201,12 @@ class SolveStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case KNIGHT -> Component.text("姫と一緒に問題に答えよう！").color(NamedTextColor.GREEN);
+      case KNIGHT -> Text("姫と一緒に問題に答えよう！", NamedTextColor.GREEN);
       case PRINCESS -> {
         if (quizStarted) {
-          yield Component.text("騎士と一緒に問題に答えよう！").color(NamedTextColor.GREEN);
+          yield Text("騎士と一緒に問題に答えよう！", NamedTextColor.GREEN);
         } else {
-          yield Component.text("感圧板を踏んだらスタート！").color(NamedTextColor.GREEN);
+          yield Text("感圧板を踏んだらスタート！", NamedTextColor.GREEN);
         }
       }
     };

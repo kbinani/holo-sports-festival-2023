@@ -20,6 +20,8 @@ import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 class BuildStage extends AbstractStage {
   interface Delegate {
     void buildStageSignalActionBarUpdate();
@@ -132,7 +134,7 @@ class BuildStage extends AbstractStage {
     if (question == null) {
       return;
     }
-    var inventory = Bukkit.createInventory(null, 18, Component.text("解答する！").color(NamedTextColor.BLUE));
+    var inventory = Bukkit.createInventory(null, 18, Text("解答する！", NamedTextColor.BLUE));
     for (int slot = 0; slot < 18; slot++) {
       var index = OptionIndexFromAnswerInventorySlot(slot);
       if (index < 0) {
@@ -231,7 +233,7 @@ class BuildStage extends AbstractStage {
   private static Title CreateCorrectAnswerTitle() {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     return Title.title(
-      Component.text("正解！").color(NamedTextColor.GREEN),
+      Text("正解！", NamedTextColor.GREEN),
       Component.empty(),
       times
     );
@@ -240,7 +242,7 @@ class BuildStage extends AbstractStage {
   private static Title CreateQuestionChangedTitle() {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     return Title.title(
-      Component.text("お題が変更されました。").color(NamedTextColor.GOLD),
+      Text("お題が変更されました。", NamedTextColor.GOLD),
       Component.empty(),
       times
     );
@@ -249,8 +251,8 @@ class BuildStage extends AbstractStage {
   private static Title CreatePenaltyTitle(int seconds) {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     return Title.title(
-      Component.text("はずれ！").color(NamedTextColor.RED),
-      Component.text(String.format("%d秒後にお題が変更されます。", seconds)).color(NamedTextColor.GREEN),
+      Text("はずれ！", NamedTextColor.RED),
+      Text(String.format("%d秒後にお題が変更されます。", seconds), NamedTextColor.GREEN),
       times
     );
   }
@@ -271,7 +273,7 @@ class BuildStage extends AbstractStage {
   @Override
   protected @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Component.text("騎士達が作っているものを答えよう！").color(NamedTextColor.GREEN);
+      case PRINCESS -> Text("騎士達が作っているものを答えよう！", NamedTextColor.GREEN);
       case KNIGHT -> {
         var question = step == 0 ? first : second;
         if (question == null) {
@@ -279,9 +281,9 @@ class BuildStage extends AbstractStage {
           // いったん action bar はクリアした方が分かりやすいはず.
           yield Component.empty();
         }
-        yield Component.text("建築で『").color(NamedTextColor.GREEN)
-          .append(Component.text(question.answer).color(NamedTextColor.GOLD))
-          .append(Component.text("』を姫に伝えよう！").color(NamedTextColor.GREEN));
+        yield Text("建築で『", NamedTextColor.GREEN)
+          .append(Text(question.answer, NamedTextColor.GOLD))
+          .append(Text("』を姫に伝えよう！", NamedTextColor.GREEN));
       }
     };
   }

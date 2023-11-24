@@ -21,9 +21,11 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+
 public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
-  static final Component title = Component.text("[Himerace]").color(NamedTextColor.AQUA);
+  static final Component title = Text("[Himerace]", NamedTextColor.AQUA);
   static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
   static final String itemTag = "hololive_sports_festival_2023_himerace";
@@ -87,7 +89,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("ゲームスタート").color(NamedTextColor.AQUA)
+      Text("ゲームスタート", NamedTextColor.AQUA)
     );
     Editor.StandingSign(
       world,
@@ -97,7 +99,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("ゲームを中断する").color(NamedTextColor.RED)
+      Text("ゲームを中断する", NamedTextColor.RED)
     );
     Editor.StandingSign(
       world,
@@ -107,7 +109,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Component.text("エントリーリスト").color(NamedTextColor.GREEN)
+      Text("エントリーリスト", NamedTextColor.GREEN)
     );
     if (race != null) {
       race.dispose();
@@ -227,13 +229,13 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       return;
     }
     broadcast(
-      Component.text("----------").color(NamedTextColor.GREEN)
+      Text("----------", NamedTextColor.GREEN)
         .appendSpace()
         .append(title)
         .appendSpace()
-        .append(Component.text("エントリー者").color(NamedTextColor.AQUA))
+        .append(Text("エントリー者", NamedTextColor.AQUA))
         .appendSpace()
-        .append(Component.text("----------").color(NamedTextColor.GREEN))
+        .append(Text("----------", NamedTextColor.GREEN))
     );
     for (int i = 0; i < TeamColor.all.length; i++) {
       var color = TeamColor.all[i];
@@ -242,18 +244,18 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         Component.text(" ")
           .append(color.component())
           .appendSpace()
-          .append(Component.text(String.format(" (%d) ", team == null ? 0 : team.size())).color(color.textColor))
+          .append(Text(String.format(" (%d) ", team == null ? 0 : team.size()), color.textColor))
       );
       if (team != null) {
         var princess = team.getPrincess();
         if (princess != null) {
           broadcast(
-            Component.text(String.format("  - [姫] %s", princess.getName())).color(NamedTextColor.RED)
+            Text(String.format("  - [姫] %s", princess.getName()), NamedTextColor.RED)
           );
         }
         for (var knight : team.getKnights()) {
           broadcast(
-            Component.text(String.format("  - %s", knight.getName())).color(NamedTextColor.RED)
+            Text(String.format("  - %s", knight.getName()), NamedTextColor.RED)
           );
         }
       }
@@ -274,11 +276,11 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     if (team.add(player, role)) {
       broadcast(title
-        .append(Component.text(" " + player.getName() + " が").color(NamedTextColor.WHITE))
+        .append(Text(" " + player.getName() + " が"))
         .append(color.component())
-        .append(Component.text("の").color(NamedTextColor.WHITE))
+        .append(Text("の"))
         .append(role.component())
-        .append(Component.text("にエントリーしました。").color(NamedTextColor.WHITE))
+        .append(Text("にエントリーしました。"))
       );
     }
   }
@@ -294,8 +296,8 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     if (countdown != null) {
       countdown.cancel();
     }
-    var titlePrefix = Component.text("スタートまで").color(NamedTextColor.AQUA);
-    var subtitle = Component.text("姫護衛レース").color(NamedTextColor.GREEN);
+    var titlePrefix = Text("スタートまで", NamedTextColor.AQUA);
+    var subtitle = Text("姫護衛レース", NamedTextColor.GREEN);
     countdown = new Countdown(
       owner, world, announceBounds,
       titlePrefix, NamedTextColor.AQUA, subtitle,
