@@ -1,29 +1,34 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Kill;
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 class CookStage extends AbstractStage {
   interface Delegate {
     void cookStageDidFinish();
   }
 
-  @Nullable
-  Delegate delegate;
+  private final @Nonnull  Delegate delegate;
 
-  CookStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
+  CookStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
     super(world, owner, origin);
     this.delegate = delegate;
   }
@@ -36,10 +41,7 @@ class CookStage extends AbstractStage {
 
   @Override
   protected void onFinish() {
-    if (delegate != null) {
-      //TODO:
-      delegate.cookStageDidFinish();
-    }
+    delegate.cookStageDidFinish();
   }
 
   @Override
@@ -122,6 +124,55 @@ class CookStage extends AbstractStage {
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().scale(0.6f));
     });
+
+    world.spawn(pos(-98, 81, 13).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
+      it.customName(Component.text("八百屋").color(NamedTextColor.GOLD));
+      it.addScoreboardTag(Stage.COOK.tag);
+      it.setProfession(Villager.Profession.FARMER);
+      it.setVillagerLevel(5);
+      var recipes = new ArrayList<MerchantRecipe>();
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.SWEET_BERRIES).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EGG).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.POTION)
+          .potion(PotionType.STRENGTH)
+          .customByteTag(Stage.COOK.tag, (byte) 1)
+          .displayName(Component.text("油 / Oil"))
+          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
+          .build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.SWEET_BERRIES).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.EGG).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      recipes.add(CreateOffer(
+        ItemBuilder.For(Material.POTION)
+          .potion(PotionType.STRENGTH)
+          .customByteTag(Stage.COOK.tag, (byte) 1)
+          .displayName(Component.text("油 / Oil"))
+          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
+          .build(),
+        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+      ));
+      it.setRecipes(recipes);
+    });
+  }
+
+  private static MerchantRecipe CreateOffer(ItemStack from, ItemStack to) {
+    var recipe = new MerchantRecipe(to, 1);
+    recipe.addIngredient(from);
+    return recipe;
   }
 
   private int x(int x) {
