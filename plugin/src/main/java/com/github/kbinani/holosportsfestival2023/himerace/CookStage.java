@@ -268,6 +268,18 @@ class CookStage extends AbstractStage {
       return cuttingBoard;
     }
     var inventory = Bukkit.createInventory(null, 36, Text("まな板", NamedTextColor.GREEN));
+    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var a = new ItemStack(Material.AIR);
+    final var ia = ItemBuilder.For(Material.IRON_AXE).displayName(Text("材料を切る！", NamedTextColor.GREEN)).build();
+    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    inventory.setContents(new ItemStack[]{
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, a, gsgp, ia, gsgp, ob, gsgp, bsgp,
+      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+    });
     cuttingBoard = inventory;
     return inventory;
   }
@@ -277,6 +289,21 @@ class CookStage extends AbstractStage {
       return servingTable;
     }
     var inventory = Bukkit.createInventory(null, 54, Text("盛り付け台", NamedTextColor.GREEN));
+    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var a = new ItemStack(Material.AIR);
+    final var b = ItemBuilder.For(Material.BOWL).build();
+    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    //NOTE: この orange_stained_glass_pane は displayName が設定されておらずアイテム名が見える: https://youtu.be/MKcNzz21P8g?t=9740
+    final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).build();
+    inventory.setContents(new ItemStack[]{
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, b, gsgp, ob, gsgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, a, a, a, a, a, gsgp, bsgp,
+      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp,
+      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp
+    });
     servingTable = inventory;
     return inventory;
   }
@@ -295,6 +322,7 @@ class CookStage extends AbstractStage {
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
       it.setCustomModelData(1);
+      //TODO: 着火した時は NamedTextColor.RED
       it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
     });
     inventory.setContents(new ItemStack[]{
@@ -314,12 +342,29 @@ class CookStage extends AbstractStage {
       return hotPlate;
     }
     var inventory = Bukkit.createInventory(null, 54, Text("鉄板", NamedTextColor.GREEN));
+    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
+    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var a = new ItemStack(Material.AIR);
+    final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var c = new ItemStack(Material.CAMPFIRE);
+    c.editMeta(ItemMeta.class, it -> {
+      it.setCustomModelData(1);
+      //TODO: 着火した時は NamedTextColor.RED
+      //NOTE: 鉄板の焚き火は最初から着火しているように見える: https://youtu.be/ZNGqqCothRc?t=9815
+      it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
+    });
+    inventory.setContents(new ItemStack[]{
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, fas, gsgp, ob, gsgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, a, a, a, a, a, gsgp, bsgp,
+      bsgp, gsgp, wsgp, wsgp, wsgp, wsgp, wsgp, gsgp, bsgp,
+      bsgp, gsgp, c, c, c, c, c, gsgp, bsgp
+    });
     hotPlate = inventory;
     return inventory;
-  }
-
-  private static ItemStack[] ItemStacksFromMaterials(Material[] materials) {
-    return Arrays.stream(materials).map(ItemStack::new).toList().toArray(new ItemStack[0]);
   }
 
   private static ItemStack AddItemTag(ItemStack item) {
