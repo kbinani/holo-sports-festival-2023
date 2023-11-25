@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Container;
 import org.bukkit.entity.TextDisplay;
@@ -19,6 +20,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
@@ -207,39 +211,25 @@ class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.FARMER);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
+      recipes.add(CreateOffer(Material.EMERALD, Material.SWEET_BERRIES));
+      recipes.add(CreateOffer(Material.EMERALD, Material.EGG));
       recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.SWEET_BERRIES).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EGG).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
+        Material.EMERALD,
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
-          .customByteTag(Stage.COOK.tag, (byte) 1)
           .displayName(Text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build()
       ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.SWEET_BERRIES).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EGG).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
+      recipes.add(CreateOffer(Material.SWEET_BERRIES, Material.EMERALD));
+      recipes.add(CreateOffer(Material.EGG, Material.EMERALD));
       recipes.add(CreateOffer(
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
-          .customByteTag(Stage.COOK.tag, (byte) 1)
           .displayName(Text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
+        Material.EMERALD
       ));
       it.setRecipes(recipes);
     });
@@ -250,38 +240,14 @@ class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.BUTCHER);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.CHICKEN).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.BEEF).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.MUTTON).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.RABBIT).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.CHICKEN).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.BEEF).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.MUTTON).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.RABBIT).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
+      recipes.add(CreateOffer(Material.EMERALD, Material.CHICKEN));
+      recipes.add(CreateOffer(Material.EMERALD, Material.BEEF));
+      recipes.add(CreateOffer(Material.EMERALD, Material.MUTTON));
+      recipes.add(CreateOffer(Material.EMERALD, Material.RABBIT));
+      recipes.add(CreateOffer(Material.CHICKEN, Material.EMERALD));
+      recipes.add(CreateOffer(Material.BEEF, Material.EMERALD));
+      recipes.add(CreateOffer(Material.MUTTON, Material.EMERALD));
+      recipes.add(CreateOffer(Material.RABBIT, Material.EMERALD));
       it.setRecipes(recipes);
     });
 
@@ -291,14 +257,8 @@ class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.SHEPHERD);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.COAL).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.COAL).customByteTag(Stage.COOK.tag, (byte) 1).build(),
-        ItemBuilder.For(Material.EMERALD).customByteTag(Stage.COOK.tag, (byte) 1).build()
-      ));
+      recipes.add(CreateOffer(Material.EMERALD, Material.COAL));
+      recipes.add(CreateOffer(Material.COAL, Material.EMERALD));
       it.setRecipes(recipes);
     });
   }
@@ -326,6 +286,25 @@ class CookStage extends AbstractStage {
       return cauldron;
     }
     var inventory = Bukkit.createInventory(null, 54, Text("鍋", NamedTextColor.GREEN));
+    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
+    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    final var a = new ItemStack(Material.AIR);
+    final var c = new ItemStack(Material.CAMPFIRE);
+    c.editMeta(ItemMeta.class, it -> {
+      it.setCustomModelData(1);
+      it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
+    });
+    inventory.setContents(new ItemStack[]{
+      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
+      bsgp, gsgp, gsgp, fas, gsgp, ob, gsgp, gsgp, bsgp,
+      bsgp, gsgp, wsgp, gsgp, gsgp, gsgp, wsgp, gsgp, bsgp,
+      bsgp, gsgp, wsgp, a, a, a, wsgp, gsgp, bsgp,
+      bsgp, gsgp, wsgp, wsgp, wsgp, wsgp, wsgp, gsgp, bsgp,
+      bsgp, gsgp, c, c, c, c, c, gsgp, bsgp
+    });
     cauldron = inventory;
     return inventory;
   }
@@ -339,10 +318,36 @@ class CookStage extends AbstractStage {
     return inventory;
   }
 
+  private static ItemStack[] ItemStacksFromMaterials(Material[] materials) {
+    return Arrays.stream(materials).map(ItemStack::new).toList().toArray(new ItemStack[0]);
+  }
+
+  private static ItemStack AddItemTag(ItemStack item) {
+    ItemMeta meta = item.getItemMeta();
+    if (meta != null) {
+      PersistentDataContainer container = meta.getPersistentDataContainer();
+      container.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
+      item.setItemMeta(meta);
+    }
+    return item;
+  }
+
   private static MerchantRecipe CreateOffer(ItemStack from, ItemStack to) {
-    var recipe = new MerchantRecipe(to, 1);
-    recipe.addIngredient(from);
+    var recipe = new MerchantRecipe(AddItemTag(to), 1);
+    recipe.addIngredient(AddItemTag(from));
     return recipe;
+  }
+
+  private static MerchantRecipe CreateOffer(Material from, Material to) {
+    return CreateOffer(new ItemStack(from), new ItemStack(to));
+  }
+
+  private static MerchantRecipe CreateOffer(Material from, ItemStack to) {
+    return CreateOffer(new ItemStack(from), to);
+  }
+
+  private static MerchantRecipe CreateOffer(ItemStack from, Material to) {
+    return CreateOffer(from, new ItemStack(to));
   }
 
   private int x(int x) {
