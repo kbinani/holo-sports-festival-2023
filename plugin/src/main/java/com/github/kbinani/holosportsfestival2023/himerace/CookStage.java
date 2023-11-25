@@ -378,7 +378,7 @@ class CookStage extends AbstractStage {
   }
 
   private static MerchantRecipe CreateOffer(ItemStack from, ItemStack to) {
-    var recipe = new MerchantRecipe(AddItemTag(to), 1);
+    var recipe = new MerchantRecipe(AddItemTag(to), Integer.MAX_VALUE);
     recipe.addIngredient(AddItemTag(from));
     return recipe;
   }
