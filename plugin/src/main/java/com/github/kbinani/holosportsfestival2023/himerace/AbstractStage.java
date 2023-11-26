@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -73,6 +74,9 @@ abstract class AbstractStage {
   protected abstract void onInventoryClick(InventoryClickEvent e, Participation participation);
 
   protected void onBlockDropItem(BlockDropItemEvent e) {
+  }
+
+  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
   }
 
   protected abstract void onStart();

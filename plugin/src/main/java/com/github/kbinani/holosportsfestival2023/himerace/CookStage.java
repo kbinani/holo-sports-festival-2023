@@ -15,6 +15,7 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -371,6 +372,30 @@ class CookStage extends AbstractStage {
           });
         }
       }
+    }
+  }
+
+  @Override
+  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
+    var block = e.getBlock();
+    var location = new Point3i(block.getLocation());
+    if (!location.equals(furnacePos)) {
+      return;
+    }
+    var result = e.getResult();
+    result.editMeta(ItemMeta.class, it -> {
+      var store = it.getPersistentDataContainer();
+      store.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
+    });
+    for (var taskItem : CookingTaskItem.values()) {
+      var task = taskItem.task;
+      if (task == null || taskItem.material != result.getType() || taskItem.customModelData != null || taskItem.specialName != null) {
+        continue;
+      }
+      result.editMeta(ItemMeta.class, it -> {
+        var store = it.getPersistentDataContainer();
+        store.set(NamespacedKey.minecraft(task.tag), PersistentDataType.BYTE, (byte) 1);
+      });
     }
   }
 

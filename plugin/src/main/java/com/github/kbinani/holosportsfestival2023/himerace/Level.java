@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -102,6 +103,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onBlockDropItem(BlockDropItemEvent e) {
     for (var stage : stages.values()) {
       stage.onBlockDropItem(e);
+    }
+  }
+
+  void onFurnaceSmelt(FurnaceSmeltEvent e) {
+    for (var stage : stages.values()) {
+      stage.onFurnaceSmelt(e);
     }
   }
 
