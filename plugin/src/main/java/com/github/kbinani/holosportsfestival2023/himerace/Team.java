@@ -60,6 +60,7 @@ public class Team implements Level.Delegate {
       }
       case BUILD -> {
         if (princess != null) {
+          princess.setFoodLevel(2);
           princess.chat("お腹が空いてきちゃった・・・(I'm so hungry...)");
           var inventory = princess.getInventory();
           inventory.setItem(0, CreateRecipeBook0());
