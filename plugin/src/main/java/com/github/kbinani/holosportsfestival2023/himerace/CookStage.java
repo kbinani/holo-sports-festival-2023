@@ -248,13 +248,84 @@ class CookStage extends AbstractStage {
     }
   }
 
+  record Recipe(TaskItem[] materials, TaskItem product) {
+    boolean consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
+      var matches = new int[materials.length];
+      var expected = new ItemStack[materials.length];
+      for (int j = 0; j < materials.length; j++) {
+        matches[j] = -1;
+        expected[j] = materials[j].toItem();
+      }
+      for (int i = materialSlotFrom; i <= materialSlotTo; i++) {
+        var item = inventory.getItem(i);
+        if (item == null) {
+          continue;
+        }
+        for (int j = 0; j < materials.length; j++) {
+          if (matches[j] < 0 && item.isSimilar(expected[j])) {
+            matches[j] = i;
+            break;
+          }
+        }
+      }
+
+      record RecipeMatch(ItemStack item, int slot) {}
+      var result = new ArrayList<RecipeMatch>();
+      for (int j = 0; j < materials.length; j++) {
+        if (matches[j] < 0) {
+          return false;
+        }
+        var item = inventory.getItem(matches[j]);
+        if (item == null) {
+          return false;
+        }
+        result.add(new RecipeMatch(item, matches[j]));
+      }
+      for (var match : result) {
+        inventory.setItem(match.slot, match.item.subtract());
+      }
+      var product = inventory.getItem(productSlot);
+      if (product != null && product.isSimilar(this.product.toItem())) {
+        inventory.setItem(productSlot, product.add());
+      } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
+        inventory.setItem(productSlot, this.product.toItem());
+      }
+      return true;
+    }
+  }
+
   private static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
+  private static final Recipe[] sCuttingBoardRecipes = new Recipe[]{
+    // https://youtu.be/ZNGqqCothRc?t=9807
+    new Recipe(new TaskItem[]{TaskItem.POTATO}, TaskItem.CUT_POTATO),
+    new Recipe(new TaskItem[]{TaskItem.CARROT}, TaskItem.CUT_CARROT),
+    // https://youtu.be/ls3kb0qhT4E?t=9813
+    new Recipe(new TaskItem[]{TaskItem.BEEF}, TaskItem.RAW_GROUND_BEEF),
+    // https://youtu.be/yMpj50YZHec?t=9817
+    new Recipe(new TaskItem[]{TaskItem.WHEAT}, TaskItem.FLOUR),
+    // https://youtu.be/MKcNzz21P8g?t=9738
+    new Recipe(new TaskItem[]{TaskItem.CHICKEN}, TaskItem.CHOPPED_CHICKEN),
+    new Recipe(new TaskItem[]{TaskItem.SWEET_BERRIES}, TaskItem.CUT_SWEET_BERRIES),
+  };
+  private static final Recipe[] sServingTableRecipes = new Recipe[]{
+    new Recipe(new TaskItem[]{TaskItem.PANCAKES, TaskItem.CUT_SWEET_BERRIES}, TaskItem.MIKO_PANCAKES),
+  };
+  private static final Recipe[] sCauldronRecipes = new Recipe[]{
+    // https://youtu.be/TEqf-g0WlKY?t=9918
+    // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
+    new Recipe(new TaskItem[]{TaskItem.OIL, TaskItem.CHOPPED_CHICKEN, TaskItem.FLOUR}, TaskItem.SUBARU_FRIED_CHICKEN),
+  };
+  private static final Recipe[] sHotPlateRecipes = new Recipe[]{
+    new Recipe(new TaskItem[]{TaskItem.FLOUR, TaskItem.EGG}, TaskItem.PANCAKES),
+    new Recipe(new TaskItem[]{TaskItem.RAW_GROUND_BEEF, TaskItem.CUT_POTATO, TaskItem.CUT_CARROT}, TaskItem.MIO_HAMBURGER_STEAK),
+  };
 
   private final @Nonnull Delegate delegate;
   private @Nullable Inventory cuttingBoard;
   private @Nullable Inventory servingTable;
   private @Nullable Inventory cauldron;
   private @Nullable Inventory hotPlate;
+
   private final List<Point3i> cuttingBoardBlocks;
   private final Point3i servingTablePos = pos(-99, 81, 8);
   private final Point3i cauldronPos = pos(-99, 81, 9);
@@ -355,111 +426,47 @@ class CookStage extends AbstractStage {
   protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
     var view = e.getView();
     var top = view.getTopInventory();
-    var bottom = view.getBottomInventory();
-    var clicked = e.getClickedInventory();
-    System.out.println("onInventoryClick; currentItem=" + e.getCurrentItem() + "; action=" + e.getAction());
     var slot = e.getRawSlot();
     var item = e.getCurrentItem();
-    var action = e.getAction();
-    var cursor = e.getCursor();
     if (top == cuttingBoard) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
       }
-      // https://youtu.be/ZNGqqCothRc?t=9807
-      // potato -> Text("切ったジャガイモ / Cut Potato", NamedTextColor.WHITE)
-      // carrot -> Text("切ったニンジン / Cut Carrot", NamedTextColor.WHITE)
-      // https://youtu.be/ls3kb0qhT4E?t=9813
-      // beef -> Text("生の牛ひき肉 / Raw Ground Beef", NamedTextColor.WHITE)
-      // https://youtu.be/yMpj50YZHec?t=9817
-      // wheat -> Text("小麦粉 / Flour", NamedTextColor.WHITE)
-      // https://youtu.be/MKcNzz21P8g?t=9738
-      // raw_chicken -> Text("切った生の鶏肉 / Chopped Chicken", NamedTextColor.WHITE)
-      record Pair(ItemStack from, ItemStack to) {
+      if (!onClickProdctSlot(e, 15)) {
+        return;
       }
-      final Pair[] pairs = new Pair[]{
-        new Pair(TaskItem.POTATO.toItem(), TaskItem.CUT_POTATO.toItem()),
-        new Pair(TaskItem.CARROT.toItem(), TaskItem.CUT_CARROT.toItem()),
-        new Pair(TaskItem.BEEF.toItem(), TaskItem.RAW_GROUND_BEEF.toItem()),
-        new Pair(TaskItem.WHEAT.toItem(), TaskItem.FLOUR.toItem()),
-        new Pair(TaskItem.CHICKEN.toItem(), TaskItem.CHOPPED_CHICKEN.toItem()),
-        new Pair(TaskItem.SWEET_BERRIES.toItem(), TaskItem.CUT_SWEET_BERRIES.toItem()),
-      };
-      if (clicked == bottom) {
-        if (action == InventoryAction.PLACE_ALL || action == InventoryAction.PLACE_ONE || action == InventoryAction.PLACE_SOME) {
-          var product = top.getItem(15);
-          if (product == null) {
-            top.setItem(15, ProductPlaceholderItem());
+      if (item == null) {
+        return;
+      }
+      if (slot == 11) {
+        // material
+      } else if (slot == 13) {
+        // iron_axe
+        e.setCancelled(true);
+        for (var recipe : sCuttingBoardRecipes) {
+          if (recipe.consumeMaterialsIfPossible(cuttingBoard, 11, 11, 15)) {
+            break;
           }
         }
-      } else if (item != null) {
-        if (slot == 11) {
-          // material
-        } else if (slot == 13) {
-          // iron_axe
-          e.setCancelled(true);
-          var material = top.getItem(11);
-          if (material != null) {
-            for (var pair : pairs) {
-              if (material.isSimilar(pair.from)) {
-                top.setItem(11, material.subtract());
-                var product = top.getItem(15);
-                if (product != null && product.isSimilar(pair.to)) {
-                  top.setItem(15, product.add());
-                  break;
-                } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
-                  top.setItem(15, pair.to);
-                  break;
-                }
-              }
-            }
-          }
-        } else if (slot == 15) {
-          // product
-          if (item.getType() == sProductPlaceholderMaterial) {
-            e.setCancelled(true);
-          } else {
-            if (action == InventoryAction.PICKUP_ALL) {
-              view.setCursor(item);
-              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-              e.setCancelled(true);
-            } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-              var playerInventory = e.getWhoClicked().getInventory();
-              playerInventory.addItem(item);
-              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-              e.setCancelled(true);
-            } else if (action == InventoryAction.PICKUP_HALF) {
-              var remain = item.getAmount() / 2;
-              var amount = item.getAmount() - remain;
-              view.setCursor(item.clone().subtract(remain));
-              if (remain == 0) {
-                view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-              } else {
-                view.setItem(e.getRawSlot(), item.clone().subtract(amount));
-              }
-              e.setCancelled(true);
-            } else {
-              e.setCancelled(true);
-            }
-          }
-        } else {
-          e.setCancelled(true);
-        }
+      } else {
+        e.setCancelled(true);
       }
     } else if (top == servingTable) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
       }
-      // ただのパンケーキ + ? -> Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD)
+      if (!onClickProdctSlot(e, 14)) {
+        return;
+      }
       if (slot == 12) {
         // bowl
         e.setCancelled(true);
-      } else if (slot == 14) {
-        // product
-        if (item.getType() == sProductPlaceholderMaterial) {
-          e.setCancelled(true);
+        for (var recipe : sServingTableRecipes) {
+          if (recipe.consumeMaterialsIfPossible(servingTable, 29, 33, 14)) {
+            break;
+          }
         }
       } else if (29 <= slot && slot <= 33) {
         // material
@@ -471,15 +478,20 @@ class CookStage extends AbstractStage {
         e.setCancelled(true);
         return;
       }
-      // https://youtu.be/TEqf-g0WlKY?t=9918
-      // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
+      if (!onClickProdctSlot(e, 14)) {
+        return;
+      }
+      if (item == null) {
+        return;
+      }
       if (slot == 12) {
         // steel_and_flint
+        //TODO: 着火するだけ, product の生成は 7 秒後
         e.setCancelled(true);
-      } else if (slot == 14) {
-        // product
-        if (item.getType() == sProductPlaceholderMaterial) {
-          e.setCancelled(true);
+        for (var recipe : sCauldronRecipes) {
+          if (recipe.consumeMaterialsIfPossible(cauldron, 30, 32, 14)) {
+            break;
+          }
         }
       } else if (30 <= slot && slot <= 32) {
         // material
@@ -491,14 +503,19 @@ class CookStage extends AbstractStage {
         e.setCancelled(true);
         return;
       }
-      // https://youtu.be/ls3kb0qhT4E?t=9819
-      // 即時: "Cut Potato" + "Cut Carrot" + "Raw Ground Beef" -> Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD)
-      // https://youtu.be/yMpj50YZHec?t=9830
-      // 即時: "小麦粉"+egg -> Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE)
-      if (slot == 14) {
-        // product
-        if (item.getType() == sProductPlaceholderMaterial) {
-          e.setCancelled(true);
+      if (!onClickProdctSlot(e, 14)) {
+        return;
+      }
+      if (item == null) {
+        return;
+      }
+      if (slot == 12) {
+        // steel_and_flint
+        e.setCancelled(true);
+        for (var recipe : sHotPlateRecipes) {
+          if (recipe.consumeMaterialsIfPossible(hotPlate, 29, 33, 14)) {
+            break;
+          }
         }
       } else if (29 <= slot && slot <= 33) {
         // material
@@ -508,7 +525,7 @@ class CookStage extends AbstractStage {
     }
   }
 
-  private boolean onClickProdctSlot(InventoryClickEvent e, Inventory cookingInventory, int productSlot) {
+  private boolean onClickProdctSlot(InventoryClickEvent e, int productSlot) {
     var view = e.getView();
     var top = view.getTopInventory();
     var bottom = view.getBottomInventory();
@@ -526,7 +543,6 @@ class CookStage extends AbstractStage {
       return false;
     } else if (item != null) {
       if (slot == productSlot) {
-        // product
         if (item.getType() == sProductPlaceholderMaterial) {
           e.setCancelled(true);
         } else {
@@ -535,8 +551,7 @@ class CookStage extends AbstractStage {
             view.setItem(e.getRawSlot(), ProductPlaceholderItem());
             e.setCancelled(true);
           } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-            var playerInventory = e.getWhoClicked().getInventory();
-            playerInventory.addItem(item);
+            bottom.addItem(item);
             view.setItem(e.getRawSlot(), ProductPlaceholderItem());
             e.setCancelled(true);
           } else if (action == InventoryAction.PICKUP_HALF) {
