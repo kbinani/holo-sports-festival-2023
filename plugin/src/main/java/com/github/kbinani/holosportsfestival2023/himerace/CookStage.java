@@ -625,7 +625,6 @@ class CookStage extends AbstractStage {
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
-      it.setCustomModelData(1);
       //NOTE: 鉄板の焚き火は着火操作必要無いぽい: https://youtu.be/ZNGqqCothRc?t=9815
       it.displayName(Text("🔥🔥🔥", NamedTextColor.RED));
     });
