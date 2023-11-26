@@ -454,7 +454,7 @@ public class CookStage extends AbstractStage {
   }
 
   public static @Nonnull ItemStack CreateRecipeBook1() {
-    var book = ItemBuilder.For(Material.WRITABLE_BOOK)
+    var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
       .customByteTag(Stage.COOK.tag)
       .customByteTag(itemTag)
