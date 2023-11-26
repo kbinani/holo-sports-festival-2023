@@ -65,259 +65,30 @@ class CookStage extends AbstractStage {
     void cookStageDidFinish();
   }
 
-  enum TaskItem {
-    EMERALD(Material.EMERALD),
-    COAL(Material.COAL),
-
-    POTATO(Material.POTATO),
-    CHICKEN(Material.CHICKEN),
-    BEEF(Material.BEEF),
-    MUTTON(Material.MUTTON),
-    RABBIT(Material.RABBIT),
-    CARROT(Material.CARROT),
-    WHEAT(Material.WHEAT),
-    OIL(Material.POTION),
-    EGG(Material.EGG),
-    SWEET_BERRIES(Material.SWEET_BERRIES),
-
-    BAKED_POTATO(Material.BAKED_POTATO),
-    COOKED_CHICKEN(Material.COOKED_CHICKEN),
-    COOKED_BEEF(Material.COOKED_BEEF),
-    COOKED_MUTTON(Material.COOKED_MUTTON),
-    COOKED_RABBIT(Material.COOKED_RABBIT),
-
-    CUT_POTATO(Material.POTATO, Text("切ったジャガイモ / Cut Potato", NamedTextColor.WHITE), 1),
-    CHOPPED_CHICKEN(Material.CHICKEN, Text("切った生の鶏肉 / Chopped Chicken", NamedTextColor.WHITE), 1),
-    RAW_GROUND_BEEF(Material.BEEF, Text("生の牛ひき肉 / Raw Ground Beef", NamedTextColor.WHITE), 1),
-    CUT_CARROT(Material.CARROT, Text("切ったニンジン / Cut Carrot", NamedTextColor.WHITE), 1),
-    FLOUR(Material.WHEAT, Text("小麦粉 / Flour", NamedTextColor.WHITE), 1),
-    CUT_SWEET_BERRIES(Material.SWEET_BERRIES, Text("切ったスイートベリー / Cut Sweet Berries", NamedTextColor.WHITE), 1),
-
-    PANCAKES(Material.CAKE, Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE), 1),
-
-    MIO_HAMBURGER_STEAK(Material.COOKED_BEEF, Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD), 1),
-    SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD), 1),
-    MIKO_PANCAKES(Material.CAKE, Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD), 2);
-
-    final Material material;
-    final @Nullable Component specialName;
-    final @Nullable Integer customModelData;
-
-    TaskItem(Material material, @Nullable Component specialName, @Nullable Integer customModelData) {
-      this.material = material;
-      this.specialName = specialName;
-      this.customModelData = customModelData;
-    }
-
-    TaskItem(Material material) {
-      this(material, null, null);
-    }
-
-    @Nonnull
-    ItemStack toItem() {
-      var item = switch (this) {
-        case OIL -> AddItemTag(
-          ItemBuilder.For(Material.POTION)
-            .potion(PotionType.STRENGTH)
-            .displayName(Text("油 / Oil"))
-            .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
-            .build()
-        );
-        default -> new ItemStack(this.material);
-      };
-      item.editMeta(ItemMeta.class, it -> {
-        if (this.specialName != null) {
-          it.displayName(this.specialName);
-        }
-        if (this.customModelData != null) {
-          it.setCustomModelData(this.customModelData);
-        }
-      });
-      return AddItemTag(item);
-    }
-  }
-
-  enum Task {
-    BAKED_POTATO(Material.BAKED_POTATO, "hololive_sports_festival_2023_himerace_cooking_easy"),
-    COOKED_CHICKEN(Material.COOKED_CHICKEN, "hololive_sports_festival_2023_himerace_cooking_easy"),
-    COOKED_BEEF(Material.COOKED_BEEF, "hololive_sports_festival_2023_himerace_cooking_easy"),
-    COOKED_MUTTON(Material.COOKED_MUTTON, "hololive_sports_festival_2023_himerace_cooking_easy"),
-    COOKED_RABBIT(Material.COOKED_RABBIT, "hololive_sports_festival_2023_himerace_cooking_easy"),
-
-    MIO_HAMBERGER_STEAK(Material.COOKED_BEEF, "hololive_sports_festival_2023_himerace_cooking_difficult"),
-    MIKO_PANCAKES(Material.PUMPKIN_PIE, "hololive_sports_festival_2023_himerace_cooking_difficult"),
-    SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, "hololive_sports_festival_2023_himerace_cooking_difficult");
-
-    final Material material;
-    final String tag;
-
-    Task(Material material, String tag) {
-      this.material = material;
-      this.tag = tag;
-    }
-
-    Component[] getRecipePageJp() {
-      return switch (this) {
-        // https://youtu.be/aca8Oy9v8tQ?t=9795
-        case BAKED_POTATO -> new Component[]{
-          Text("[ベイクドポテト]", NamedTextColor.BLUE).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①かまどで精錬！", NamedTextColor.BLACK))
-        };
-        case COOKED_CHICKEN -> new Component[]{
-          Text("[焼き鳥]", NamedTextColor.BLUE).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①かまどで精錬！", NamedTextColor.BLACK))
-        };
-        case COOKED_BEEF -> new Component[]{
-          Text("[ステーキ]", NamedTextColor.BLUE).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①かまどで精錬！", NamedTextColor.BLACK))
-        };
-        case COOKED_MUTTON -> new Component[]{
-          Text("[焼き羊肉]", NamedTextColor.BLUE).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の羊肉", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①かまどで精錬！", NamedTextColor.BLACK))
-        };
-        case COOKED_RABBIT -> new Component[]{
-          Text("[焼き兎肉]", NamedTextColor.BLUE).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の兎肉", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①かまどで精錬！", NamedTextColor.BLACK))
-        };
-        case MIO_HAMBERGER_STEAK -> new Component[]{
-          Text("[ミオしゃ特製ハンバーグ♡]", NamedTextColor.DARK_RED).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・ニンジン", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①まな板で生の牛肉、ジャガイモ、ニンジンを切る！", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("②鉄板で牛ひき肉と切ったジャガイモと切ったニンジンを一緒に焼く！", NamedTextColor.BLACK))
-        };
-        // https://youtu.be/vHk29E_TIDc?t=3066
-        case SUBARU_FRIED_CHICKEN -> new Component[]{
-          Text("[スバルの唐揚げ]", NamedTextColor.DARK_RED).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・油", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①まな板で生の鶏肉、小麦を切る！", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("②鍋に切った鶏肉、小麦粉、油を入れて揚げる！", NamedTextColor.BLACK))
-        };
-        case MIKO_PANCAKES -> new Component[]{
-          Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
-            .appendNewline()
-            .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・卵", NamedTextColor.BLACK)).appendNewline()
-            .append(Text("・スイートベリー", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("①まな板で小麦、スイートベリーを切る！", NamedTextColor.BLACK)).appendNewline()
-            .appendNewline()
-            .append(Text("②鉄板で小麦粉と卵を一緒に焼く！", NamedTextColor.BLACK)),
-          Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
-            .appendNewline()
-            .append(Text("③盛り付け台でただのパンケーキと切ったスイートベリーを盛り付ける！", NamedTextColor.BLACK))
-        };
-      };
-    }
-
-    Component[] getRecipePageEn() {
-      //TODO: 英訳したものになっているはずだけど一旦日本語版と同じにしてある
-      return getRecipePageJp();
-    }
-  }
-
-  record Recipe(TaskItem[] materials, TaskItem product) {
-    boolean consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
-      var matches = new int[materials.length];
-      var expected = new ItemStack[materials.length];
-      for (int j = 0; j < materials.length; j++) {
-        matches[j] = -1;
-        expected[j] = materials[j].toItem();
-      }
-      for (int i = materialSlotFrom; i <= materialSlotTo; i++) {
-        var item = inventory.getItem(i);
-        if (item == null) {
-          continue;
-        }
-        for (int j = 0; j < materials.length; j++) {
-          if (matches[j] < 0 && item.isSimilar(expected[j])) {
-            matches[j] = i;
-            break;
-          }
-        }
-      }
-
-      record RecipeMatch(ItemStack item, int slot) {}
-      var result = new ArrayList<RecipeMatch>();
-      for (int j = 0; j < materials.length; j++) {
-        if (matches[j] < 0) {
-          return false;
-        }
-        var item = inventory.getItem(matches[j]);
-        if (item == null) {
-          return false;
-        }
-        result.add(new RecipeMatch(item, matches[j]));
-      }
-      for (var match : result) {
-        inventory.setItem(match.slot, match.item.subtract());
-      }
-      var product = inventory.getItem(productSlot);
-      if (product != null && product.isSimilar(this.product.toItem())) {
-        inventory.setItem(productSlot, product.add());
-      } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
-        inventory.setItem(productSlot, this.product.toItem());
-      }
-      return true;
-    }
-  }
-
-  private static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
-  private static final Recipe[] sCuttingBoardRecipes = new Recipe[]{
+  static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
+  private static final CookingRecipe[] sCuttingBoardRecipes = new CookingRecipe[]{
     // https://youtu.be/ZNGqqCothRc?t=9807
-    new Recipe(new TaskItem[]{TaskItem.POTATO}, TaskItem.CUT_POTATO),
-    new Recipe(new TaskItem[]{TaskItem.CARROT}, TaskItem.CUT_CARROT),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.POTATO}, CookingTaskItem.CUT_POTATO),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CARROT}, CookingTaskItem.CUT_CARROT),
     // https://youtu.be/ls3kb0qhT4E?t=9813
-    new Recipe(new TaskItem[]{TaskItem.BEEF}, TaskItem.RAW_GROUND_BEEF),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.BEEF}, CookingTaskItem.RAW_GROUND_BEEF),
     // https://youtu.be/yMpj50YZHec?t=9817
-    new Recipe(new TaskItem[]{TaskItem.WHEAT}, TaskItem.FLOUR),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.WHEAT}, CookingTaskItem.FLOUR),
     // https://youtu.be/MKcNzz21P8g?t=9738
-    new Recipe(new TaskItem[]{TaskItem.CHICKEN}, TaskItem.CHOPPED_CHICKEN),
-    new Recipe(new TaskItem[]{TaskItem.SWEET_BERRIES}, TaskItem.CUT_SWEET_BERRIES),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CHICKEN}, CookingTaskItem.CHOPPED_CHICKEN),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.SWEET_BERRIES}, CookingTaskItem.CUT_SWEET_BERRIES),
   };
-  private static final Recipe[] sServingTableRecipes = new Recipe[]{
-    new Recipe(new TaskItem[]{TaskItem.PANCAKES, TaskItem.CUT_SWEET_BERRIES}, TaskItem.MIKO_PANCAKES),
+  private static final CookingRecipe[] sServingTableRecipes = new CookingRecipe[]{
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.PANCAKES, CookingTaskItem.CUT_SWEET_BERRIES}, CookingTaskItem.MIKO_PANCAKES),
   };
-  private static final Recipe[] sCauldronRecipes = new Recipe[]{
+  private static final CookingRecipe[] sCauldronRecipes = new CookingRecipe[]{
     // https://youtu.be/TEqf-g0WlKY?t=9918
     // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
-    new Recipe(new TaskItem[]{TaskItem.OIL, TaskItem.CHOPPED_CHICKEN, TaskItem.FLOUR}, TaskItem.SUBARU_FRIED_CHICKEN),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.OIL, CookingTaskItem.CHOPPED_CHICKEN, CookingTaskItem.FLOUR}, CookingTaskItem.SUBARU_FRIED_CHICKEN),
   };
-  private static final Recipe[] sHotPlateRecipes = new Recipe[]{
-    new Recipe(new TaskItem[]{TaskItem.FLOUR, TaskItem.EGG}, TaskItem.PANCAKES),
-    new Recipe(new TaskItem[]{TaskItem.RAW_GROUND_BEEF, TaskItem.CUT_POTATO, TaskItem.CUT_CARROT}, TaskItem.MIO_HAMBURGER_STEAK),
+  private static final CookingRecipe[] sHotPlateRecipes = new CookingRecipe[]{
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.FLOUR, CookingTaskItem.EGG}, CookingTaskItem.PANCAKES),
+    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.RAW_GROUND_BEEF, CookingTaskItem.CUT_POTATO, CookingTaskItem.CUT_CARROT}, CookingTaskItem.MIO_HAMBURGER_STEAK),
   };
 
   private final @Nonnull Delegate delegate;
@@ -856,7 +627,7 @@ class CookStage extends AbstractStage {
     return inventory;
   }
 
-  private static ItemStack AddItemTag(ItemStack item) {
+  static ItemStack AddItemTag(ItemStack item) {
     ItemMeta meta = item.getItemMeta();
     if (meta != null) {
       PersistentDataContainer container = meta.getPersistentDataContainer();
@@ -884,16 +655,16 @@ class CookStage extends AbstractStage {
     return CreateOffer(from, new ItemStack(to));
   }
 
-  private static Task[] GetRecipeBookTasks() {
-    return new Task[]{
-      Task.BAKED_POTATO,
-      Task.COOKED_CHICKEN,
-      Task.COOKED_BEEF,
-      Task.COOKED_MUTTON,
-      Task.COOKED_RABBIT,
-      Task.MIO_HAMBERGER_STEAK,
-      Task.SUBARU_FRIED_CHICKEN,
-      Task.MIKO_PANCAKES
+  private static CookingTask[] GetRecipeBookTasks() {
+    return new CookingTask[]{
+      CookingTask.BAKED_POTATO,
+      CookingTask.COOKED_CHICKEN,
+      CookingTask.COOKED_BEEF,
+      CookingTask.COOKED_MUTTON,
+      CookingTask.COOKED_RABBIT,
+      CookingTask.MIO_HAMBERGER_STEAK,
+      CookingTask.SUBARU_FRIED_CHICKEN,
+      CookingTask.MIKO_PANCAKES
     };
   }
 
