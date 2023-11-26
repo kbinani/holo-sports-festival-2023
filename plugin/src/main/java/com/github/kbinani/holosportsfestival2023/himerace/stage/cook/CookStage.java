@@ -222,15 +222,23 @@ public class CookStage extends AbstractStage {
     if (!isEasyTaskCleared && Task.ToItem(easy.item).isSimilar(item)) {
       isEasyTaskCleared = true;
       delegate.cookStageSignalActionBarUpdate();
-      if (isDifficultTaskCleared) {
-        delegate.cookStageDidFinish();
-      }
     } else if (!isDifficultTaskCleared && Task.ToItem(difficult.item).isSimilar(item)) {
       isDifficultTaskCleared = true;
       delegate.cookStageSignalActionBarUpdate();
-      if (isEasyTaskCleared) {
-        delegate.cookStageDidFinish();
-      }
+    } else {
+      return;
+    }
+    e.setCancelled(true);
+    var player = e.getPlayer();
+    var inventory = player.getInventory();
+    inventory.remove(item);
+    if (isEasyTaskCleared && isDifficultTaskCleared) {
+      player.setFoodLevel(20);
+      delegate.cookStageDidFinish();
+    } else if (isEasyTaskCleared || isDifficultTaskCleared) {
+      //NOTE: 本家ではクリアした時に満腹度が全回復する.
+      // しかし, アイテムを消費する毎に満腹度が回復したほうが, 姫に言わせたセリフとの矛盾感が減るはず.
+      player.setFoodLevel(2 + (20 - 2) / 2);
     }
   }
 
