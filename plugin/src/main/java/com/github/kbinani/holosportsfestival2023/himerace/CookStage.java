@@ -15,6 +15,7 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -62,6 +63,78 @@ class CookStage extends AbstractStage {
   // (敬称略)
   interface Delegate {
     void cookStageDidFinish();
+  }
+
+  enum TaskItem {
+    EMERALD(Material.EMERALD),
+    COAL(Material.COAL),
+
+    POTATO(Material.POTATO),
+    CHICKEN(Material.CHICKEN),
+    BEEF(Material.BEEF),
+    MUTTON(Material.MUTTON),
+    RABBIT(Material.RABBIT),
+    CARROT(Material.CARROT),
+    WHEAT(Material.WHEAT),
+    OIL(Material.POTION),
+    EGG(Material.EGG),
+    SWEET_BERRIES(Material.SWEET_BERRIES),
+
+    BAKED_POTATO(Material.BAKED_POTATO),
+    COOKED_CHICKEN(Material.COOKED_CHICKEN),
+    COOKED_BEEF(Material.COOKED_BEEF),
+    COOKED_MUTTON(Material.COOKED_MUTTON),
+    COOKED_RABBIT(Material.COOKED_RABBIT),
+
+    CUT_POTATO(Material.POTATO, Text("切ったジャガイモ / Cut Potato", NamedTextColor.WHITE), 1),
+    CHOPPED_CHICKEN(Material.CHICKEN, Text("切った生の鶏肉 / Chopped Chicken", NamedTextColor.WHITE), 1),
+    RAW_GROUND_BEEF(Material.BEEF, Text("生の牛ひき肉 / Raw Ground Beef", NamedTextColor.WHITE), 1),
+    CUT_CARROT(Material.CARROT, Text("切ったニンジン / Cut Carrot", NamedTextColor.WHITE), 1),
+    FLOUR(Material.WHEAT, Text("小麦粉 / Flour", NamedTextColor.WHITE), 1),
+    CUT_SWEET_BERRIES(Material.SWEET_BERRIES, Text("切ったスイートベリー / Cut Sweet Berries", NamedTextColor.WHITE), 1),
+
+    PANCAKES(Material.CAKE, Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE), 1),
+
+    MIO_HAMBURGER_STEAK(Material.COOKED_BEEF, Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD), 1),
+    SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD), 1),
+    MIKO_PANCAKES(Material.CAKE, Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD), 2);
+
+    final Material material;
+    final @Nullable Component specialName;
+    final @Nullable Integer customModelData;
+
+    TaskItem(Material material, @Nullable Component specialName, @Nullable Integer customModelData) {
+      this.material = material;
+      this.specialName = specialName;
+      this.customModelData = customModelData;
+    }
+
+    TaskItem(Material material) {
+      this(material, null, null);
+    }
+
+    @Nonnull
+    ItemStack toItem() {
+      var item = switch (this) {
+        case OIL -> AddItemTag(
+          ItemBuilder.For(Material.POTION)
+            .potion(PotionType.STRENGTH)
+            .displayName(Text("油 / Oil"))
+            .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
+            .build()
+        );
+        default -> new ItemStack(this.material);
+      };
+      item.editMeta(ItemMeta.class, it -> {
+        if (this.specialName != null) {
+          it.displayName(this.specialName);
+        }
+        if (this.customModelData != null) {
+          it.setCustomModelData(this.customModelData);
+        }
+      });
+      return AddItemTag(item);
+    }
   }
 
   enum Task {
@@ -175,6 +248,8 @@ class CookStage extends AbstractStage {
     }
   }
 
+  private static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
+
   private final @Nonnull Delegate delegate;
   private @Nullable Inventory cuttingBoard;
   private @Nullable Inventory servingTable;
@@ -185,7 +260,7 @@ class CookStage extends AbstractStage {
   private final Point3i cauldronPos = pos(-99, 81, 9);
   private final List<Point3i> hotPlateBlocks;
   private final Point3i furnacePos = pos(-99, 81, 10);
-  private final Point3i[] carrotCrops = new Point3i[]{    pos(-90, 80, 7), pos(-89, 80, 7), pos(-90, 80, 8), pos(-89, 80, 8)  };
+  private final Point3i[] carrotCrops = new Point3i[]{pos(-90, 80, 7), pos(-89, 80, 7), pos(-90, 80, 8), pos(-89, 80, 8)};
   private final Point3i[] potatoCrops = new Point3i[]{pos(-90, 80, 10), pos(-89, 80, 10), pos(-90, 80, 11), pos(-89, 80, 11)};
   private final Point3i[] wheatCrops = new Point3i[]{pos(-90, 80, 13), pos(-89, 80, 13), pos(-90, 80, 14), pos(-89, 80, 14)};
   private final Point3i[] beetrootCrops = new Point3i[]{pos(-90, 80, 16), pos(-89, 80, 16), pos(-90, 80, 17), pos(-89, 80, 17)};
@@ -254,35 +329,40 @@ class CookStage extends AbstractStage {
       return;
     }
     var action = e.getAction();
-    if (action != Action.RIGHT_CLICK_BLOCK) {
-      return;
-    }
     var block = e.getClickedBlock();
     if (block == null) {
       return;
     }
     var player = e.getPlayer();
     var location = new Point3i(block.getLocation());
-    if (location.equals(cauldronPos)) {
-      player.openInventory(ensureCauldronInventory());
-    } else if (location.equals(servingTablePos)) {
-      player.openInventory(ensureServingTableInventory());
-    } else if (cuttingBoardBlocks.stream().anyMatch(p -> p.equals(location))) {
-      player.openInventory(ensureCuttingBoardInventory());
-    } else if (hotPlateBlocks.stream().anyMatch(p -> p.equals(location))) {
-      player.openInventory(ensureHotPlateInventory());
-    } else {
-      return;
+    if (action == Action.RIGHT_CLICK_BLOCK) {
+      if (location.equals(cauldronPos)) {
+        player.openInventory(ensureCauldronInventory());
+      } else if (location.equals(servingTablePos)) {
+        player.openInventory(ensureServingTableInventory());
+      } else if (cuttingBoardBlocks.stream().anyMatch(p -> p.equals(location))) {
+        player.openInventory(ensureCuttingBoardInventory());
+      } else if (hotPlateBlocks.stream().anyMatch(p -> p.equals(location))) {
+        player.openInventory(ensureHotPlateInventory());
+      } else {
+        return;
+      }
+      e.setCancelled(true);
     }
-    e.setCancelled(true);
   }
 
   @Override
   protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-    var inventory = e.getClickedInventory();
-    var slot = e.getSlot();
+    var view = e.getView();
+    var top = view.getTopInventory();
+    var bottom = view.getBottomInventory();
+    var clicked = e.getClickedInventory();
+    System.out.println("onInventoryClick; currentItem=" + e.getCurrentItem() + "; action=" + e.getAction());
+    var slot = e.getRawSlot();
     var item = e.getCurrentItem();
-    if (inventory == cuttingBoard) {
+    var action = e.getAction();
+    var cursor = e.getCursor();
+    if (top == cuttingBoard) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
@@ -296,20 +376,78 @@ class CookStage extends AbstractStage {
       // wheat -> Text("小麦粉 / Flour", NamedTextColor.WHITE)
       // https://youtu.be/MKcNzz21P8g?t=9738
       // raw_chicken -> Text("切った生の鶏肉 / Chopped Chicken", NamedTextColor.WHITE)
-      if (slot == 11) {
-        // material
-      } else if (slot == 13) {
-        // iron_axe
-        e.setCancelled(true);
-      } else if (slot == 15) {
-        // product
-        if (item != null && item.getType() == Material.OAK_BUTTON) {
+      record Pair(ItemStack from, ItemStack to) {
+      }
+      final Pair[] pairs = new Pair[]{
+        new Pair(TaskItem.POTATO.toItem(), TaskItem.CUT_POTATO.toItem()),
+        new Pair(TaskItem.CARROT.toItem(), TaskItem.CUT_CARROT.toItem()),
+        new Pair(TaskItem.BEEF.toItem(), TaskItem.RAW_GROUND_BEEF.toItem()),
+        new Pair(TaskItem.WHEAT.toItem(), TaskItem.FLOUR.toItem()),
+        new Pair(TaskItem.CHICKEN.toItem(), TaskItem.CHOPPED_CHICKEN.toItem()),
+        new Pair(TaskItem.SWEET_BERRIES.toItem(), TaskItem.CUT_SWEET_BERRIES.toItem()),
+      };
+      if (clicked == bottom) {
+        if (action == InventoryAction.PLACE_ALL || action == InventoryAction.PLACE_ONE || action == InventoryAction.PLACE_SOME) {
+          var product = top.getItem(15);
+          if (product == null) {
+            top.setItem(15, ProductPlaceholderItem());
+          }
+        }
+      } else if (item != null) {
+        if (slot == 11) {
+          // material
+        } else if (slot == 13) {
+          // iron_axe
+          e.setCancelled(true);
+          var material = top.getItem(11);
+          if (material != null) {
+            for (var pair : pairs) {
+              if (material.isSimilar(pair.from)) {
+                top.setItem(11, material.subtract());
+                var product = top.getItem(15);
+                if (product != null && product.isSimilar(pair.to)) {
+                  top.setItem(15, product.add());
+                  break;
+                } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
+                  top.setItem(15, pair.to);
+                  break;
+                }
+              }
+            }
+          }
+        } else if (slot == 15) {
+          // product
+          if (item.getType() == sProductPlaceholderMaterial) {
+            e.setCancelled(true);
+          } else {
+            if (action == InventoryAction.PICKUP_ALL) {
+              view.setCursor(item);
+              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+              e.setCancelled(true);
+            } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+              var playerInventory = e.getWhoClicked().getInventory();
+              playerInventory.addItem(item);
+              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+              e.setCancelled(true);
+            } else if (action == InventoryAction.PICKUP_HALF) {
+              var remain = item.getAmount() / 2;
+              var amount = item.getAmount() - remain;
+              view.setCursor(item.clone().subtract(remain));
+              if (remain == 0) {
+                view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+              } else {
+                view.setItem(e.getRawSlot(), item.clone().subtract(amount));
+              }
+              e.setCancelled(true);
+            } else {
+              e.setCancelled(true);
+            }
+          }
+        } else {
           e.setCancelled(true);
         }
-      } else {
-        e.setCancelled(true);
       }
-    } else if (inventory == servingTable) {
+    } else if (top == servingTable) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
@@ -320,7 +458,7 @@ class CookStage extends AbstractStage {
         e.setCancelled(true);
       } else if (slot == 14) {
         // product
-        if (item != null && item.getType() == Material.OAK_BUTTON) {
+        if (item.getType() == sProductPlaceholderMaterial) {
           e.setCancelled(true);
         }
       } else if (29 <= slot && slot <= 33) {
@@ -328,7 +466,7 @@ class CookStage extends AbstractStage {
       } else {
         e.setCancelled(true);
       }
-    } else if (inventory == cauldron) {
+    } else if (top == cauldron) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
@@ -340,7 +478,7 @@ class CookStage extends AbstractStage {
         e.setCancelled(true);
       } else if (slot == 14) {
         // product
-        if (item != null && item.getType() == Material.OAK_BUTTON) {
+        if (item.getType() == sProductPlaceholderMaterial) {
           e.setCancelled(true);
         }
       } else if (30 <= slot && slot <= 32) {
@@ -348,7 +486,7 @@ class CookStage extends AbstractStage {
       } else {
         e.setCancelled(true);
       }
-    } else if (inventory == hotPlate) {
+    } else if (top == hotPlate) {
       if (participation.role != Role.KNIGHT) {
         e.setCancelled(true);
         return;
@@ -359,7 +497,7 @@ class CookStage extends AbstractStage {
       // 即時: "小麦粉"+egg -> Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE)
       if (slot == 14) {
         // product
-        if (item != null && item.getType() == Material.OAK_BUTTON) {
+        if (item.getType() == sProductPlaceholderMaterial) {
           e.setCancelled(true);
         }
       } else if (29 <= slot && slot <= 33) {
@@ -368,6 +506,64 @@ class CookStage extends AbstractStage {
         e.setCancelled(true);
       }
     }
+  }
+
+  private boolean onClickProdctSlot(InventoryClickEvent e, Inventory cookingInventory, int productSlot) {
+    var view = e.getView();
+    var top = view.getTopInventory();
+    var bottom = view.getBottomInventory();
+    var clicked = e.getClickedInventory();
+    var slot = e.getRawSlot();
+    var item = e.getCurrentItem();
+    var action = e.getAction();
+    if (clicked == bottom) {
+      if (action == InventoryAction.PLACE_ALL || action == InventoryAction.PLACE_ONE || action == InventoryAction.PLACE_SOME) {
+        var product = top.getItem(productSlot);
+        if (product == null) {
+          top.setItem(productSlot, ProductPlaceholderItem());
+        }
+      }
+      return false;
+    } else if (item != null) {
+      if (slot == productSlot) {
+        // product
+        if (item.getType() == sProductPlaceholderMaterial) {
+          e.setCancelled(true);
+        } else {
+          if (action == InventoryAction.PICKUP_ALL) {
+            view.setCursor(item);
+            view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+            e.setCancelled(true);
+          } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+            var playerInventory = e.getWhoClicked().getInventory();
+            playerInventory.addItem(item);
+            view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+            e.setCancelled(true);
+          } else if (action == InventoryAction.PICKUP_HALF) {
+            var remain = item.getAmount() / 2;
+            var amount = item.getAmount() - remain;
+            view.setCursor(item.clone().subtract(remain));
+            if (remain == 0) {
+              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
+            } else {
+              view.setItem(e.getRawSlot(), item.clone().subtract(amount));
+            }
+            e.setCancelled(true);
+          } else {
+            e.setCancelled(true);
+          }
+        }
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  private static ItemStack ProductPlaceholderItem() {
+    return ItemBuilder.For(sProductPlaceholderMaterial).displayName(Component.empty()).build();
   }
 
   @Override
@@ -551,7 +747,7 @@ class CookStage extends AbstractStage {
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
     final var ia = ItemBuilder.For(Material.IRON_AXE).displayName(Text("材料を切る！", NamedTextColor.GREEN)).build();
-    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var ob = ProductPlaceholderItem();
     final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     inventory.setContents(new ItemStack[]{
       bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
@@ -571,8 +767,8 @@ class CookStage extends AbstractStage {
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
-    final var b = ItemBuilder.For(Material.BOWL).build();
-    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var b = ItemBuilder.For(Material.BOWL).displayName(Text("盛り付ける！", NamedTextColor.GREEN)).build();
+    final var ob = ProductPlaceholderItem();
     //NOTE: この orange_stained_glass_pane は displayName が設定されておらずアイテム名が見える: https://youtu.be/MKcNzz21P8g?t=9740
     final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).build();
     inventory.setContents(new ItemStack[]{
@@ -595,7 +791,7 @@ class CookStage extends AbstractStage {
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
-    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var ob = ProductPlaceholderItem();
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
     final var c = new ItemStack(Material.CAMPFIRE);
@@ -624,7 +820,7 @@ class CookStage extends AbstractStage {
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("材料を焼く！", NamedTextColor.GREEN)).build();
-    final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
+    final var ob = ProductPlaceholderItem();
     final var a = new ItemStack(Material.AIR);
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var c = new ItemStack(Material.CAMPFIRE);
