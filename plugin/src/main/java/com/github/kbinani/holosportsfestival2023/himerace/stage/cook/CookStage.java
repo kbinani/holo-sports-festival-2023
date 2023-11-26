@@ -213,7 +213,7 @@ public class CookStage extends AbstractStage {
     var result = e.getResult();
     ItemTag.AddByte(result, Stage.COOK.tag);
     ItemTag.AddByte(result, itemTag);
-    for (var taskItem : CookingTaskItem.values()) {
+    for (var taskItem : TaskItem.values()) {
       var task = taskItem.task;
       if (task == null || taskItem.material != result.getType() || taskItem.customModelData != null || taskItem.specialName != null) {
         continue;
@@ -423,16 +423,16 @@ public class CookStage extends AbstractStage {
     return CreateOffer(from, new ItemStack(to));
   }
 
-  private static CookingTask[] GetRecipeBookTasks() {
-    return new CookingTask[]{
-      CookingTask.BAKED_POTATO,
-      CookingTask.COOKED_CHICKEN,
-      CookingTask.COOKED_BEEF,
-      CookingTask.COOKED_MUTTON,
-      CookingTask.COOKED_RABBIT,
-      CookingTask.MIO_HAMBERGER_STEAK,
-      CookingTask.SUBARU_FRIED_CHICKEN,
-      CookingTask.MIKO_PANCAKES
+  private static Task[] GetRecipeBookTasks() {
+    return new Task[]{
+      Task.BAKED_POTATO,
+      Task.COOKED_CHICKEN,
+      Task.COOKED_BEEF,
+      Task.COOKED_MUTTON,
+      Task.COOKED_RABBIT,
+      Task.MIO_HAMBERGER_STEAK,
+      Task.SUBARU_FRIED_CHICKEN,
+      Task.MIKO_PANCAKES
     };
   }
 

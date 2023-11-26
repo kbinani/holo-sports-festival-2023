@@ -45,10 +45,10 @@ class HotPlateKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  protected @Nonnull CookingRecipe[] getRecipes() {
-    return new CookingRecipe[]{
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.FLOUR, CookingTaskItem.EGG}, CookingTaskItem.PANCAKES),
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.RAW_GROUND_BEEF, CookingTaskItem.CUT_POTATO, CookingTaskItem.CUT_CARROT}, CookingTaskItem.MIO_HAMBURGER_STEAK),
+  protected @Nonnull Recipe[] getRecipes() {
+    return new Recipe[]{
+      new Recipe(new TaskItem[]{TaskItem.FLOUR, TaskItem.EGG}, TaskItem.PANCAKES),
+      new Recipe(new TaskItem[]{TaskItem.RAW_GROUND_BEEF, TaskItem.CUT_POTATO, TaskItem.CUT_CARROT}, TaskItem.MIO_HAMBURGER_STEAK),
     };
   }
 }

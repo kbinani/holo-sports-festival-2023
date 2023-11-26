@@ -6,7 +6,7 @@ import org.bukkit.Material;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
-enum CookingTask {
+enum Task {
   BAKED_POTATO(Material.BAKED_POTATO, "hololive_sports_festival_2023_himerace_cooking_easy"),
   COOKED_CHICKEN(Material.COOKED_CHICKEN, "hololive_sports_festival_2023_himerace_cooking_easy"),
   COOKED_BEEF(Material.COOKED_BEEF, "hololive_sports_festival_2023_himerace_cooking_easy"),
@@ -20,7 +20,7 @@ enum CookingTask {
   final Material material;
   final String tag;
 
-  CookingTask(Material material, String tag) {
+  Task(Material material, String tag) {
     this.material = material;
     this.tag = tag;
   }

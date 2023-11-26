@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.sProductPlaceholderMaterial;
 
-record CookingRecipe(CookingTaskItem[] materials, CookingTaskItem product) {
+record Recipe(TaskItem[] materials, TaskItem product) {
   private record RecipeMatch(ItemStack item, int slot) {
   }
 

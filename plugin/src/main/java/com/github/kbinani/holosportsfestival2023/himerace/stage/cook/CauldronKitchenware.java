@@ -46,11 +46,11 @@ class CauldronKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  protected @Nonnull CookingRecipe[] getRecipes() {
-    return new CookingRecipe[]{
+  protected @Nonnull Recipe[] getRecipes() {
+    return new Recipe[]{
       // https://youtu.be/TEqf-g0WlKY?t=9918
       // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.OIL, CookingTaskItem.CHOPPED_CHICKEN, CookingTaskItem.FLOUR}, CookingTaskItem.SUBARU_FRIED_CHICKEN),
+      new Recipe(new TaskItem[]{TaskItem.OIL, TaskItem.CHOPPED_CHICKEN, TaskItem.FLOUR}, TaskItem.SUBARU_FRIED_CHICKEN),
     };
   }
 

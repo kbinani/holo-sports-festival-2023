@@ -35,7 +35,7 @@ abstract class AbstractKitchenware {
 
   protected abstract @Nonnull Inventory createInventory();
 
-  protected abstract @Nonnull CookingRecipe[] getRecipes();
+  protected abstract @Nonnull Recipe[] getRecipes();
 
   protected @Nullable Integer getCooldownSeconds() {
     return null;
@@ -74,7 +74,7 @@ abstract class AbstractKitchenware {
       // nop
     } else if (toolSlot == slot) {
       e.setCancelled(true);
-      CookingRecipe match = null;
+      Recipe match = null;
       for (var recipe : getRecipes()) {
         if (recipe.match(inventory, materialSlotFrom, materialSlotTo)) {
           match = recipe;

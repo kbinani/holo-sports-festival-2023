@@ -37,18 +37,18 @@ class CuttingBoardKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  protected @Nonnull CookingRecipe[] getRecipes() {
-    return new CookingRecipe[]{
+  protected @Nonnull Recipe[] getRecipes() {
+    return new Recipe[]{
       // https://youtu.be/ZNGqqCothRc?t=9807
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.POTATO}, CookingTaskItem.CUT_POTATO),
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CARROT}, CookingTaskItem.CUT_CARROT),
+      new Recipe(new TaskItem[]{TaskItem.POTATO}, TaskItem.CUT_POTATO),
+      new Recipe(new TaskItem[]{TaskItem.CARROT}, TaskItem.CUT_CARROT),
       // https://youtu.be/ls3kb0qhT4E?t=9813
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.BEEF}, CookingTaskItem.RAW_GROUND_BEEF),
+      new Recipe(new TaskItem[]{TaskItem.BEEF}, TaskItem.RAW_GROUND_BEEF),
       // https://youtu.be/yMpj50YZHec?t=9817
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.WHEAT}, CookingTaskItem.FLOUR),
+      new Recipe(new TaskItem[]{TaskItem.WHEAT}, TaskItem.FLOUR),
       // https://youtu.be/MKcNzz21P8g?t=9738
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CHICKEN}, CookingTaskItem.CHOPPED_CHICKEN),
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.SWEET_BERRIES}, CookingTaskItem.CUT_SWEET_BERRIES),
+      new Recipe(new TaskItem[]{TaskItem.CHICKEN}, TaskItem.CHOPPED_CHICKEN),
+      new Recipe(new TaskItem[]{TaskItem.SWEET_BERRIES}, TaskItem.CUT_SWEET_BERRIES),
     };
   }
 }

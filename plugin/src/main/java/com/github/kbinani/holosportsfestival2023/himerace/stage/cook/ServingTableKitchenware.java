@@ -40,9 +40,9 @@ class ServingTableKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  protected @Nonnull CookingRecipe[] getRecipes() {
-    return new CookingRecipe[]{
-      new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.PANCAKES, CookingTaskItem.CUT_SWEET_BERRIES}, CookingTaskItem.MIKO_PANCAKES),
+  protected @Nonnull Recipe[] getRecipes() {
+    return new Recipe[]{
+      new Recipe(new TaskItem[]{TaskItem.PANCAKES, TaskItem.CUT_SWEET_BERRIES}, TaskItem.MIKO_PANCAKES),
     };
   }
 }
