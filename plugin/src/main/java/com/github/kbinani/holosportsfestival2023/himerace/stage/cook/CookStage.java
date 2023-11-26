@@ -302,14 +302,18 @@ public class CookStage extends AbstractStage {
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case KNIGHT -> Text("姫が食べたいものをプレゼントしてあげよう！", NamedTextColor.GREEN);
-      case PRINCESS -> text("『", isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED)
-        .append(this.easy.item.getDescription().colorIfAbsent(isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
-        .append(text("』", isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
-        .append(text("と", NamedTextColor.GREEN))
-        .append(text("『", isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
-        .append(this.difficult.item.getDescription().colorIfAbsent(isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
-        .append(text("』", isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
-        .append(text("が食べたい！", NamedTextColor.GREEN));
+      case PRINCESS -> {
+        var easyDecor = isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED;
+        var difficultDecor = isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED;
+        yield text("『", easyDecor)
+          .append(this.easy.item.getDescription().colorIfAbsent(easyDecor))
+          .append(text("』", easyDecor))
+          .append(text("と", NamedTextColor.GREEN))
+          .append(text("『", difficultDecor))
+          .append(this.difficult.item.getDescription().colorIfAbsent(difficultDecor))
+          .append(text("』", difficultDecor))
+          .append(text("が食べたい！", NamedTextColor.GREEN));
+      }
     };
   }
 
