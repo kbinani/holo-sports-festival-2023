@@ -38,6 +38,26 @@ import java.util.stream.Collectors;
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
 class CookStage extends AbstractStage {
+  // 本番:
+  //   赤組:
+  //     姫: 常闇トワ https://youtu.be/0zFjBmflulU?t=9879
+  //     騎士: 火威青 https://youtu.be/yMpj50YZHec?t=9808
+  //     騎士: 紫咲シオン (配信枠無し)
+  //     騎士: FUWAMOCO https://youtu.be/QBMF6LN1QyU?t=9855
+  //     お題: ベイクドポテト / えりぃとパンケーキ
+  //   白組:
+  //     姫: 天音かなた https://youtu.be/aca8Oy9v8tQ?t=9783
+  //     騎士: AZKi https://youtu.be/ls3kb0qhT4E?t=9777
+  //     騎士: 風真いろは https://youtu.be/ZNGqqCothRc?t=9779
+  //     騎士: Nanashi Mumei https://youtu.be/XwN95bpEaX0?t=9893
+  //     お題: 焼き羊肉, ミオしゃ特製ハンバーグ♡
+  //   黄組:
+  //     姫: IRyS https://youtu.be/f3cUeNF_HwQ?t=9757
+  //     騎士: 一条莉々華 https://youtu.be/D9fgFnjuzJ0?t=10104
+  //     騎士: 轟はじめ https://youtu.be/TEqf-g0WlKY?t=9890
+  //     騎士: 夏色まつり https://youtu.be/MKcNzz21P8g?t=9724
+  //     お題: ステーキ / スバルの唐揚げ
+  // (敬称略)
   interface Delegate {
     void cookStageDidFinish();
   }
@@ -142,7 +162,95 @@ class CookStage extends AbstractStage {
 
   @Override
   protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-
+    var inventory = e.getClickedInventory();
+    var slot = e.getSlot();
+    var item = e.getCurrentItem();
+    if (inventory == cuttingBoard) {
+      if (participation.role != Role.KNIGHT) {
+        e.setCancelled(true);
+        return;
+      }
+      // https://youtu.be/ZNGqqCothRc?t=9807
+      // potato -> Text("切ったジャガイモ / Cut Potato", NamedTextColor.WHITE)
+      // carrot -> Text("切ったニンジン / Cut Carrot", NamedTextColor.WHITE)
+      // https://youtu.be/ls3kb0qhT4E?t=9813
+      // beef -> Text("生の牛ひき肉 / Raw Ground Beef", NamedTextColor.WHITE)
+      // https://youtu.be/yMpj50YZHec?t=9817
+      // wheat -> Text("小麦粉 / Flour", NamedTextColor.WHITE)
+      // https://youtu.be/MKcNzz21P8g?t=9738
+      // raw_chicken -> Text("切った生の鶏肉 / Chopped Chicken", NamedTextColor.WHITE)
+      if (slot == 11) {
+        // material
+      } else if (slot == 13) {
+        // iron_axe
+        e.setCancelled(true);
+      } else if (slot == 15) {
+        // product
+        if (item != null && item.getType() == Material.OAK_BUTTON) {
+          e.setCancelled(true);
+        }
+      } else {
+        e.setCancelled(true);
+      }
+    } else if (inventory == servingTable) {
+      if (participation.role != Role.KNIGHT) {
+        e.setCancelled(true);
+        return;
+      }
+      // ただのパンケーキ + ? -> Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD)
+      if (slot == 12) {
+        // bowl
+        e.setCancelled(true);
+      } else if (slot == 14) {
+        // product
+        if (item != null && item.getType() == Material.OAK_BUTTON) {
+          e.setCancelled(true);
+        }
+      } else if (29 <= slot && slot <= 33) {
+        // material
+      } else {
+        e.setCancelled(true);
+      }
+    } else if (inventory == cauldron) {
+      if (participation.role != Role.KNIGHT) {
+        e.setCancelled(true);
+        return;
+      }
+      // https://youtu.be/TEqf-g0WlKY?t=9918
+      // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
+      if (slot == 12) {
+        // steel_and_flint
+        e.setCancelled(true);
+      } else if (slot == 14) {
+        // product
+        if (item != null && item.getType() == Material.OAK_BUTTON) {
+          e.setCancelled(true);
+        }
+      } else if (30 <= slot && slot <= 32) {
+        // material
+      } else {
+        e.setCancelled(true);
+      }
+    } else if (inventory == hotPlate) {
+      if (participation.role != Role.KNIGHT) {
+        e.setCancelled(true);
+        return;
+      }
+      // https://youtu.be/ls3kb0qhT4E?t=9819
+      // 即時: "Cut Potato" + "Cut Carrot" + "Raw Ground Beef" -> Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD)
+      // https://youtu.be/yMpj50YZHec?t=9830
+      // 即時: "小麦粉"+egg -> Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE)
+      if (slot == 14) {
+        // product
+        if (item != null && item.getType() == Material.OAK_BUTTON) {
+          e.setCancelled(true);
+        }
+      } else if (29 <= slot && slot <= 33) {
+        // material
+      } else {
+        e.setCancelled(true);
+      }
+    }
   }
 
   @Override
@@ -345,16 +453,15 @@ class CookStage extends AbstractStage {
     var inventory = Bukkit.createInventory(null, 54, Text("鉄板", NamedTextColor.GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
+    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("材料を焼く！", NamedTextColor.GREEN)).build();
     final var ob = ItemBuilder.For(Material.OAK_BUTTON).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
       it.setCustomModelData(1);
-      //TODO: 着火した時は NamedTextColor.RED
-      //NOTE: 鉄板の焚き火は最初から着火しているように見える: https://youtu.be/ZNGqqCothRc?t=9815
-      it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
+      //NOTE: 鉄板の焚き火は着火操作必要無いぽい: https://youtu.be/ZNGqqCothRc?t=9815
+      it.displayName(Text("🔥🔥🔥", NamedTextColor.RED));
     });
     inventory.setContents(new ItemStack[]{
       bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
