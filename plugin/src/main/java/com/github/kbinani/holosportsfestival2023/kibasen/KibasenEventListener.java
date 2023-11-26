@@ -4,7 +4,6 @@ import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
@@ -21,7 +20,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
@@ -108,16 +106,12 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
           var item = e.getItem();
           if (item != null) {
             if (item.getType() == Material.BOOK) {
-              var meta = item.getItemMeta();
-              if (meta != null) {
-                var store = meta.getPersistentDataContainer();
-                if (store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
-                  var inventory = openLeaderRegistrationInventory();
-                  if (inventory != null) {
-                    player.openInventory(inventory);
-                    e.setCancelled(true);
-                    return;
-                  }
+              if (ItemTag.HasByte(item, itemTag)) {
+                var inventory = openLeaderRegistrationInventory();
+                if (inventory != null) {
+                  player.openInventory(inventory);
+                  e.setCancelled(true);
+                  return;
                 }
               }
             }
@@ -155,12 +149,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       if (!(e.getRightClicked() instanceof Player vehicle)) {
         return;
       }
-      var meta = item.getItemMeta();
-      if (meta == null) {
-        return;
-      }
-      var store = meta.getPersistentDataContainer();
-      if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+      if (!ItemTag.HasByte(item, itemTag)) {
         return;
       }
       registrants.addPassenger(attacker, vehicle);
@@ -283,12 +272,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       if (item == null) {
         continue;
       }
-      var meta = item.getItemMeta();
-      if (meta == null) {
-        continue;
-      }
-      var container = meta.getPersistentDataContainer();
-      if (container.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+      if (ItemTag.HasByte(item, itemTag)) {
         inventory.clear(i);
       }
     }
@@ -359,14 +343,14 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   static ItemStack CreateSaddle() {
     return ItemBuilder.For(Material.SADDLE)
       .displayName(Text("自分の馬を右クリックしてください！", NamedTextColor.GOLD))
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .build();
   }
 
   static ItemStack CreateBook() {
     return ItemBuilder.For(Material.BOOK)
       .displayName(Text("大将にエントリー (右クリックで使用)", NamedTextColor.GOLD))
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .build();
   }
 

@@ -3,7 +3,6 @@ package com.github.kbinani.holosportsfestival2023;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
@@ -12,8 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
@@ -44,13 +41,8 @@ public class ItemBuilder {
     return this;
   }
 
-  public ItemBuilder customByteTag(String name, byte value) {
-    ItemMeta meta = item.getItemMeta();
-    if (meta != null) {
-      PersistentDataContainer container = meta.getPersistentDataContainer();
-      container.set(NamespacedKey.minecraft(name), PersistentDataType.BYTE, value);
-      item.setItemMeta(meta);
-    }
+  public ItemBuilder customByteTag(String name) {
+    ItemTag.AddByte(item, name);
     return this;
   }
 

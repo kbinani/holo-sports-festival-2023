@@ -1,13 +1,13 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Container;
 import org.bukkit.block.data.Ageable;
@@ -26,8 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
@@ -366,10 +364,7 @@ class CookStage extends AbstractStage {
       switch (type) {
         case CARROT, POTATO, WHEAT, BEETROOT -> {
           item.addScoreboardTag(Stage.COOK.tag);
-          stack.editMeta(ItemMeta.class, it -> {
-            var store = it.getPersistentDataContainer();
-            store.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
-          });
+          ItemTag.AddByte(stack, Stage.COOK.tag);
         }
       }
     }
@@ -383,19 +378,13 @@ class CookStage extends AbstractStage {
       return;
     }
     var result = e.getResult();
-    result.editMeta(ItemMeta.class, it -> {
-      var store = it.getPersistentDataContainer();
-      store.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
-    });
+    ItemTag.AddByte(result, Stage.COOK.tag);
     for (var taskItem : CookingTaskItem.values()) {
       var task = taskItem.task;
       if (task == null || taskItem.material != result.getType() || taskItem.customModelData != null || taskItem.specialName != null) {
         continue;
       }
-      result.editMeta(ItemMeta.class, it -> {
-        var store = it.getPersistentDataContainer();
-        store.set(NamespacedKey.minecraft(task.tag), PersistentDataType.BYTE, (byte) 1);
-      });
+      ItemTag.AddByte(result, task.tag);
     }
   }
 
@@ -653,12 +642,7 @@ class CookStage extends AbstractStage {
   }
 
   static ItemStack AddItemTag(ItemStack item) {
-    ItemMeta meta = item.getItemMeta();
-    if (meta != null) {
-      PersistentDataContainer container = meta.getPersistentDataContainer();
-      container.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
-      item.setItemMeta(meta);
-    }
+    ItemTag.AddByte(item, Stage.COOK.tag);
     return item;
   }
 
@@ -696,7 +680,7 @@ class CookStage extends AbstractStage {
   static @Nonnull ItemStack CreateRecipeBook0() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(Text("秘伝のレシピブック", NamedTextColor.GOLD))
-      .customByteTag(Stage.COOK.tag, (byte) 1)
+      .customByteTag(Stage.COOK.tag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();
@@ -712,7 +696,7 @@ class CookStage extends AbstractStage {
   static @Nonnull ItemStack CreateRecipeBook1() {
     var book = ItemBuilder.For(Material.WRITABLE_BOOK)
       .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
-      .customByteTag(Stage.COOK.tag, (byte) 1)
+      .customByteTag(Stage.COOK.tag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();

@@ -5,13 +5,15 @@ import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -98,12 +100,7 @@ class Session {
     if (item.getType() != Material.WOODEN_SWORD) {
       return;
     }
-    var meta = item.getItemMeta();
-    if (meta == null) {
-      return;
-    }
-    var store = meta.getPersistentDataContainer();
-    if (!store.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+    if (!ItemTag.HasByte(item, itemTag)) {
       return;
     }
     if (defenceUnit.damagedBy(offence)) {

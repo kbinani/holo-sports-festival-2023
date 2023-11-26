@@ -4,7 +4,6 @@ import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -16,9 +15,6 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
@@ -453,7 +449,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     var inventory = player.getInventory();
     ItemStack weak = ItemBuilder.For(Material.TRIDENT)
       .amount(1)
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .enchant(Enchantment.RIPTIDE, 1)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
       .displayName(Text("HoloUp用トライデント（弱）", NamedTextColor.AQUA))
@@ -473,7 +469,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
     ItemStack bed = ItemBuilder.For(Material.RED_BED)
       .amount(1)
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .displayName(Text("リスポーン地点に戻る（右クリック）", NamedTextColor.AQUA))
       .build();
     if (inventory.getItem(2) != null) {
@@ -488,8 +484,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   static ItemStack CreateStrongTrident() {
     return ItemBuilder.For(Material.TRIDENT)
       .amount(1)
-      .customByteTag(itemTag, (byte) 1)
-      .customByteTag(itemTagStrong, (byte) 1)
+      .customByteTag(itemTag)
+      .customByteTag(itemTagStrong)
       .enchant(Enchantment.RIPTIDE, 2)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
       .displayName(Text("HoloUp用トライデント（強）", NamedTextColor.GREEN))
@@ -497,12 +493,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   static boolean IsStrongItem(ItemStack item) {
-    var meta = item.getItemMeta();
-    if (meta == null) {
-      return false;
-    }
-    PersistentDataContainer container = meta.getPersistentDataContainer();
-    return container.has(NamespacedKey.minecraft(itemTagStrong), PersistentDataType.BYTE);
+    return ItemTag.HasByte(item, itemTagStrong);
   }
 
   private void warnNonEmptySlot(Player player, int index) {
@@ -518,12 +509,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       if (item == null) {
         continue;
       }
-      ItemMeta meta = item.getItemMeta();
-      if (meta == null) {
-        continue;
-      }
-      PersistentDataContainer container = meta.getPersistentDataContainer();
-      if (container.has(NamespacedKey.minecraft(itemTag), PersistentDataType.BYTE)) {
+      if (ItemTag.HasByte(item, itemTag)) {
         inventory.clear(i);
       }
     }

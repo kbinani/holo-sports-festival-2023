@@ -1,14 +1,13 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.ItemTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionType;
 
 import javax.annotation.Nonnull;
@@ -86,11 +85,10 @@ enum CookingTaskItem {
       if (this.customModelData != null) {
         it.setCustomModelData(this.customModelData);
       }
-      if (this.task != null) {
-        var store = it.getPersistentDataContainer();
-        store.set(NamespacedKey.minecraft(this.task.tag), PersistentDataType.BYTE, (byte) 1);
-      }
     });
+    if (task != null) {
+      ItemTag.AddByte(item, task.tag);
+    }
     return AddItemTag(item);
   }
 }

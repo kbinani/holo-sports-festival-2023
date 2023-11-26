@@ -4,7 +4,6 @@ import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -15,7 +14,6 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 
@@ -135,12 +133,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       if (item == null) {
         continue;
       }
-      var meta = item.getItemMeta();
-      if (meta == null) {
-        continue;
-      }
-      var container = meta.getPersistentDataContainer();
-      if (container.has(NamespacedKey.minecraft(tag), PersistentDataType.BYTE)) {
+      if (ItemTag.HasByte(item, tag)) {
         inventory.clear(i);
       }
     }

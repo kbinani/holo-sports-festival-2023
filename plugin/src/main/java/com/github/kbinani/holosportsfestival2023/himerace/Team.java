@@ -49,8 +49,8 @@ class Team implements Level.Delegate {
       case CARRY -> {
         if (princess != null) {
           var book = ItemBuilder.For(Material.BOOK)
-            .customByteTag(itemTag, (byte) 1)
-            .customByteTag(Stage.BUILD.tag, (byte) 1)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.BUILD.tag)
             .displayName(Text("回答する！(右クリックで開く) / Answer Book (Right click to open)", NamedTextColor.AQUA))
             .build();
           var inventory = princess.getInventory();
@@ -67,7 +67,7 @@ class Team implements Level.Delegate {
         for (var knight : knights) {
           var emerald = ItemBuilder.For(Material.EMERALD)
             .amount(20)
-            .customByteTag(Stage.COOK.tag, (byte) 1)
+            .customByteTag(Stage.COOK.tag)
             .build();
           knight.getInventory().setItem(0, emerald);
         }

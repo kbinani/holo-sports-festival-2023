@@ -1,6 +1,7 @@
 package  com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -10,7 +11,6 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -116,12 +116,7 @@ class BuildStage extends AbstractStage {
     if (item.getType() != Material.BOOK) {
       return;
     }
-    var meta = item.getItemMeta();
-    if (meta == null) {
-      return;
-    }
-    var store = meta.getPersistentDataContainer();
-    if (!(store.has(NamespacedKey.minecraft(Stage.BUILD.tag), PersistentDataType.BYTE))) {
+    if (!ItemTag.HasByte(item, Stage.BUILD.tag)) {
       return;
     }
     e.setCancelled(true);

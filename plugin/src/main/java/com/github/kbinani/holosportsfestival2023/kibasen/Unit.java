@@ -206,11 +206,11 @@ class Unit {
     ClearItems(attacker);
     var inventory = attacker.getInventory();
     var sword = ItemBuilder.For(Material.WOODEN_SWORD)
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .build();
     inventory.setItem(0, sword);
     var shield = ItemBuilder.For(Material.SHIELD)
-      .customByteTag(itemTag, (byte) 1)
+      .customByteTag(itemTag)
       .build();
     inventory.setItemInOffHand(shield);
     inventory.setHeldItemSlot(0);
