@@ -1,0 +1,6 @@
+{
+    "parent": "minecraft:item/generated",
+    "textures": {
+        "layer0": "item/cooked_beef_mio_hamburger_steak"
+    }
+}
