@@ -20,6 +20,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -393,6 +394,163 @@ class CookStage extends AbstractStage {
 
   private static MerchantRecipe CreateOffer(ItemStack from, Material to) {
     return CreateOffer(from, new ItemStack(to));
+  }
+
+  static @Nonnull ItemStack CreateRecipeBook0() {
+    var book = ItemBuilder.For(Material.WRITTEN_BOOK)
+      .displayName(Text("秘伝のレシピブック", NamedTextColor.GOLD))
+      .customByteTag(Stage.COOK.tag, (byte) 1)
+      .build();
+    book.editMeta(BookMeta.class, it -> {
+      // https://youtu.be/aca8Oy9v8tQ?t=9795
+      var page0 = Text("[ベイクドポテト]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page1 = Text("[焼き鳥]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page2 = Text("[ステーキ]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page3 = Text("[焼き羊肉]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の羊肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page4 = Text("[焼き兎肉]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の兎肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page5 = Text("[ミオしゃ特製ハンバーグ♡]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ニンジン", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で生の牛肉、ジャガイモ、ニンジンを切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鉄板で牛ひき肉と切ったジャガイモと切ったニンジンを一緒に焼く！", NamedTextColor.BLACK));
+      // https://youtu.be/vHk29E_TIDc?t=3066
+      var page6 = Text("[スバルの唐揚げ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・油", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で生の鶏肉、小麦を切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鍋に切った鶏肉、小麦粉、油を入れて揚げる！", NamedTextColor.BLACK));
+      var page7 = Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・卵", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・スイートベリー", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で小麦、スイートベリーを切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鉄板で小麦粉と卵を一緒に焼く！", NamedTextColor.BLACK));
+      var page8 = Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("③盛り付け台でただのパンケーキと切ったスイートベリーを盛り付ける！", NamedTextColor.BLACK));
+      it.addPages(page0, page1, page2, page3, page4, page5, page6, page7, page8);
+      it.setTitle("");
+      it.setAuthor("");
+    });
+    return book;
+  }
+
+  static @Nonnull ItemStack CreateRecipeBook1() {
+    var book = ItemBuilder.For(Material.WRITABLE_BOOK)
+      .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
+      .customByteTag(Stage.COOK.tag, (byte) 1)
+      .build();
+    //TODO: 英訳したものになっているはずだけど一旦日本語版と同じにしてある
+    book.editMeta(BookMeta.class, it -> {
+      // https://youtu.be/aca8Oy9v8tQ?t=9795
+      var page0 = Text("[ベイクドポテト]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page1 = Text("[焼き鳥]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page2 = Text("[ステーキ]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page3 = Text("[焼き羊肉]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の羊肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page4 = Text("[焼き兎肉]", NamedTextColor.BLUE).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の兎肉", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①かまどで精錬！", NamedTextColor.BLACK));
+      var page5 = Text("[ミオしゃ特製ハンバーグ♡]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の牛肉", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ジャガイモ", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・ニンジン", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で生の牛肉、ジャガイモ、ニンジンを切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鉄板で牛ひき肉と切ったジャガイモと切ったニンジンを一緒に焼く！", NamedTextColor.BLACK));
+      // https://youtu.be/vHk29E_TIDc?t=3066
+      var page6 = Text("[スバルの唐揚げ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・生の鶏肉", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・油", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で生の鶏肉、小麦を切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鍋に切った鶏肉、小麦粉、油を入れて揚げる！", NamedTextColor.BLACK));
+      var page7 = Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("材料", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・小麦", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・卵", NamedTextColor.BLACK)).appendNewline()
+        .append(Text("・スイートベリー", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("①まな板で小麦、スイートベリーを切る！", NamedTextColor.BLACK)).appendNewline()
+        .appendNewline()
+        .append(Text("②鉄板で小麦粉と卵を一緒に焼く！", NamedTextColor.BLACK));
+      var page8 = Text("[えりぃとパンケーキ]", NamedTextColor.DARK_RED).appendNewline()
+        .appendNewline()
+        .append(Text("③盛り付け台でただのパンケーキと切ったスイートベリーを盛り付ける！", NamedTextColor.BLACK));
+      it.addPages(page0, page1, page2, page3, page4, page5, page6, page7, page8);
+      it.setTitle("");
+      it.setAuthor("");
+    });
+    return book;
   }
 
   private int x(int x) {

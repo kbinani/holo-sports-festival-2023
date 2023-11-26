@@ -14,6 +14,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.CreateRecipeBook0;
+import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.CreateRecipeBook1;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 
@@ -58,6 +60,16 @@ class Team implements Level.Delegate {
       case BUILD -> {
         if (princess != null) {
           princess.chat("お腹が空いてきちゃった・・・(I'm so hungry...)");
+          var inventory = princess.getInventory();
+          inventory.setItem(0, CreateRecipeBook0());
+          inventory.setItem(1, CreateRecipeBook1());
+        }
+        for (var knight : knights) {
+          var emerald = ItemBuilder.For(Material.EMERALD)
+            .amount(20)
+            .customByteTag(Stage.COOK.tag, (byte) 1)
+            .build();
+          knight.getInventory().setItem(0, emerald);
         }
       }
       case GOAL -> {
