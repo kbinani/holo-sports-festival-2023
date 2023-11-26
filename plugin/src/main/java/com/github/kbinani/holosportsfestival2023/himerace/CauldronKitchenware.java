@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 
@@ -20,7 +21,7 @@ class CauldronKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull Inventory createInventory() {
+  protected @Nonnull Inventory createInventory() {
     var inventory = Bukkit.createInventory(null, capacity, Text("鍋", NamedTextColor.GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
@@ -31,7 +32,6 @@ class CauldronKitchenware extends AbstractKitchenware {
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
       it.setCustomModelData(1);
-      //TODO: 着火した時は NamedTextColor.RED
       it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
     });
     inventory.setContents(new ItemStack[]{
@@ -46,11 +46,49 @@ class CauldronKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull CookingRecipe[] getRecipes() {
+  protected @Nonnull CookingRecipe[] getRecipes() {
     return new CookingRecipe[]{
       // https://youtu.be/TEqf-g0WlKY?t=9918
       // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
       new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.OIL, CookingTaskItem.CHOPPED_CHICKEN, CookingTaskItem.FLOUR}, CookingTaskItem.SUBARU_FRIED_CHICKEN),
     };
+  }
+
+  @Override
+  protected @Nullable Integer getCooldownSeconds() {
+    return 7;
+  }
+
+  @Override
+  protected void onCountdown(int count) {
+    var red = ItemBuilder.For(Material.RED_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    var orange = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    for (var i = 0; i < Math.min(count - 1, 6); i++) {
+      inventory.setItem(i * 9, orange);
+      inventory.setItem(i * 9 + 8, orange);
+    }
+    for (var i = Math.max(0, count - 1); i < 6; i++) {
+      inventory.setItem(i * 9, red);
+      inventory.setItem(i * 9 + 8, red);
+    }
+    var campfire = new ItemStack(Material.CAMPFIRE);
+    campfire.editMeta(ItemMeta.class, it -> {
+      if (count == 0) {
+        it.setCustomModelData(1);
+      }
+      it.displayName(Text("🔥🔥🔥", count == 0 ? NamedTextColor.DARK_GRAY : NamedTextColor.RED));
+    });
+    for (var i = 47; i <= 51; i++) {
+      inventory.setItem(i, campfire);
+    }
+  }
+
+  @Override
+  protected void onAllProductPickedUp() {
+    var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    for (var i = 0; i < 6; i++) {
+      inventory.setItem(i * 9, bsgp);
+      inventory.setItem(i * 9 + 8, bsgp);
+    }
   }
 }

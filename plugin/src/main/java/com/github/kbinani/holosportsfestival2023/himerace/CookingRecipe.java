@@ -3,12 +3,38 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.sProductPlaceholderMaterial;
 
 record CookingRecipe(CookingTaskItem[] materials, CookingTaskItem product) {
-  boolean consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
+  private record RecipeMatch(ItemStack item, int slot) {
+  }
+
+  boolean match(Inventory inventory, int materialSlotFrom, int materialSlotTo) {
+    return getMatches(inventory, materialSlotFrom, materialSlotTo) != null;
+  }
+
+  @Nullable ItemStack consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
+    var result = getMatches(inventory, materialSlotFrom, materialSlotTo);
+    if (result == null) {
+      return null;
+    }
+    for (var match : result) {
+      inventory.setItem(match.slot, match.item.subtract());
+    }
+    var product = inventory.getItem(productSlot);
+    if (product != null && product.isSimilar(this.product.toItem())) {
+      return product.add();
+    } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
+      return this.product.toItem();
+    } else {
+      return null;
+    }
+  }
+
+  private ArrayList<RecipeMatch> getMatches(Inventory inventory, int materialSlotFrom, int materialSlotTo) {
     var matches = new int[materials.length];
     var expected = new ItemStack[materials.length];
     for (int j = 0; j < materials.length; j++) {
@@ -28,27 +54,17 @@ record CookingRecipe(CookingTaskItem[] materials, CookingTaskItem product) {
       }
     }
 
-    record RecipeMatch(ItemStack item, int slot) {}
     var result = new ArrayList<RecipeMatch>();
     for (int j = 0; j < materials.length; j++) {
       if (matches[j] < 0) {
-        return false;
+        return null;
       }
       var item = inventory.getItem(matches[j]);
       if (item == null) {
-        return false;
+        return null;
       }
       result.add(new RecipeMatch(item, matches[j]));
     }
-    for (var match : result) {
-      inventory.setItem(match.slot, match.item.subtract());
-    }
-    var product = inventory.getItem(productSlot);
-    if (product != null && product.isSimilar(this.product.toItem())) {
-      inventory.setItem(productSlot, product.add());
-    } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
-      inventory.setItem(productSlot, this.product.toItem());
-    }
-    return true;
+    return result;
   }
 }

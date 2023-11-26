@@ -20,7 +20,7 @@ class HotPlateKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull Inventory createInventory() {
+  protected @Nonnull Inventory createInventory() {
     var inventory = Bukkit.createInventory(null, capacity, Text("鉄板", NamedTextColor.GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
@@ -45,7 +45,7 @@ class HotPlateKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull CookingRecipe[] getRecipes() {
+  protected @Nonnull CookingRecipe[] getRecipes() {
     return new CookingRecipe[]{
       new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.FLOUR, CookingTaskItem.EGG}, CookingTaskItem.PANCAKES),
       new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.RAW_GROUND_BEEF, CookingTaskItem.CUT_POTATO, CookingTaskItem.CUT_CARROT}, CookingTaskItem.MIO_HAMBURGER_STEAK),

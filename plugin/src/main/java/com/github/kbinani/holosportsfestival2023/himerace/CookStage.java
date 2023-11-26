@@ -167,16 +167,16 @@ class CookStage extends AbstractStage {
   @Override
   protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
     if (cuttingBoard != null) {
-      cuttingBoard.onInventoryClick(e);
+      cuttingBoard.onInventoryClick(e, owner);
     }
     if (servingTable != null) {
-      servingTable.onInventoryClick(e);
+      servingTable.onInventoryClick(e, owner);
     }
     if (cauldron != null) {
-      cauldron.onInventoryClick(e);
+      cauldron.onInventoryClick(e, owner);
     }
     if (hotPlate != null) {
-      hotPlate.onInventoryClick(e);
+      hotPlate.onInventoryClick(e, owner);
     }
   }
 

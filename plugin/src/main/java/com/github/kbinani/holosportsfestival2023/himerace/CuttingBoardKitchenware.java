@@ -19,7 +19,7 @@ class CuttingBoardKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull Inventory createInventory() {
+  protected @Nonnull Inventory createInventory() {
     var inventory = Bukkit.createInventory(null, capacity, Text("まな板", NamedTextColor.GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
@@ -37,7 +37,7 @@ class CuttingBoardKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull CookingRecipe[] getRecipes() {
+  protected @Nonnull CookingRecipe[] getRecipes() {
     return new CookingRecipe[]{
       // https://youtu.be/ZNGqqCothRc?t=9807
       new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.POTATO}, CookingTaskItem.CUT_POTATO),

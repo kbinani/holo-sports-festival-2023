@@ -19,7 +19,7 @@ class ServingTableKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull Inventory createInventory() {
+  protected @Nonnull Inventory createInventory() {
     var inventory = Bukkit.createInventory(null, capacity, Text("盛り付け台", NamedTextColor.GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
@@ -40,7 +40,7 @@ class ServingTableKitchenware extends AbstractKitchenware {
   }
 
   @Override
-  @Nonnull CookingRecipe[] getRecipes() {
+  protected @Nonnull CookingRecipe[] getRecipes() {
     return new CookingRecipe[]{
       new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.PANCAKES, CookingTaskItem.CUT_SWEET_BERRIES}, CookingTaskItem.MIKO_PANCAKES),
     };
