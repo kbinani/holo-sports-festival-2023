@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 
 class CookStage extends AbstractStage {
   // 本番:
@@ -193,6 +194,7 @@ class CookStage extends AbstractStage {
         continue;
       }
       var stack = item.getItemStack();
+      ItemTag.AddByte(stack, itemTag);
       var type = stack.getType();
       switch (type) {
         case CARROT, POTATO, WHEAT, BEETROOT -> {
@@ -212,6 +214,7 @@ class CookStage extends AbstractStage {
     }
     var result = e.getResult();
     ItemTag.AddByte(result, Stage.COOK.tag);
+    ItemTag.AddByte(result, itemTag);
     for (var taskItem : CookingTaskItem.values()) {
       var task = taskItem.task;
       if (task == null || taskItem.material != result.getType() || taskItem.customModelData != null || taskItem.specialName != null) {
@@ -401,6 +404,7 @@ class CookStage extends AbstractStage {
 
   static ItemStack AddItemTag(ItemStack item) {
     ItemTag.AddByte(item, Stage.COOK.tag);
+    ItemTag.AddByte(item, itemTag);
     return item;
   }
 
@@ -439,6 +443,7 @@ class CookStage extends AbstractStage {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(Text("秘伝のレシピブック", NamedTextColor.GOLD))
       .customByteTag(Stage.COOK.tag)
+      .customByteTag(itemTag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();
@@ -455,6 +460,7 @@ class CookStage extends AbstractStage {
     var book = ItemBuilder.For(Material.WRITABLE_BOOK)
       .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
       .customByteTag(Stage.COOK.tag)
+      .customByteTag(itemTag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();

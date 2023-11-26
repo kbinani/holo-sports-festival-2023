@@ -67,6 +67,7 @@ class Team implements Level.Delegate {
         for (var knight : knights) {
           var emerald = ItemBuilder.For(Material.EMERALD)
             .amount(20)
+            .customByteTag(itemTag)
             .customByteTag(Stage.COOK.tag)
             .build();
           knight.getInventory().setItem(0, emerald);
