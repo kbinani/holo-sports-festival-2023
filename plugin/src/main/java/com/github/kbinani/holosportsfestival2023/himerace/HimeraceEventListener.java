@@ -80,6 +80,9 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     levels.forEach((color, level) -> {
       level.reset();
     });
+    for (var team : teams.values()) {
+      team.dispose();
+    }
     teams.clear();
     Editor.StandingSign(
       world,
