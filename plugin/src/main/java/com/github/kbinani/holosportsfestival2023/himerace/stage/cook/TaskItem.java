@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.AddItemTag;
 
-enum TaskItem {
+public enum TaskItem {
   EMERALD(Material.EMERALD),
   COAL(Material.COAL),
 
@@ -67,7 +67,7 @@ enum TaskItem {
   }
 
   @Nonnull
-  ItemStack toItem() {
+  public ItemStack toItem() {
     var item = switch (this) {
       case OIL -> AddItemTag(
         ItemBuilder.For(Material.POTION)
