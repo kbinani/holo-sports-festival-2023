@@ -14,6 +14,7 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -365,6 +366,28 @@ class CookStage extends AbstractStage {
         // material
       } else {
         e.setCancelled(true);
+      }
+    }
+  }
+
+  @Override
+  protected void onBlockDropItem(BlockDropItemEvent e) {
+    var items = e.getItems();
+    for (var item : items) {
+      var location = item.getLocation();
+      if (!bounds.contains(location.toVector())) {
+        continue;
+      }
+      var stack = item.getItemStack();
+      var type = stack.getType();
+      switch (type) {
+        case CARROT, POTATO, WHEAT, BEETROOT -> {
+          item.addScoreboardTag(Stage.COOK.tag);
+          stack.editMeta(ItemMeta.class, it -> {
+            var store = it.getPersistentDataContainer();
+            store.set(NamespacedKey.minecraft(Stage.COOK.tag), PersistentDataType.BYTE, (byte) 1);
+          });
+        }
       }
     }
   }

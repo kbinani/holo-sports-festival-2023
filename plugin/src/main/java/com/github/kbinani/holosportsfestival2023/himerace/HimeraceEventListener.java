@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -262,6 +263,17 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       if (i < 2) {
         broadcast(Component.empty());
       }
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onBlockDropItem(BlockDropItemEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    for (var level : levels.values()) {
+      level.onBlockDropItem(e);
     }
   }
 

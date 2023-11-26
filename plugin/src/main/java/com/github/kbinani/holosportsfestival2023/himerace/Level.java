@@ -10,6 +10,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -95,6 +96,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onInventoryClick(InventoryClickEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.onInventoryClick(e, participation);
+    }
+  }
+
+  void onBlockDropItem(BlockDropItemEvent e) {
+    for (var stage : stages.values()) {
+      stage.onBlockDropItem(e);
     }
   }
 
