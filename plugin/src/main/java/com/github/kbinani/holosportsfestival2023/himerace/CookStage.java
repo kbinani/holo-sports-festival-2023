@@ -6,7 +6,6 @@ import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Container;
@@ -16,16 +15,13 @@ import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
@@ -65,36 +61,12 @@ class CookStage extends AbstractStage {
   }
 
   static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
-  private static final CookingRecipe[] sCuttingBoardRecipes = new CookingRecipe[]{
-    // https://youtu.be/ZNGqqCothRc?t=9807
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.POTATO}, CookingTaskItem.CUT_POTATO),
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CARROT}, CookingTaskItem.CUT_CARROT),
-    // https://youtu.be/ls3kb0qhT4E?t=9813
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.BEEF}, CookingTaskItem.RAW_GROUND_BEEF),
-    // https://youtu.be/yMpj50YZHec?t=9817
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.WHEAT}, CookingTaskItem.FLOUR),
-    // https://youtu.be/MKcNzz21P8g?t=9738
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.CHICKEN}, CookingTaskItem.CHOPPED_CHICKEN),
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.SWEET_BERRIES}, CookingTaskItem.CUT_SWEET_BERRIES),
-  };
-  private static final CookingRecipe[] sServingTableRecipes = new CookingRecipe[]{
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.PANCAKES, CookingTaskItem.CUT_SWEET_BERRIES}, CookingTaskItem.MIKO_PANCAKES),
-  };
-  private static final CookingRecipe[] sCauldronRecipes = new CookingRecipe[]{
-    // https://youtu.be/TEqf-g0WlKY?t=9918
-    // 7秒: "油" + "切った生の鶏肉" + "小麦粉" -> Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD)
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.OIL, CookingTaskItem.CHOPPED_CHICKEN, CookingTaskItem.FLOUR}, CookingTaskItem.SUBARU_FRIED_CHICKEN),
-  };
-  private static final CookingRecipe[] sHotPlateRecipes = new CookingRecipe[]{
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.FLOUR, CookingTaskItem.EGG}, CookingTaskItem.PANCAKES),
-    new CookingRecipe(new CookingTaskItem[]{CookingTaskItem.RAW_GROUND_BEEF, CookingTaskItem.CUT_POTATO, CookingTaskItem.CUT_CARROT}, CookingTaskItem.MIO_HAMBURGER_STEAK),
-  };
 
   private final @Nonnull Delegate delegate;
-  private @Nullable Inventory cuttingBoard;
-  private @Nullable Inventory servingTable;
-  private @Nullable Inventory cauldron;
-  private @Nullable Inventory hotPlate;
+  private @Nullable CuttingBoardKitchenware cuttingBoard;
+  private @Nullable ServingTableKitchenware servingTable;
+  private @Nullable CauldronKitchenware cauldron;
+  private @Nullable HotPlateKitchenware hotPlate;
 
   private final List<Point3i> cuttingBoardBlocks;
   private final Point3i servingTablePos = pos(-99, 81, 8);
@@ -137,19 +109,19 @@ class CookStage extends AbstractStage {
   protected void onReset() {
     Kill.EntitiesByScoreboardTag(world, Stage.COOK.tag);
     if (cauldron != null) {
-      cauldron.close();
+      cauldron.dispose();
       cauldron = null;
     }
     if (cuttingBoard != null) {
-      cuttingBoard.close();
+      cuttingBoard.dispose();
       cuttingBoard = null;
     }
     if (servingTable != null) {
-      servingTable.close();
+      servingTable.dispose();
       servingTable = null;
     }
     if (hotPlate != null) {
-      hotPlate.close();
+      hotPlate.dispose();
       hotPlate = null;
     }
     var furnace = world.getBlockAt(furnacePos.toLocation(world));
@@ -178,13 +150,13 @@ class CookStage extends AbstractStage {
     var location = new Point3i(block.getLocation());
     if (action == Action.RIGHT_CLICK_BLOCK) {
       if (location.equals(cauldronPos)) {
-        player.openInventory(ensureCauldronInventory());
+        player.openInventory(ensureCauldron().inventory);
       } else if (location.equals(servingTablePos)) {
-        player.openInventory(ensureServingTableInventory());
+        player.openInventory(ensureServingTable().inventory);
       } else if (cuttingBoardBlocks.stream().anyMatch(p -> p.equals(location))) {
-        player.openInventory(ensureCuttingBoardInventory());
+        player.openInventory(ensureCuttingBoard().inventory);
       } else if (hotPlateBlocks.stream().anyMatch(p -> p.equals(location))) {
-        player.openInventory(ensureHotPlateInventory());
+        player.openInventory(ensureHotPlate().inventory);
       } else {
         return;
       }
@@ -194,160 +166,21 @@ class CookStage extends AbstractStage {
 
   @Override
   protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-    var view = e.getView();
-    var top = view.getTopInventory();
-    var slot = e.getRawSlot();
-    var item = e.getCurrentItem();
-    if (top == cuttingBoard) {
-      if (participation.role != Role.KNIGHT) {
-        e.setCancelled(true);
-        return;
-      }
-      if (!onClickProdctSlot(e, 15)) {
-        return;
-      }
-      if (item == null) {
-        return;
-      }
-      if (slot == 11) {
-        // material
-      } else if (slot == 13) {
-        // iron_axe
-        e.setCancelled(true);
-        for (var recipe : sCuttingBoardRecipes) {
-          if (recipe.consumeMaterialsIfPossible(cuttingBoard, 11, 11, 15)) {
-            break;
-          }
-        }
-      } else {
-        e.setCancelled(true);
-      }
-    } else if (top == servingTable) {
-      if (participation.role != Role.KNIGHT) {
-        e.setCancelled(true);
-        return;
-      }
-      if (!onClickProdctSlot(e, 14)) {
-        return;
-      }
-      if (slot == 12) {
-        // bowl
-        e.setCancelled(true);
-        for (var recipe : sServingTableRecipes) {
-          if (recipe.consumeMaterialsIfPossible(servingTable, 29, 33, 14)) {
-            break;
-          }
-        }
-      } else if (29 <= slot && slot <= 33) {
-        // material
-      } else {
-        e.setCancelled(true);
-      }
-    } else if (top == cauldron) {
-      if (participation.role != Role.KNIGHT) {
-        e.setCancelled(true);
-        return;
-      }
-      if (!onClickProdctSlot(e, 14)) {
-        return;
-      }
-      if (item == null) {
-        return;
-      }
-      if (slot == 12) {
-        // steel_and_flint
-        //TODO: 着火するだけ, product の生成は 7 秒後
-        e.setCancelled(true);
-        for (var recipe : sCauldronRecipes) {
-          if (recipe.consumeMaterialsIfPossible(cauldron, 30, 32, 14)) {
-            break;
-          }
-        }
-      } else if (30 <= slot && slot <= 32) {
-        // material
-      } else {
-        e.setCancelled(true);
-      }
-    } else if (top == hotPlate) {
-      if (participation.role != Role.KNIGHT) {
-        e.setCancelled(true);
-        return;
-      }
-      if (!onClickProdctSlot(e, 14)) {
-        return;
-      }
-      if (item == null) {
-        return;
-      }
-      if (slot == 12) {
-        // steel_and_flint
-        e.setCancelled(true);
-        for (var recipe : sHotPlateRecipes) {
-          if (recipe.consumeMaterialsIfPossible(hotPlate, 29, 33, 14)) {
-            break;
-          }
-        }
-      } else if (29 <= slot && slot <= 33) {
-        // material
-      } else {
-        e.setCancelled(true);
-      }
+    if (cuttingBoard != null) {
+      cuttingBoard.onInventoryClick(e);
+    }
+    if (servingTable != null) {
+      servingTable.onInventoryClick(e);
+    }
+    if (cauldron != null) {
+      cauldron.onInventoryClick(e);
+    }
+    if (hotPlate != null) {
+      hotPlate.onInventoryClick(e);
     }
   }
 
-  private boolean onClickProdctSlot(InventoryClickEvent e, int productSlot) {
-    var view = e.getView();
-    var top = view.getTopInventory();
-    var bottom = view.getBottomInventory();
-    var clicked = e.getClickedInventory();
-    var slot = e.getRawSlot();
-    var item = e.getCurrentItem();
-    var action = e.getAction();
-    if (clicked == bottom) {
-      if (action == InventoryAction.PLACE_ALL || action == InventoryAction.PLACE_ONE || action == InventoryAction.PLACE_SOME) {
-        var product = top.getItem(productSlot);
-        if (product == null) {
-          top.setItem(productSlot, ProductPlaceholderItem());
-        }
-      }
-      return false;
-    } else if (item != null) {
-      if (slot == productSlot) {
-        if (item.getType() == sProductPlaceholderMaterial) {
-          e.setCancelled(true);
-        } else {
-          if (action == InventoryAction.PICKUP_ALL) {
-            view.setCursor(item);
-            view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-            e.setCancelled(true);
-          } else if (action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-            bottom.addItem(item);
-            view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-            e.setCancelled(true);
-          } else if (action == InventoryAction.PICKUP_HALF) {
-            var remain = item.getAmount() / 2;
-            var amount = item.getAmount() - remain;
-            view.setCursor(item.clone().subtract(remain));
-            if (remain == 0) {
-              view.setItem(e.getRawSlot(), ProductPlaceholderItem());
-            } else {
-              view.setItem(e.getRawSlot(), item.clone().subtract(amount));
-            }
-            e.setCancelled(true);
-          } else {
-            e.setCancelled(true);
-          }
-        }
-        return false;
-      } else {
-        return true;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  private static ItemStack ProductPlaceholderItem() {
+  static ItemStack ProductPlaceholderItem() {
     return ItemBuilder.For(sProductPlaceholderMaterial).displayName(Component.empty()).build();
   }
 
@@ -538,106 +371,32 @@ class CookStage extends AbstractStage {
     });
   }
 
-  private @Nonnull Inventory ensureCuttingBoardInventory() {
-    if (cuttingBoard != null) {
-      return cuttingBoard;
+  private @Nonnull CuttingBoardKitchenware ensureCuttingBoard() {
+    if (cuttingBoard == null) {
+      cuttingBoard = new CuttingBoardKitchenware();
     }
-    var inventory = Bukkit.createInventory(null, 36, Text("まな板", NamedTextColor.GREEN));
-    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var a = new ItemStack(Material.AIR);
-    final var ia = ItemBuilder.For(Material.IRON_AXE).displayName(Text("材料を切る！", NamedTextColor.GREEN)).build();
-    final var ob = ProductPlaceholderItem();
-    final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    inventory.setContents(new ItemStack[]{
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, a, gsgp, ia, gsgp, ob, gsgp, bsgp,
-      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-    });
-    cuttingBoard = inventory;
-    return inventory;
+    return cuttingBoard;
   }
 
-  private @Nonnull Inventory ensureServingTableInventory() {
-    if (servingTable != null) {
-      return servingTable;
+  private @Nonnull ServingTableKitchenware ensureServingTable() {
+    if (servingTable == null) {
+      servingTable = new ServingTableKitchenware();
     }
-    var inventory = Bukkit.createInventory(null, 54, Text("盛り付け台", NamedTextColor.GREEN));
-    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var a = new ItemStack(Material.AIR);
-    final var b = ItemBuilder.For(Material.BOWL).displayName(Text("盛り付ける！", NamedTextColor.GREEN)).build();
-    final var ob = ProductPlaceholderItem();
-    //NOTE: この orange_stained_glass_pane は displayName が設定されておらずアイテム名が見える: https://youtu.be/MKcNzz21P8g?t=9740
-    final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).build();
-    inventory.setContents(new ItemStack[]{
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, b, gsgp, ob, gsgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, a, a, a, a, a, gsgp, bsgp,
-      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp,
-      bsgp, gsgp, osgp, osgp, osgp, osgp, osgp, gsgp, bsgp
-    });
-    servingTable = inventory;
-    return inventory;
+    return servingTable;
   }
 
-  private @Nonnull Inventory ensureCauldronInventory() {
-    if (cauldron != null) {
-      return cauldron;
+  private @Nonnull CauldronKitchenware ensureCauldron() {
+    if (cauldron == null) {
+      cauldron = new CauldronKitchenware();
     }
-    var inventory = Bukkit.createInventory(null, 54, Text("鍋", NamedTextColor.GREEN));
-    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
-    final var ob = ProductPlaceholderItem();
-    final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var a = new ItemStack(Material.AIR);
-    final var c = new ItemStack(Material.CAMPFIRE);
-    c.editMeta(ItemMeta.class, it -> {
-      it.setCustomModelData(1);
-      //TODO: 着火した時は NamedTextColor.RED
-      it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
-    });
-    inventory.setContents(new ItemStack[]{
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, fas, gsgp, ob, gsgp, gsgp, bsgp,
-      bsgp, gsgp, wsgp, gsgp, gsgp, gsgp, wsgp, gsgp, bsgp,
-      bsgp, gsgp, wsgp, a, a, a, wsgp, gsgp, bsgp,
-      bsgp, gsgp, wsgp, wsgp, wsgp, wsgp, wsgp, gsgp, bsgp,
-      bsgp, gsgp, c, c, c, c, c, gsgp, bsgp
-    });
-    cauldron = inventory;
-    return inventory;
+    return cauldron;
   }
 
-  private @Nonnull Inventory ensureHotPlateInventory() {
-    if (hotPlate != null) {
-      return hotPlate;
+  private @Nonnull HotPlateKitchenware ensureHotPlate() {
+    if (hotPlate == null) {
+      hotPlate = new HotPlateKitchenware();
     }
-    var inventory = Bukkit.createInventory(null, 54, Text("鉄板", NamedTextColor.GREEN));
-    final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("材料を焼く！", NamedTextColor.GREEN)).build();
-    final var ob = ProductPlaceholderItem();
-    final var a = new ItemStack(Material.AIR);
-    final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var c = new ItemStack(Material.CAMPFIRE);
-    c.editMeta(ItemMeta.class, it -> {
-      //NOTE: 鉄板の焚き火は着火操作必要無いぽい: https://youtu.be/ZNGqqCothRc?t=9815
-      it.displayName(Text("🔥🔥🔥", NamedTextColor.RED));
-    });
-    inventory.setContents(new ItemStack[]{
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, fas, gsgp, ob, gsgp, gsgp, bsgp,
-      bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
-      bsgp, gsgp, a, a, a, a, a, gsgp, bsgp,
-      bsgp, gsgp, wsgp, wsgp, wsgp, wsgp, wsgp, gsgp, bsgp,
-      bsgp, gsgp, c, c, c, c, c, gsgp, bsgp
-    });
-    hotPlate = inventory;
-    return inventory;
+    return hotPlate;
   }
 
   static ItemStack AddItemTag(ItemStack item) {
