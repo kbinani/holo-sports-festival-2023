@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -122,6 +123,8 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       countdown.cancel();
       countdown = null;
     }
+    Kill.EntitiesByScoreboardTag(world, itemTag);
+    Bukkit.getServer().getOnlinePlayers().forEach(it -> ClearItems(it, itemTag));
   }
 
   @Override

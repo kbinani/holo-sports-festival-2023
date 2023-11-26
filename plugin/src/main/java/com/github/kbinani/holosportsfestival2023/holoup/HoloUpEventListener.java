@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.holoup;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -157,7 +158,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
     registrants.clear();
     status = Status.IDLE;
-    world.getPlayers().forEach(this::clearItems);
+    Kill.EntitiesByScoreboardTag(world, itemTag);
+    Bukkit.getServer().getOnlinePlayers().forEach(this::clearItems);
     if (countdownTask != null) {
       countdownTask.cancel();
       countdownTask = null;

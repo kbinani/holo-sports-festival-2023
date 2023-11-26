@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Barrel;
@@ -436,6 +437,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     registrants.clearLeaderRegistrationBarrel();
 
     Kill.EntitiesByScoreboardTag(world, healthDisplayScoreboardTag);
+    Bukkit.getServer().getOnlinePlayers().forEach(KibasenEventListener::ClearItems);
 
     registrants.clear();
     if (session != null) {
