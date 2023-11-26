@@ -77,6 +77,7 @@ public class CookStage extends AbstractStage {
   private final Point3i cauldronPos = pos(-99, 81, 9);
   private final List<Point3i> hotPlateBlocks;
   private final Point3i furnacePos = pos(-99, 81, 10);
+  private final Point3i craftingTablePos = pos(-99, 81, 7);
   private final Point3i[] carrotCrops = new Point3i[]{pos(-90, 80, 7), pos(-89, 80, 7), pos(-90, 80, 8), pos(-89, 80, 8)};
   private final Point3i[] potatoCrops = new Point3i[]{pos(-90, 80, 10), pos(-89, 80, 10), pos(-90, 80, 11), pos(-89, 80, 11)};
   private final Point3i[] wheatCrops = new Point3i[]{pos(-90, 80, 13), pos(-89, 80, 13), pos(-90, 80, 14), pos(-89, 80, 14)};
@@ -149,13 +150,27 @@ public class CookStage extends AbstractStage {
     var location = new Point3i(block.getLocation());
     if (action == Action.RIGHT_CLICK_BLOCK) {
       if (location.equals(cauldronPos)) {
-        player.openInventory(ensureCauldron().inventory);
+        if (participation.role == Role.KNIGHT) {
+          player.openInventory(ensureCauldron().inventory);
+        }
+        player.swingMainHand();
       } else if (location.equals(servingTablePos)) {
-        player.openInventory(ensureServingTable().inventory);
+        if (participation.role == Role.KNIGHT) {
+          player.openInventory(ensureServingTable().inventory);
+        }
+        player.swingMainHand();
       } else if (cuttingBoardBlocks.stream().anyMatch(p -> p.equals(location))) {
-        player.openInventory(ensureCuttingBoard().inventory);
+        if (participation.role == Role.KNIGHT) {
+          player.openInventory(ensureCuttingBoard().inventory);
+        }
+        player.swingMainHand();
       } else if (hotPlateBlocks.stream().anyMatch(p -> p.equals(location))) {
-        player.openInventory(ensureHotPlate().inventory);
+        if (participation.role == Role.KNIGHT) {
+          player.openInventory(ensureHotPlate().inventory);
+        }
+        player.swingMainHand();
+      } else if (participation.role == Role.PRINCESS && (furnacePos.equals(location) || craftingTablePos.equals(location))) {
+        player.swingMainHand();
       } else {
         return;
       }
