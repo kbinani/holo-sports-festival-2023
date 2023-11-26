@@ -1,4 +1,4 @@
-package com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.ItemTag;
@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.AddItemTag;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.AddItemTag;
 
 enum CookingTaskItem {
   EMERALD(Material.EMERALD),

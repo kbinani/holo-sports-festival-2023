@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 
-enum Role {
+public enum Role {
   PRINCESS("姫", NamedTextColor.LIGHT_PURPLE),
   KNIGHT("騎士", NamedTextColor.GOLD);
 

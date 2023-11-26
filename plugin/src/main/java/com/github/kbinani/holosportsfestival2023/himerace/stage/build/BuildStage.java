@@ -1,16 +1,22 @@
-package  com.github.kbinani.holosportsfestival2023.himerace;
+package  com.github.kbinani.holosportsfestival2023.himerace.stage.build;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
+import com.github.kbinani.holosportsfestival2023.himerace.Stage;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -22,8 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
-class BuildStage extends AbstractStage {
-  interface Delegate {
+public class BuildStage extends AbstractStage {
+  public interface Delegate {
     void buildStageSignalActionBarUpdate();
 
     void buildStageDidFinish();
@@ -64,7 +70,7 @@ class BuildStage extends AbstractStage {
   private int step = 0;
   private @Nullable BukkitTask penaltyCooldown;
 
-  BuildStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+  public BuildStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
   }
@@ -89,11 +95,6 @@ class BuildStage extends AbstractStage {
       penaltyCooldown.cancel();
       penaltyCooldown = null;
     }
-  }
-
-  @Override
-  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-
   }
 
   @Override
@@ -159,7 +160,7 @@ class BuildStage extends AbstractStage {
   }
 
   @Override
-  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
     if (finished || !started) {
       return;
     }
@@ -253,7 +254,7 @@ class BuildStage extends AbstractStage {
   }
 
   @Override
-  protected float getProgress() {
+  public float getProgress() {
     if (finished) {
       return 1;
     } else {
@@ -266,7 +267,7 @@ class BuildStage extends AbstractStage {
   }
 
   @Override
-  protected @Nonnull Component getActionBar(Role role) {
+  public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case PRINCESS -> Text("騎士達が作っているものを答えよう！", NamedTextColor.GREEN);
       case KNIGHT -> {

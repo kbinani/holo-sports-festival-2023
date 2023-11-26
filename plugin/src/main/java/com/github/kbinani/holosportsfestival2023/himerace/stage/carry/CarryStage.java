@@ -1,6 +1,10 @@
-package  com.github.kbinani.holosportsfestival2023.himerace;
+package  com.github.kbinani.holosportsfestival2023.himerace.stage.carry;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
+import com.github.kbinani.holosportsfestival2023.himerace.Team;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
@@ -11,7 +15,6 @@ import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,8 +26,8 @@ import java.util.*;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
-class CarryStage extends AbstractStage {
-  interface Delegate {
+public class CarryStage extends AbstractStage {
+  public interface Delegate {
     void carryStageDidFinish();
   }
 
@@ -53,7 +56,7 @@ class CarryStage extends AbstractStage {
   private final double startZ = z(-57);
   private final double goalZ = z(-23);
 
-  CarryStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+  public CarryStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
     this.firstFloorRegions = new Region2D[]{
@@ -140,11 +143,6 @@ class CarryStage extends AbstractStage {
   }
 
   @Override
-  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-
-  }
-
-  @Override
   protected void onFinish() {
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);
     delegate.carryStageDidFinish();
@@ -152,7 +150,7 @@ class CarryStage extends AbstractStage {
 
 
   @Override
-  protected float getProgress() {
+  public float getProgress() {
     if (finished) {
       return 1;
     } else {
@@ -161,7 +159,7 @@ class CarryStage extends AbstractStage {
   }
 
   @Override
-  protected @Nonnull Component getActionBar(Role role) {
+  public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case PRINCESS -> Text("騎士達に向こうの足場まで運んでもらいましょう！", NamedTextColor.GREEN);
       case KNIGHT -> Text("向こうの足場までお姫様を運んであげましょう！", NamedTextColor.GREEN);

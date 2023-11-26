@@ -1,8 +1,13 @@
-package  com.github.kbinani.holosportsfestival2023.himerace;
+package  com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
+import com.github.kbinani.holosportsfestival2023.himerace.Stage;
+import com.github.kbinani.holosportsfestival2023.himerace.Team;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -11,16 +16,13 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,8 +32,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
-class SolveStage extends AbstractStage {
-  interface Delegate {
+public class SolveStage extends AbstractStage {
+  public interface Delegate {
     void solveStageDidFinish();
   }
 
@@ -43,7 +45,7 @@ class SolveStage extends AbstractStage {
     private @Nullable Rendered rendered;
 
     @Override
-    public void render(@NotNull MapView map, @NotNull MapCanvas canvas, @NotNull Player player) {
+    public void render(@Nonnull MapView map, @Nonnull MapCanvas canvas, @Nonnull Player player) {
       if (!started) {
         return;
       }
@@ -90,7 +92,7 @@ class SolveStage extends AbstractStage {
   private @Nullable ItemFrame itemFrame;
   private final int mapId;
 
-  SolveStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, Material quizConcealer, int mapId, Delegate delegate) {
+  public SolveStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, Material quizConcealer, int mapId, Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
     this.quizOrigin = pos(-92, 83, 38);
@@ -123,11 +125,6 @@ class SolveStage extends AbstractStage {
       itemFrame = null;
     }
     Kill.EntitiesByScoreboardTag(world, Stage.SOLVE.tag);
-  }
-
-  @Override
-  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-
   }
 
   @Override
@@ -185,12 +182,7 @@ class SolveStage extends AbstractStage {
   }
 
   @Override
-  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-
-  }
-
-  @Override
-  protected float getProgress() {
+  public float getProgress() {
     if (finished) {
       return 1;
     } else {
@@ -199,7 +191,7 @@ class SolveStage extends AbstractStage {
   }
 
   @Override
-  protected @Nonnull Component getActionBar(Role role) {
+  public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case KNIGHT -> Text("姫と一緒に問題に答えよう！", NamedTextColor.GREEN);
       case PRINCESS -> {

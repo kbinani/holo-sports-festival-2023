@@ -1,4 +1,4 @@
-package com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.sProductPlaceholderMaterial;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.sProductPlaceholderMaterial;
 
 record CookingRecipe(CookingTaskItem[] materials, CookingTaskItem product) {
   private record RecipeMatch(ItemStack item, int slot) {

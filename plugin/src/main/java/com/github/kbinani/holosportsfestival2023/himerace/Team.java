@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -14,12 +15,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.CreateRecipeBook0;
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.CreateRecipeBook1;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook0;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook1;
 
-class Team implements Level.Delegate {
+public class Team implements Level.Delegate {
   interface Delegate {
     void teamDidFinish(TeamColor color);
   }
@@ -142,11 +143,11 @@ class Team implements Level.Delegate {
     };
   }
 
-  List<Player> getKnights() {
+  public List<Player> getKnights() {
     return new LinkedList<>(knights);
   }
 
-  @Nullable Player getPrincess() {
+  public @Nullable Player getPrincess() {
     return princess;
   }
 

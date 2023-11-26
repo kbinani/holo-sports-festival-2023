@@ -1,22 +1,23 @@
-package  com.github.kbinani.holosportsfestival2023.himerace;
+package  com.github.kbinani.holosportsfestival2023.himerace.stage.goal;
 
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 
-class GoalStage extends AbstractStage {
-  interface Delegate {
+public class GoalStage extends AbstractStage {
+  public interface Delegate {
     void goalStageDidFinish();
   }
 
@@ -24,7 +25,7 @@ class GoalStage extends AbstractStage {
   private final double startZ = z(86);
   private final double goalZ = z(96);
 
-  GoalStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+  public GoalStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
   }
@@ -40,11 +41,6 @@ class GoalStage extends AbstractStage {
 
   @Override
   protected void onReset() {
-  }
-
-  @Override
-  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-
   }
 
   @Override
@@ -66,17 +62,12 @@ class GoalStage extends AbstractStage {
   }
 
   @Override
-  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
-
-  }
-
-  @Override
-  protected float getProgress() {
+  public float getProgress() {
     return 1;
   }
 
   @Override
-  protected @Nonnull Component getActionBar(Role role) {
+  public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case PRINCESS -> Text("騎士と一緒にモンスターを倒そう！", NamedTextColor.GREEN);
       case KNIGHT -> Text("姫と一緒にモンスターを倒そう！", NamedTextColor.GREEN);

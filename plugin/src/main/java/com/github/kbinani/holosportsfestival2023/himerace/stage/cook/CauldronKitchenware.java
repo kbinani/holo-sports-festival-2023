@@ -1,4 +1,4 @@
-package com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import net.kyori.adventure.text.Component;
@@ -8,12 +8,12 @@ import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.ProductPlaceholderItem;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.ProductPlaceholderItem;
 
 class CauldronKitchenware extends AbstractKitchenware {
   CauldronKitchenware() {

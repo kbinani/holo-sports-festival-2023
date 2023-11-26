@@ -1,7 +1,9 @@
-package com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -18,7 +20,7 @@ import org.bukkit.util.BoundingBox;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-abstract class AbstractStage {
+public abstract class AbstractStage {
   protected final World world;
   protected final JavaPlugin owner;
   protected final Point3i origin;
@@ -29,7 +31,7 @@ abstract class AbstractStage {
   protected boolean finished = false;
   private @Nullable BukkitTask openGateTask;
 
-  AbstractStage(World world, JavaPlugin owner, Point3i origin, int sizeX, int sizeZ) {
+  protected AbstractStage(World world, JavaPlugin owner, Point3i origin, int sizeX, int sizeZ) {
     this.world = world;
     this.owner = owner;
     this.origin = origin;
@@ -38,45 +40,48 @@ abstract class AbstractStage {
     this.bounds = new BoundingBox(origin.x, origin.y, origin.z, origin.x + sizeX, 500, origin.z + sizeZ);
   }
 
-  final void start() {
+  public final void start() {
     if (started || finished) {
       return;
     }
     setStarted(true);
   }
 
-  final void reset() {
+  public final void reset() {
     closeGate();
     onReset();
     finished = false;
     started = false;
   }
 
-  final void playerMove(PlayerMoveEvent e, Participation participation) {
+  public final void playerMove(PlayerMoveEvent e, Participation participation) {
     if (started && !finished) {
       onPlayerMove(e, participation);
     }
   }
 
-  final void playerInteract(PlayerInteractEvent e, Participation participation) {
+  public final void playerInteract(PlayerInteractEvent e, Participation participation) {
     if (started && !finished) {
       onPlayerInteract(e, participation);
     }
   }
 
-  void tick() {
+  public void tick() {
   }
 
-  protected abstract void onPlayerMove(PlayerMoveEvent e, Participation participation);
-
-  protected abstract void onPlayerInteract(PlayerInteractEvent e, Participation participation);
-
-  protected abstract void onInventoryClick(InventoryClickEvent e, Participation participation);
-
-  protected void onBlockDropItem(BlockDropItemEvent e) {
+  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
   }
 
-  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
+  protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
+  }
+
+  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  }
+
+  public void onBlockDropItem(BlockDropItemEvent e) {
+  }
+
+  public void onFurnaceSmelt(FurnaceSmeltEvent e) {
   }
 
   protected abstract void onStart();
@@ -85,9 +90,9 @@ abstract class AbstractStage {
 
   protected abstract void onFinish();
 
-  protected abstract float getProgress();
+  public abstract float getProgress();
 
-  protected abstract @Nonnull Component getActionBar(Role role);
+  public abstract @Nonnull Component getActionBar(Role role);
 
   protected final void setFinished(boolean v) {
     if (finished == v) {

@@ -29,7 +29,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   static final Component title = Text("[Himerace]", NamedTextColor.AQUA);
   static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
-  static final String itemTag = "hololive_sports_festival_2023_himerace";
+  public static final String itemTag = "hololive_sports_festival_2023_himerace";
 
   private final World world;
   private final JavaPlugin owner;

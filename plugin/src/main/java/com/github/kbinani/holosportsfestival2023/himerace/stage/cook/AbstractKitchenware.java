@@ -1,4 +1,4 @@
-package com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryAction;
@@ -11,8 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.ProductPlaceholderItem;
-import static com.github.kbinani.holosportsfestival2023.himerace.CookStage.sProductPlaceholderMaterial;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.ProductPlaceholderItem;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.sProductPlaceholderMaterial;
 
 abstract class AbstractKitchenware {
   protected final int capacity;

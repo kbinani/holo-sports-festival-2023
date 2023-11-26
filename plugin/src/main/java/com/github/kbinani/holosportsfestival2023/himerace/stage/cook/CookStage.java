@@ -1,9 +1,13 @@
-package  com.github.kbinani.holosportsfestival2023.himerace;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.himerace.Participation;
+import com.github.kbinani.holosportsfestival2023.himerace.Role;
+import com.github.kbinani.holosportsfestival2023.himerace.Stage;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -17,7 +21,6 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
@@ -36,7 +39,7 @@ import java.util.stream.Collectors;
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 
-class CookStage extends AbstractStage {
+public class CookStage extends AbstractStage {
   // 本番:
   //   赤組:
   //     姫: 常闇トワ https://youtu.be/0zFjBmflulU?t=9879
@@ -57,7 +60,7 @@ class CookStage extends AbstractStage {
   //     騎士: 夏色まつり https://youtu.be/MKcNzz21P8g?t=9724
   //     お題: ステーキ / スバルの唐揚げ
   // (敬称略)
-  interface Delegate {
+  public interface Delegate {
     void cookStageDidFinish();
   }
 
@@ -79,7 +82,7 @@ class CookStage extends AbstractStage {
   private final Point3i[] wheatCrops = new Point3i[]{pos(-90, 80, 13), pos(-89, 80, 13), pos(-90, 80, 14), pos(-89, 80, 14)};
   private final Point3i[] beetrootCrops = new Point3i[]{pos(-90, 80, 16), pos(-89, 80, 16), pos(-90, 80, 17), pos(-89, 80, 17)};
 
-  CookStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+  public CookStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.cuttingBoardBlocks = Arrays.stream(new Point3i[]{
       pos(-98, 82, 6),
@@ -133,11 +136,6 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
-
-  }
-
-  @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
     if (finished || !started) {
       return;
@@ -166,7 +164,7 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
     if (cuttingBoard != null) {
       cuttingBoard.onInventoryClick(e, owner);
     }
@@ -186,7 +184,7 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  protected void onBlockDropItem(BlockDropItemEvent e) {
+  public void onBlockDropItem(BlockDropItemEvent e) {
     var items = e.getItems();
     for (var item : items) {
       var location = item.getLocation();
@@ -206,7 +204,7 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
+  public void onFurnaceSmelt(FurnaceSmeltEvent e) {
     var block = e.getBlock();
     var location = new Point3i(block.getLocation());
     if (!location.equals(furnacePos)) {
@@ -225,13 +223,13 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  protected float getProgress() {
+  public float getProgress() {
     //TODO:
     return 0;
   }
 
   @Override
-  protected @Nonnull Component getActionBar(Role role) {
+  public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case KNIGHT -> Text("姫が食べたいものをプレゼントしてあげよう！", NamedTextColor.GREEN);
       case PRINCESS -> {
@@ -242,7 +240,7 @@ class CookStage extends AbstractStage {
   }
 
   @Override
-  void tick() {
+  public void tick() {
     for (var pos : carrotCrops) {
       growOrPlant(pos, Material.CARROTS);
     }
@@ -265,7 +263,6 @@ class CookStage extends AbstractStage {
       if (blockData instanceof Ageable ageable) {
         ageable.setAge(Math.min(ageable.getAge() + 1, ageable.getMaximumAge()));
         block.setBlockData(blockData);
-      } else {
       }
     } else if (type == Material.AIR) {
       world.setBlockData(pos.x, pos.y, pos.z, material.createBlockData("[age=1]"));
@@ -439,7 +436,7 @@ class CookStage extends AbstractStage {
     };
   }
 
-  static @Nonnull ItemStack CreateRecipeBook0() {
+  public static @Nonnull ItemStack CreateRecipeBook0() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(Text("秘伝のレシピブック", NamedTextColor.GOLD))
       .customByteTag(Stage.COOK.tag)
@@ -456,7 +453,7 @@ class CookStage extends AbstractStage {
     return book;
   }
 
-  static @Nonnull ItemStack CreateRecipeBook1() {
+  public static @Nonnull ItemStack CreateRecipeBook1() {
     var book = ItemBuilder.For(Material.WRITABLE_BOOK)
       .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
       .customByteTag(Stage.COOK.tag)
