@@ -22,8 +22,8 @@ class FightStage extends AbstractStage {
   @Nullable
   Delegate delegate;
 
-  FightStage(World world, JavaPlugin owner, Point3i origin, Delegate delegate) {
-    super(world, owner, origin);
+  FightStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
   }
 

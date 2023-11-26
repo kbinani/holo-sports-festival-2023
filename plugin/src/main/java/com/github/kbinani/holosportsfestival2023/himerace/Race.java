@@ -45,7 +45,7 @@ class Race implements Team.Delegate {
     this.delegate = delegate;
     teams.clear();
     startTimeMillis = System.currentTimeMillis();
-    timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 20);
+    timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 10);
     start();
   }
 

@@ -11,6 +11,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,14 +20,20 @@ abstract class AbstractStage {
   protected final World world;
   protected final JavaPlugin owner;
   protected final Point3i origin;
+  protected final int sizeX ;
+  protected final int sizeZ;
+  protected final BoundingBox bounds;
   protected boolean started = false;
   protected boolean finished = false;
   private @Nullable BukkitTask openGateTask;
 
-  AbstractStage(World world, JavaPlugin owner, Point3i origin) {
+  AbstractStage(World world, JavaPlugin owner, Point3i origin, int sizeX, int sizeZ) {
     this.world = world;
     this.owner = owner;
     this.origin = origin;
+    this.sizeX = sizeX;
+    this.sizeZ = sizeZ;
+    this.bounds = new BoundingBox(origin.x, origin.y, origin.z, origin.x + sizeX, 500, origin.z + sizeZ);
   }
 
   final void start() {
@@ -53,6 +60,9 @@ abstract class AbstractStage {
     if (started && !finished) {
       onPlayerInteract(e, participation);
     }
+  }
+
+  void tick() {
   }
 
   protected abstract void onPlayerMove(PlayerMoveEvent e, Participation participation);

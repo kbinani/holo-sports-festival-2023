@@ -53,8 +53,8 @@ class CarryStage extends AbstractStage {
   private final double startZ = z(-57);
   private final double goalZ = z(-23);
 
-  CarryStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
-    super(world, owner, origin);
+  CarryStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
     this.firstFloorRegions = new Region2D[]{
       new Region2D(pos(-99, -59), pos(-96, -39)),

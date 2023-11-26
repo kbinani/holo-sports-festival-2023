@@ -64,8 +64,8 @@ class BuildStage extends AbstractStage {
   private int step = 0;
   private @Nullable BukkitTask penaltyCooldown;
 
-  BuildStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
-    super(world, owner, origin);
+  BuildStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
   }
 

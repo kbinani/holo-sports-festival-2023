@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Container;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
@@ -183,9 +184,13 @@ class CookStage extends AbstractStage {
   private final Point3i cauldronPos = pos(-99, 81, 9);
   private final List<Point3i> hotPlateBlocks;
   private final Point3i furnacePos = pos(-99, 81, 10);
+  private final Point3i[] carrotCrops = new Point3i[]{    pos(-90, 80, 7), pos(-89, 80, 7), pos(-90, 80, 8), pos(-89, 80, 8)  };
+  private final Point3i[] potatoCrops = new Point3i[]{pos(-90, 80, 10), pos(-89, 80, 10), pos(-90, 80, 11), pos(-89, 80, 11)};
+  private final Point3i[] wheatCrops = new Point3i[]{pos(-90, 80, 13), pos(-89, 80, 13), pos(-90, 80, 14), pos(-89, 80, 14)};
+  private final Point3i[] beetrootCrops = new Point3i[]{pos(-90, 80, 16), pos(-89, 80, 16), pos(-90, 80, 17), pos(-89, 80, 17)};
 
-  CookStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
-    super(world, owner, origin);
+  CookStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.cuttingBoardBlocks = Arrays.stream(new Point3i[]{
       pos(-98, 82, 6),
       pos(-97, 82, 6),
@@ -379,6 +384,37 @@ class CookStage extends AbstractStage {
         yield Component.empty();
       }
     };
+  }
+
+  @Override
+  void tick() {
+    for (var pos : carrotCrops) {
+      growOrPlant(pos, Material.CARROTS);
+    }
+    for (var pos : potatoCrops) {
+      growOrPlant(pos, Material.POTATOES);
+    }
+    for (var pos : wheatCrops) {
+      growOrPlant(pos, Material.WHEAT);
+    }
+    for (var pos : beetrootCrops) {
+      growOrPlant(pos, Material.BEETROOTS);
+    }
+  }
+
+  private void growOrPlant(Point3i pos, Material material) {
+    var block = world.getBlockAt(pos.x, pos.y, pos.z);
+    var type = block.getType();
+    if (type == material) {
+      var blockData = block.getBlockData();
+      if (blockData instanceof Ageable ageable) {
+        ageable.setAge(Math.min(ageable.getAge() + 1, ageable.getMaximumAge()));
+        block.setBlockData(blockData);
+      } else {
+      }
+    } else if (type == Material.AIR) {
+      world.setBlockData(pos.x, pos.y, pos.z, material.createBlockData("[age=1]"));
+    }
   }
 
   private void prepare() {

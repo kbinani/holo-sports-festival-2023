@@ -178,6 +178,7 @@ class Team implements Level.Delegate {
   }
 
   void tick() {
+    level.tick();
     updateActionBar();
   }
 

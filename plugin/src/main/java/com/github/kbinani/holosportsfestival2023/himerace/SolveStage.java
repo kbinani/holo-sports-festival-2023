@@ -90,8 +90,8 @@ class SolveStage extends AbstractStage {
   private @Nullable ItemFrame itemFrame;
   private final int mapId;
 
-  SolveStage(World world, JavaPlugin owner, Point3i origin, Material quizConcealer, int mapId, Delegate delegate) {
-    super(world, owner, origin);
+  SolveStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, Material quizConcealer, int mapId, Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
     this.quizOrigin = pos(-92, 83, 38);
     this.quiz = Quiz.Create(ThreadLocalRandom.current());

@@ -24,8 +24,8 @@ class GoalStage extends AbstractStage {
   private final double startZ = z(86);
   private final double goalZ = z(96);
 
-  GoalStage(World world, JavaPlugin owner, Point3i origin, @Nonnull Delegate delegate) {
-    super(world, owner, origin);
+  GoalStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
+    super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
   }
 
