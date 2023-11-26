@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -68,7 +69,7 @@ public class Team implements Level.Delegate {
           inventory.setItem(1, CreateRecipeBook1());
         }
         for (var knight : knights) {
-          var emerald = TaskItem.EMERALD.toItem();
+          var emerald = Task.ToItem(TaskItem.EMERALD, 20);
           knight.getInventory().setItem(0, emerald);
         }
       }

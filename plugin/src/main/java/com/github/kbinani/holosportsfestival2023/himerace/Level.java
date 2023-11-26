@@ -21,6 +21,7 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -104,6 +105,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onInventoryClick(InventoryClickEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.onInventoryClick(e, participation);
+    }
+  }
+
+  void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.onPlayerItemConsume(e, participation);
     }
   }
 
@@ -196,6 +203,11 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     this.delegate.use(d -> {
       d.levelPlaySound(sound);
     });
+  }
+
+  @Override
+  public void cookStageSignalActionBarUpdate() {
+    this.delegate.use(Delegate::levelSignalActionBarUpdate);
   }
 
   @Override

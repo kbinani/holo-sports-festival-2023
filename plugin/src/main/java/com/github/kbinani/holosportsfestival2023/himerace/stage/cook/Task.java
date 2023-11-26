@@ -1,28 +1,50 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import com.github.kbinani.holosportsfestival2023.ItemTag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionType;
+
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.AddItemTag;
 
-enum Task {
-  BAKED_POTATO(Material.BAKED_POTATO, "hololive_sports_festival_2023_himerace_cooking_easy"),
-  COOKED_CHICKEN(Material.COOKED_CHICKEN, "hololive_sports_festival_2023_himerace_cooking_easy"),
-  COOKED_BEEF(Material.COOKED_BEEF, "hololive_sports_festival_2023_himerace_cooking_easy"),
-  COOKED_MUTTON(Material.COOKED_MUTTON, "hololive_sports_festival_2023_himerace_cooking_easy"),
-  COOKED_RABBIT(Material.COOKED_RABBIT, "hololive_sports_festival_2023_himerace_cooking_easy"),
+public enum Task {
+  BAKED_POTATO(TaskItem.BAKED_POTATO, true),
+  COOKED_CHICKEN(TaskItem.COOKED_CHICKEN, true),
+  COOKED_BEEF(TaskItem.COOKED_BEEF, true),
+  COOKED_MUTTON(TaskItem.COOKED_MUTTON, true),
+  COOKED_RABBIT(TaskItem.COOKED_RABBIT, true),
 
-  MIO_HAMBERGER_STEAK(Material.COOKED_BEEF, "hololive_sports_festival_2023_himerace_cooking_difficult"),
-  MIKO_PANCAKES(Material.PUMPKIN_PIE, "hololive_sports_festival_2023_himerace_cooking_difficult"),
-  SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, "hololive_sports_festival_2023_himerace_cooking_difficult");
+  MIO_HAMBERGER_STEAK(TaskItem.MIO_HAMBURGER_STEAK, false),
+  MIKO_PANCAKES(TaskItem.MIKO_PANCAKES, false),
+  SUBARU_FRIED_CHICKEN(TaskItem.SUBARU_FRIED_CHICKEN, false);
 
-  final Material material;
-  final String tag;
+  static final String easyTaskTag = "hololive_sports_festival_2023_himerace_cooking_easy";
+  static final String difficultTaskTag = "hololive_sports_festival_2023_himerace_cooking_difficult";
 
-  Task(Material material, String tag) {
-    this.material = material;
-    this.tag = tag;
+  final TaskItem item;
+  final boolean isEasy;
+
+  Task(TaskItem item, boolean isEasy) {
+    this.item = item;
+    this.isEasy = isEasy;
+  }
+
+  String getTag() {
+    if (isEasy) {
+      return easyTaskTag;
+    } else {
+      return difficultTaskTag;
+    }
   }
 
   Component[] getRecipePageJp() {
@@ -114,6 +136,50 @@ enum Task {
   Component[] getRecipePageEn() {
     //TODO: 英訳したものになっているはずだけど一旦日本語版と同じにしてある
     return getRecipePageJp();
+  }
+
+  static Task selectRandomlyEasyTask() {
+    var tasks = Arrays.stream(values()).filter(it -> it.isEasy).toList();
+    var index = ThreadLocalRandom.current().nextInt(tasks.size());
+    return tasks.get(index);
+  }
+
+  static Task selectRandomlyDifficultTask() {
+    var tasks = Arrays.stream(values()).filter(it -> !it.isEasy).toList();
+    var index = ThreadLocalRandom.current().nextInt(tasks.size());
+    return tasks.get(index);
+  }
+
+  public static @Nonnull ItemStack ToItem(TaskItem taskItem) {
+    return ToItem(taskItem, 1);
+  }
+
+  public static @Nonnull ItemStack ToItem(TaskItem taskItem, int amount) {
+    var item = switch (taskItem) {
+      case OIL -> AddItemTag(
+        ItemBuilder.For(Material.POTION)
+          .amount(amount)
+          .potion(PotionType.STRENGTH)
+          .displayName(Text("油 / Oil"))
+          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
+          .build()
+      );
+      default -> new ItemStack(taskItem.material, amount);
+    };
+    item.editMeta(ItemMeta.class, it -> {
+      if (taskItem.specialItemName != null) {
+        it.displayName(taskItem.specialItemName);
+      }
+      if (taskItem.customModelData != null) {
+        it.setCustomModelData(taskItem.customModelData);
+      }
+    });
+    for (var task : Task.values()) {
+      if (task.item == taskItem) {
+        ItemTag.AddByte(item, task.getTag());
+      }
+    }
+    return AddItemTag(item);
   }
 }
 

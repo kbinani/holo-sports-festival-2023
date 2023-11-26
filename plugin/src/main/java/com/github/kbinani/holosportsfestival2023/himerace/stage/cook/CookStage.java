@@ -21,6 +21,7 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
+import static net.kyori.adventure.text.Component.text;
 
 public class CookStage extends AbstractStage {
   // 本番:
@@ -61,17 +63,13 @@ public class CookStage extends AbstractStage {
   //     お題: ステーキ / スバルの唐揚げ
   // (敬称略)
   public interface Delegate {
+    void cookStageSignalActionBarUpdate();
     void cookStageDidFinish();
   }
 
   static final Material sProductPlaceholderMaterial = Material.OAK_BUTTON;
 
   private final @Nonnull Delegate delegate;
-  private @Nullable CuttingBoardKitchenware cuttingBoard;
-  private @Nullable ServingTableKitchenware servingTable;
-  private @Nullable CauldronKitchenware cauldron;
-  private @Nullable HotPlateKitchenware hotPlate;
-
   private final List<Point3i> cuttingBoardBlocks;
   private final Point3i servingTablePos = pos(-99, 81, 8);
   private final Point3i cauldronPos = pos(-99, 81, 9);
@@ -82,6 +80,15 @@ public class CookStage extends AbstractStage {
   private final Point3i[] potatoCrops = new Point3i[]{pos(-90, 80, 10), pos(-89, 80, 10), pos(-90, 80, 11), pos(-89, 80, 11)};
   private final Point3i[] wheatCrops = new Point3i[]{pos(-90, 80, 13), pos(-89, 80, 13), pos(-90, 80, 14), pos(-89, 80, 14)};
   private final Point3i[] beetrootCrops = new Point3i[]{pos(-90, 80, 16), pos(-89, 80, 16), pos(-90, 80, 17), pos(-89, 80, 17)};
+
+  private @Nullable CuttingBoardKitchenware cuttingBoard;
+  private @Nullable ServingTableKitchenware servingTable;
+  private @Nullable CauldronKitchenware cauldron;
+  private @Nullable HotPlateKitchenware hotPlate;
+  private Task easy;
+  private Task difficult;
+  private boolean isEasyTaskCleared = false;
+  private boolean isDifficultTaskCleared = false;
 
   public CookStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
@@ -98,6 +105,8 @@ public class CookStage extends AbstractStage {
       pos(-97, 81, 11),
     }).collect(Collectors.toList());
     this.delegate = delegate;
+    this.easy = Task.selectRandomlyEasyTask();
+    this.difficult = Task.selectRandomlyDifficultTask();
   }
 
   @Override
@@ -134,6 +143,10 @@ public class CookStage extends AbstractStage {
       var inventory = container.getInventory();
       inventory.clear();
     }
+    this.easy = Task.selectRandomlyEasyTask();
+    this.difficult = Task.selectRandomlyDifficultTask();
+    this.isEasyTaskCleared = false;
+    this.isDifficultTaskCleared = false;
   }
 
   @Override
@@ -180,6 +193,9 @@ public class CookStage extends AbstractStage {
 
   @Override
   public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
     if (cuttingBoard != null) {
       cuttingBoard.onInventoryClick(e, owner);
     }
@@ -191,6 +207,30 @@ public class CookStage extends AbstractStage {
     }
     if (hotPlate != null) {
       hotPlate.onInventoryClick(e, owner);
+    }
+  }
+
+  @Override
+  public void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
+    if (participation.role != Role.PRINCESS) {
+      return;
+    }
+    var item = e.getItem();
+    if (!isEasyTaskCleared && Task.ToItem(easy.item).isSimilar(item)) {
+      isEasyTaskCleared = true;
+      delegate.cookStageSignalActionBarUpdate();
+      if (isDifficultTaskCleared) {
+        delegate.cookStageDidFinish();
+      }
+    } else if (!isDifficultTaskCleared && Task.ToItem(difficult.item).isSimilar(item)) {
+      isDifficultTaskCleared = true;
+      delegate.cookStageSignalActionBarUpdate();
+      if (isEasyTaskCleared) {
+        delegate.cookStageDidFinish();
+      }
     }
   }
 
@@ -226,31 +266,42 @@ public class CookStage extends AbstractStage {
       return;
     }
     var result = e.getResult();
-    ItemTag.AddByte(result, Stage.COOK.tag);
-    ItemTag.AddByte(result, itemTag);
     for (var taskItem : TaskItem.values()) {
-      var task = taskItem.task;
-      if (task == null || taskItem.material != result.getType() || taskItem.customModelData != null || taskItem.specialName != null) {
+      if (taskItem.material != result.getType()) {
         continue;
       }
-      ItemTag.AddByte(result, task.tag);
+      if (taskItem.customModelData != null) {
+        continue;
+      }
+      e.setResult(Task.ToItem(taskItem));
+      break;
     }
   }
 
   @Override
   public float getProgress() {
-    //TODO:
-    return 0;
+    float ret = 0;
+    if (isEasyTaskCleared) {
+      ret += 0.5f;
+    }
+    if (isDifficultTaskCleared) {
+      ret += 0.5f;
+    }
+    return ret;
   }
 
   @Override
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
       case KNIGHT -> Text("姫が食べたいものをプレゼントしてあげよう！", NamedTextColor.GREEN);
-      case PRINCESS -> {
-        //TODO:
-        yield Component.empty();
-      }
+      case PRINCESS -> text("『", isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED)
+        .append(this.easy.item.getDescription().colorIfAbsent(isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
+        .append(text("』", isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
+        .append(text("と", NamedTextColor.GREEN))
+        .append(text("『", isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
+        .append(this.difficult.item.getDescription().colorIfAbsent(isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
+        .append(text("』", isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED))
+        .append(text("が食べたい！", NamedTextColor.GREEN));
     };
   }
 

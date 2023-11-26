@@ -25,10 +25,10 @@ record Recipe(TaskItem[] materials, TaskItem product) {
       inventory.setItem(match.slot, match.item.subtract());
     }
     var product = inventory.getItem(productSlot);
-    if (product != null && product.isSimilar(this.product.toItem())) {
+    if (product != null && product.isSimilar(Task.ToItem(this.product))) {
       return product.add();
     } else if (product == null || product.getType() == sProductPlaceholderMaterial) {
-      return this.product.toItem();
+      return Task.ToItem(this.product);
     } else {
       return null;
     }
@@ -39,7 +39,7 @@ record Recipe(TaskItem[] materials, TaskItem product) {
     var expected = new ItemStack[materials.length];
     for (int j = 0; j < materials.length; j++) {
       matches[j] = -1;
-      expected[j] = materials[j].toItem();
+      expected[j] = Task.ToItem(materials[j]);
     }
     for (int i = materialSlotFrom; i <= materialSlotTo; i++) {
       var item = inventory.getItem(i);

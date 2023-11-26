@@ -12,6 +12,7 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -76,6 +77,9 @@ public abstract class AbstractStage {
   }
 
   public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  }
+
+  public void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
   }
 
   public void onBlockDropItem(BlockDropItemEvent e) {
