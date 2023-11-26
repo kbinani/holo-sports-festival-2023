@@ -44,11 +44,11 @@ public enum TaskItem {
   FLOUR(Material.WHEAT, Text("小麦粉 / Flour", NamedTextColor.WHITE), 1, null),
   CUT_SWEET_BERRIES(Material.SWEET_BERRIES, Text("切ったスイートベリー / Cut Sweet Berries", NamedTextColor.WHITE), 1, null),
 
-  PANCAKES(Material.CAKE, Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE), 1, null),
+  PANCAKES(Material.PUMPKIN_PIE, Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE), 1, null),
 
   MIO_HAMBURGER_STEAK(Material.COOKED_BEEF, Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD), 1, Task.MIO_HAMBERGER_STEAK),
   SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD), 1, Task.SUBARU_FRIED_CHICKEN),
-  MIKO_PANCAKES(Material.CAKE, Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD), 2, Task.MIKO_PANCAKES);
+  MIKO_PANCAKES(Material.PUMPKIN_PIE, Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD), 2, Task.MIKO_PANCAKES);
 
   final Material material;
   final @Nullable Component specialName;
