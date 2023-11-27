@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -11,8 +10,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.ProductPlaceholderItem;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 class HotPlateKitchenware extends AbstractKitchenware {
   HotPlateKitchenware() {
@@ -21,17 +22,17 @@ class HotPlateKitchenware extends AbstractKitchenware {
 
   @Override
   protected @Nonnull Inventory createInventory() {
-    var inventory = Bukkit.createInventory(null, capacity, Text("鉄板", NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, capacity, text("鉄板", GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("材料を焼く！", NamedTextColor.GREEN)).build();
+    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(text("材料を焼く！", GREEN)).build();
     final var ob = ProductPlaceholderItem();
     final var a = new ItemStack(Material.AIR);
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
       //NOTE: 鉄板の焚き火は着火操作必要無いぽい: https://youtu.be/ZNGqqCothRc?t=9815
-      it.displayName(Text("🔥🔥🔥", NamedTextColor.RED));
+      it.displayName(text("🔥🔥🔥", RED));
     });
     inventory.setContents(new ItemStack[]{
       bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,

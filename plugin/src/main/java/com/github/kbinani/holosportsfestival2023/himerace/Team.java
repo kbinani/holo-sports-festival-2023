@@ -6,7 +6,6 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -16,11 +15,13 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook0;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook1;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 public class Team implements Level.Delegate {
   interface Delegate {
@@ -54,7 +55,7 @@ public class Team implements Level.Delegate {
           var book = ItemBuilder.For(Material.BOOK)
             .customByteTag(itemTag)
             .customByteTag(Stage.BUILD.tag)
-            .displayName(Text("回答する！(右クリックで開く) / Answer Book (Right click to open)", NamedTextColor.AQUA))
+            .displayName(text("回答する！(右クリックで開く) / Answer Book (Right click to open)", AQUA))
             .build();
           var inventory = princess.getInventory();
           inventory.setItem(0, book);
@@ -171,7 +172,7 @@ public class Team implements Level.Delegate {
 
   Component getBossBarName() {
     var stage = level.getActive();
-    return color.component().append(Text(String.format(" %s", stage.description), NamedTextColor.WHITE));
+    return color.component().append(text(String.format(" %s", stage.description), WHITE));
   }
 
   float getProgress() {

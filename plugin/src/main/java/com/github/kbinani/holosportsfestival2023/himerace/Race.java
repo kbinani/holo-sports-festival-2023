@@ -4,7 +4,6 @@ import com.github.kbinani.holosportsfestival2023.BossBar;
 import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -18,8 +17,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.*;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class Race implements Team.Delegate {
   interface Delegate {
@@ -56,20 +56,20 @@ class Race implements Team.Delegate {
     }
     broadcast(prefix
       .append(color.component())
-      .append(Text("がゴールしました！")));
+      .append(text("がゴールしました！", WHITE)));
     if (!isAllTeamsFinished()) {
       return;
     }
     broadcast(prefix
-      .append(Text("ゲームが終了しました！")));
+      .append(text("ゲームが終了しました！", WHITE)));
     broadcast(Component.empty());
     var separator = "▪"; //TODO: この文字本当は何なのかが分からない
     broadcast(
-      Text(separator.repeat(32), NamedTextColor.GRAY)
+      text(separator.repeat(32), GRAY)
         .appendSpace()
         .append(title)
         .appendSpace()
-        .append(Text(separator.repeat(32), NamedTextColor.GRAY))
+        .append(text(separator.repeat(32), GRAY))
     );
     broadcast(Component.empty());
     result((i, c, durationMillis) -> {
@@ -77,10 +77,10 @@ class Race implements Team.Delegate {
       long millis = durationMillis - seconds * 1000;
       long minutes = seconds / 60;
       seconds = seconds - minutes * 60;
-      broadcast(Text(String.format(" - %d位 ", i + 1), NamedTextColor.AQUA)
+      broadcast(text(String.format(" - %d位 ", i + 1), AQUA)
         .append(c.component())
         .appendSpace()
-        .append(Text(String.format("(%d:%02d:%03d)", minutes, seconds, millis), c.textColor))
+        .append(text(String.format("(%d:%02d:%03d)", minutes, seconds, millis), c.textColor))
       );
     });
     broadcast(Component.empty());

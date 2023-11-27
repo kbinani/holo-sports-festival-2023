@@ -9,7 +9,6 @@ import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Container;
@@ -37,9 +36,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class CookStage extends AbstractStage {
   // 本番:
@@ -301,18 +300,18 @@ public class CookStage extends AbstractStage {
   @Override
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case KNIGHT -> Text("姫が食べたいものをプレゼントしてあげよう！", NamedTextColor.GREEN);
+      case KNIGHT -> text("姫が食べたいものをプレゼントしてあげよう！", GREEN);
       case PRINCESS -> {
-        var easyDecor = isEasyTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED;
-        var difficultDecor = isDifficultTaskCleared ? NamedTextColor.AQUA : NamedTextColor.RED;
+        var easyDecor = isEasyTaskCleared ? AQUA : RED;
+        var difficultDecor = isDifficultTaskCleared ? AQUA : RED;
         yield text("『", easyDecor)
           .append(this.easy.item.getDescription().colorIfAbsent(easyDecor))
           .append(text("』", easyDecor))
-          .append(text("と", NamedTextColor.GREEN))
+          .append(text("と", GREEN))
           .append(text("『", difficultDecor))
           .append(this.difficult.item.getDescription().colorIfAbsent(difficultDecor))
           .append(text("』", difficultDecor))
-          .append(text("が食べたい！", NamedTextColor.GREEN));
+          .append(text("が食べたい！", GREEN));
       }
     };
   }
@@ -349,50 +348,50 @@ public class CookStage extends AbstractStage {
 
   private void prepare() {
     world.spawn(pos(-97, 82, 11).toLocation(world).add(0, -0.34, -0.02), TextDisplay.class, it -> {
-      it.text(Text("鉄板", NamedTextColor.GREEN));
+      it.text(text("鉄板", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (Math.PI)));
     });
     world.spawn(pos(-97, 82, 11).toLocation(world).add(0, -0.5, -0.02), TextDisplay.class, it -> {
-      it.text(Text("Hot Plate", NamedTextColor.GREEN));
+      it.text(text("Hot Plate", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-98, 82, 9).toLocation(world).add(0.02, -0.34, 0.5), TextDisplay.class, it -> {
-      it.text(Text("鍋", NamedTextColor.GREEN));
+      it.text(text("鍋", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)));
     });
     world.spawn(pos(-98, 82, 9).toLocation(world).add(0.02, -0.5, 0.5), TextDisplay.class, it -> {
-      it.text(Text("Cauldron", NamedTextColor.GREEN));
+      it.text(text("Cauldron", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-98, 82, 8).toLocation(world).add(0.02, -0.34, 0.5), TextDisplay.class, it -> {
-      it.text(Text("盛り付け台", NamedTextColor.GREEN));
+      it.text(text("盛り付け台", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)));
     });
     world.spawn(pos(-98, 82, 8).toLocation(world).add(0.02, -0.5, 0.5), TextDisplay.class, it -> {
-      it.text(Text("Serving Table", NamedTextColor.GREEN));
+      it.text(text("Serving Table", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().rotateY((float) (90.0 / 180.0 * Math.PI)).scale(0.6f));
     });
 
     world.spawn(pos(-97, 82, 7).toLocation(world).add(0, -0.34, 0.02), TextDisplay.class, it -> {
-      it.text(Text("まな板", NamedTextColor.GREEN));
+      it.text(text("まな板", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
     });
     world.spawn(pos(-97, 82, 7).toLocation(world).add(0, -0.5, 0.02), TextDisplay.class, it -> {
-      it.text(Text("Cutting Board", NamedTextColor.GREEN));
+      it.text(text("Cutting Board", GREEN));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setTransformationMatrix(new Matrix4f().scale(0.6f));
     });
 
     world.spawn(pos(-98, 81, 13).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Text("八百屋", NamedTextColor.GOLD));
+      it.customName(text("八百屋", GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.FARMER);
       it.setVillagerLevel(5);
@@ -403,7 +402,7 @@ public class CookStage extends AbstractStage {
         Material.EMERALD,
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
-          .displayName(Text("油 / Oil"))
+          .displayName(text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build()
       ));
@@ -412,7 +411,7 @@ public class CookStage extends AbstractStage {
       recipes.add(CreateOffer(
         ItemBuilder.For(Material.POTION)
           .potion(PotionType.STRENGTH)
-          .displayName(Text("油 / Oil"))
+          .displayName(text("油 / Oil"))
           .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
           .build(),
         Material.EMERALD
@@ -421,7 +420,7 @@ public class CookStage extends AbstractStage {
     });
 
     world.spawn(pos(-98, 81, 15).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Text("精肉屋", NamedTextColor.GOLD));
+      it.customName(text("精肉屋", GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.BUTCHER);
       it.setVillagerLevel(5);
@@ -438,7 +437,7 @@ public class CookStage extends AbstractStage {
     });
 
     world.spawn(pos(-98, 81, 17).toLocation(world).add(0.5, 0, 0.5), Villager.class, it -> {
-      it.customName(Text("雑貨屋", NamedTextColor.GOLD));
+      it.customName(text("雑貨屋", GOLD));
       it.addScoreboardTag(Stage.COOK.tag);
       it.setProfession(Villager.Profession.SHEPHERD);
       it.setVillagerLevel(5);
@@ -516,7 +515,7 @@ public class CookStage extends AbstractStage {
 
   public static @Nonnull ItemStack CreateRecipeBook0() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
-      .displayName(Text("秘伝のレシピブック", NamedTextColor.GOLD))
+      .displayName(text("秘伝のレシピブック", GOLD))
       .customByteTag(Stage.COOK.tag)
       .customByteTag(itemTag)
       .build();
@@ -533,7 +532,7 @@ public class CookStage extends AbstractStage {
 
   public static @Nonnull ItemStack CreateRecipeBook1() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
-      .displayName(Text("The Secret Recipe Book", NamedTextColor.GOLD))
+      .displayName(text("The Secret Recipe Book", GOLD))
       .customByteTag(Stage.COOK.tag)
       .customByteTag(itemTag)
       .build();

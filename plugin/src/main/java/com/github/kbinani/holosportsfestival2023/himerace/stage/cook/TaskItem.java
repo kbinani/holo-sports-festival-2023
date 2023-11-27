@@ -1,13 +1,13 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 
 import javax.annotation.Nullable;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 public enum TaskItem {
   EMERALD(Material.EMERALD),
@@ -37,11 +37,11 @@ public enum TaskItem {
   FLOUR(Material.WHEAT, text("小麦粉 / Flour"), null, 1),
   CUT_SWEET_BERRIES(Material.SWEET_BERRIES, text("切ったスイートベリー / Cut Sweet Berries"), null, 1),
 
-  PANCAKES(Material.PUMPKIN_PIE, Text("ただのパンケーキ / Pancakes", NamedTextColor.WHITE), null, 1),
+  PANCAKES(Material.PUMPKIN_PIE, text("ただのパンケーキ / Pancakes", WHITE), null, 1),
 
-  MIO_HAMBURGER_STEAK(Material.COOKED_BEEF, Text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", NamedTextColor.GOLD), null, 1),
-  SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, Text("スバルの唐揚げ / Subaru's Fried Chicken", NamedTextColor.GOLD), null, 1),
-  MIKO_PANCAKES(Material.PUMPKIN_PIE, Text("えりぃとパンケーキ / Miko's Pancakes", NamedTextColor.GOLD), null, 2);
+  MIO_HAMBURGER_STEAK(Material.COOKED_BEEF, text("ミオしゃ特製ハンバーグ♡ / Mio's Hamburger Steak", GOLD), null, 1),
+  SUBARU_FRIED_CHICKEN(Material.COOKED_CHICKEN, text("スバルの唐揚げ / Subaru's Fried Chicken", GOLD), null, 1),
+  MIKO_PANCAKES(Material.PUMPKIN_PIE, text("えりぃとパンケーキ / Miko's Pancakes", GOLD), null, 2);
 
   final Material material;
   final @Nullable Component specialItemName;

@@ -5,7 +5,6 @@ import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -26,10 +25,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierName;
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierUUID;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class Unit {
   private final JavaPlugin owner;
@@ -66,7 +66,7 @@ class Unit {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
     var title = Title.title(
       Component.empty(),
-      enemy.teamDisplayName().append(Text("を倒しました！", NamedTextColor.GOLD)),
+      enemy.teamDisplayName().append(text("を倒しました！", GOLD)),
       times
     );
     attacker.showTitle(title);
@@ -82,7 +82,7 @@ class Unit {
       var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
       var title = Title.title(
         Component.empty(),
-        enemy.teamDisplayName().append(Text("に倒されました...", NamedTextColor.GOLD)),
+        enemy.teamDisplayName().append(text("に倒されました...", GOLD)),
         times
       );
       attacker.showTitle(title);
@@ -130,8 +130,8 @@ class Unit {
   }
 
   private Component createHealthDisplayComponent() {
-    return Text("♥".repeat(health), NamedTextColor.RED)
-      .append(Text("♡".repeat(maxHealth - health)));
+    return text("♥".repeat(health), RED)
+      .append(text("♡".repeat(maxHealth - health), WHITE));
   }
 
   private @Nonnull Entity ensureHealthDisplayEntity() {
@@ -162,7 +162,7 @@ class Unit {
   }
 
   private void updateActionBar() {
-    var actionBar = Text(String.format("現在のキル数: %d", kills), NamedTextColor.GREEN);
+    var actionBar = text(String.format("現在のキル数: %d", kills), GREEN);
     attacker.sendActionBar(actionBar);
     vehicle.sendActionBar(actionBar);
   }

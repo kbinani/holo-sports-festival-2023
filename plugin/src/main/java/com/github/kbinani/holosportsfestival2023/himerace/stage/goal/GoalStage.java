@@ -6,7 +6,6 @@ import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.World;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -14,7 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
 public class GoalStage extends AbstractStage {
   public interface Delegate {
@@ -69,8 +69,8 @@ public class GoalStage extends AbstractStage {
   @Override
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Text("騎士と一緒にモンスターを倒そう！", NamedTextColor.GREEN);
-      case KNIGHT -> Text("姫と一緒にモンスターを倒そう！", NamedTextColor.GREEN);
+      case PRINCESS -> text("騎士と一緒にモンスターを倒そう！", GREEN);
+      case KNIGHT -> text("姫と一緒にモンスターを倒そう！", GREEN);
     };
   }
 

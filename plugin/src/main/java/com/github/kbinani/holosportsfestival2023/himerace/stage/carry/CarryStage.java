@@ -6,7 +6,6 @@ import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Team;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -24,7 +23,8 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
 public class CarryStage extends AbstractStage {
   public interface Delegate {
@@ -161,8 +161,8 @@ public class CarryStage extends AbstractStage {
   @Override
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case PRINCESS -> Text("騎士達に向こうの足場まで運んでもらいましょう！", NamedTextColor.GREEN);
-      case KNIGHT -> Text("向こうの足場までお姫様を運んであげましょう！", NamedTextColor.GREEN);
+      case PRINCESS -> text("騎士達に向こうの足場まで運んでもらいましょう！", GREEN);
+      case KNIGHT -> text("向こうの足場までお姫様を運んであげましょう！", GREEN);
     };
   }
 

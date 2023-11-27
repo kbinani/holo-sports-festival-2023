@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.holoup;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -24,13 +23,14 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class HoloUpEventListener implements MiniGame, Race.Delegate {
   // 位置をずらしたい場合はここでずらす
   private static final Point3i offset = new Point3i(0, 0, 0);
-  private static final Component title = Text("[Holoup]", NamedTextColor.AQUA);
-  static final Component prefix = title.append(Text(" "));
+  private static final Component title = text("[Holoup]", AQUA);
+  static final Component prefix = title.append(text(" ", WHITE));
   private static final Point3i joinSignRed = pos(-42, 100, -29);
   private static final Point3i joinSignWhite = pos(-41, 100, -29);
   private static final Point3i joinSignYellow = pos(-40, 100, -29);
@@ -71,16 +71,16 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @Override
   public void raceDidDetectGoal(TeamColor color, Player player) {
     broadcast(prefix
-      .append(Text(player.getName(), color.textColor))
+      .append(text(player.getName(), color.textColor))
       .appendSpace()
-      .append(Text("がゴールしました！", NamedTextColor.GOLD)));
+      .append(text("がゴールしました！", GOLD)));
   }
 
   @Override
   public void raceDidDetectCheckpoint(TeamColor color, Player player, int index) {
     broadcast(prefix
-      .append(Text(player.getName(), color.textColor))
-      .append(Text(String.format(" が%d個目のチェックポイントに到達しました！", index))));
+      .append(text(player.getName(), color.textColor))
+      .append(text(String.format(" が%d個目のチェックポイントに到達しました！", index), WHITE)));
   }
 
   private void reset() {
@@ -92,7 +92,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       TeamColor.RED.component(),
       Component.empty(),
-      Text("右クリでエントリー！", NamedTextColor.AQUA)
+      text("右クリでエントリー！", AQUA)
     );
     Editor.StandingSign(
       world,
@@ -102,7 +102,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       TeamColor.WHITE.component(),
       Component.empty(),
-      Text("右クリでエントリー！", NamedTextColor.AQUA)
+      text("右クリでエントリー！", AQUA)
     );
     Editor.StandingSign(
       world,
@@ -112,7 +112,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       TeamColor.YELLOW.component(),
       Component.empty(),
-      Text("右クリでエントリー！", NamedTextColor.AQUA)
+      text("右クリでエントリー！", AQUA)
     );
     Editor.StandingSign(
       world,
@@ -120,9 +120,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       Material.OAK_SIGN,
       0,
       title,
-      Text("観戦者", NamedTextColor.DARK_PURPLE),
-      Text("Spectator", NamedTextColor.DARK_PURPLE),
-      Text("右クリでエントリー！", NamedTextColor.AQUA)
+      text("観戦者", DARK_PURPLE),
+      text("Spectator", DARK_PURPLE),
+      text("右クリでエントリー！", AQUA)
     );
 
     Editor.StandingSign(
@@ -133,7 +133,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("ゲームスタート", NamedTextColor.AQUA)
+      text("ゲームスタート", AQUA)
     );
     Editor.StandingSign(
       world,
@@ -143,7 +143,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("ゲームを中断する", NamedTextColor.RED)
+      text("ゲームを中断する", RED)
     );
     Editor.StandingSign(
       world,
@@ -153,7 +153,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("エントリー リスト", NamedTextColor.GREEN)
+      text("エントリー リスト", GREEN)
     );
 
     registrants.clear();
@@ -206,7 +206,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         } else if (location.equals(startSign)) {
           if (registrants.isEmpty()) {
             player.sendMessage(prefix
-              .append(Text("参加者がいません", NamedTextColor.RED)));
+              .append(text("参加者がいません", RED)));
           } else {
             announceEntryList();
             startCountdown();
@@ -227,11 +227,11 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         if (location.equals(abortSign)) {
           abort();
           broadcast(prefix
-            .append(Text("ゲームを中断しました", NamedTextColor.RED)));
+            .append(text("ゲームを中断しました", RED)));
         } else if (location.equals(entryListSign)) {
           announceEntryList();
         } else if (location.equals(startSign)) {
-          player.sendMessage(Text("ゲームが既に開始しています。", NamedTextColor.RED));
+          player.sendMessage(text("ゲームが既に開始しています。", RED));
         }
       }
       case ACTIVE -> {
@@ -249,9 +249,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         if (location.equals(abortSign)) {
           abort();
           broadcast(prefix
-            .append(Text("ゲームを中断しました", NamedTextColor.RED)));
+            .append(text("ゲームを中断しました", RED)));
         } else if (location.equals(startSign)) {
-          player.sendMessage(Text("ゲームが既に開始しています。", NamedTextColor.RED));
+          player.sendMessage(text("ゲームが既に開始しています。", RED));
         }
       }
     }
@@ -323,12 +323,12 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void announceEntryList() {
-    broadcast(Text("-".repeat(10), NamedTextColor.GREEN)
+    broadcast(text("-".repeat(10), GREEN)
       .appendSpace()
       .append(prefix)
       .appendSpace()
-      .append(Text("エントリー者 ", NamedTextColor.AQUA))
-      .append(Text("-".repeat(10), NamedTextColor.GREEN)));
+      .append(text("エントリー者 ", AQUA))
+      .append(text("-".repeat(10), GREEN)));
     var first = true;
     for (var color : TeamColor.all) {
       if (!first) {
@@ -337,9 +337,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       first = false;
       var player = registrants.get(color);
       int count = player == null ? 0 : 1;
-      broadcast(Text(String.format(" %s (%d)", color.text, count), color.textColor));
+      broadcast(text(String.format(" %s (%d)", color.text, count), color.textColor));
       if (player != null) {
-        broadcast(Text(String.format("  - %s", player.getName()), color.textColor));
+        broadcast(text(String.format("  - %s", player.getName()), color.textColor));
       }
     }
   }
@@ -350,14 +350,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       countdownTask = null;
     }
     status = Status.COUNTDOWN;
-    var titlePrefix = Text("スタートまで", NamedTextColor.AQUA);
-    var subtitle = Text("上を目指せ!holoUp!", NamedTextColor.GREEN);
+    var titlePrefix = text("スタートまで", AQUA);
+    var subtitle = text("上を目指せ!holoUp!", GREEN);
     countdownTask = new Countdown(
       owner,
       world,
       announceBounds,
       titlePrefix,
-      NamedTextColor.AQUA,
+      AQUA,
       subtitle,
       10,
       this::start
@@ -376,7 +376,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         clearItems(player);
       }
       broadcast(prefix
-        .append(Text("準備が整っていない参加者がいたため中断しました。", NamedTextColor.RED)));
+        .append(text("準備が整っていない参加者がいたため中断しました。", RED)));
       status = Status.IDLE;
       return;
     }
@@ -387,7 +387,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     this.race = new Race(owner, world, announceBounds, registrants, this);
     status = Status.ACTIVE;
     broadcast(prefix
-      .append(Text("ゲームがスタートしました。")));
+      .append(text("ゲームがスタートしました。", WHITE)));
   }
 
   private void onClickJoin(Player player, TeamColor color) {
@@ -395,24 +395,24 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     if (current == null) {
       if (registrants.containsValue(player)) {
         player.sendMessage(prefix
-          .append(Text("既に他のチームにエントリーしています。", NamedTextColor.RED))
+          .append(text("既に他のチームにエントリーしています。", RED))
         );
       } else {
         registrants.put(color, player);
         broadcast(prefix
-          .append(Text(player.getName(), color.textColor))
-          .append(Text("が"))
+          .append(text(player.getName(), color.textColor))
+          .append(text("が", WHITE))
           .append(color.component())
-          .append(Text("にエントリーしました。"))
+          .append(text("にエントリーしました。", WHITE))
         );
       }
     } else if (current == player) {
       leave(player);
     } else {
       player.sendMessage(prefix
-        .append(Text("既に", NamedTextColor.RED))
+        .append(text("既に", RED))
         .append(color.component())
-        .append(Text("のプレイヤーがエントリーしています。", NamedTextColor.RED))
+        .append(text("のプレイヤーがエントリーしています。", RED))
       );
     }
   }
@@ -428,9 +428,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     if (color != null) {
       registrants.remove(color);
       broadcast(prefix
-        .append(Text(player.getName() + "が"))
+        .append(text(player.getName() + "が", WHITE))
         .append(color.component())
-        .append(Text("のエントリーを解除しました。"))
+        .append(text("のエントリーを解除しました。", WHITE))
       );
     }
     if (registrants.isEmpty() && countdownTask != null) {
@@ -444,7 +444,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     var y = player.getLocation().getBlockY();
     if (y > Race.groundLevel) {
       player.sendMessage(prefix
-        .append(Text("規定の位置より高い位置に居るためスタートできません。", NamedTextColor.RED))
+        .append(text("規定の位置より高い位置に居るためスタートできません。", RED))
       );
       return false;
     }
@@ -454,7 +454,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       .customByteTag(itemTag)
       .enchant(Enchantment.RIPTIDE, 1)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
-      .displayName(Text("HoloUp用トライデント（弱）", NamedTextColor.AQUA))
+      .displayName(text("HoloUp用トライデント（弱）", AQUA))
       .build();
     if (inventory.getItem(0) != null) {
       warnNonEmptySlot(player, 0);
@@ -472,7 +472,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     ItemStack bed = ItemBuilder.For(Material.RED_BED)
       .amount(1)
       .customByteTag(itemTag)
-      .displayName(Text("リスポーン地点に戻る（右クリック）", NamedTextColor.AQUA))
+      .displayName(text("リスポーン地点に戻る（右クリック）", AQUA))
       .build();
     if (inventory.getItem(2) != null) {
       warnNonEmptySlot(player, 2);
@@ -490,7 +490,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       .customByteTag(itemTagStrong)
       .enchant(Enchantment.RIPTIDE, 2)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
-      .displayName(Text("HoloUp用トライデント（強）", NamedTextColor.GREEN))
+      .displayName(text("HoloUp用トライデント（強）", GREEN))
       .build();
   }
 
@@ -500,7 +500,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
   private void warnNonEmptySlot(Player player, int index) {
     player.sendMessage(prefix
-      .append(Text(String.format("インベントリのスロット%dに既にアイテムがあるため競技用アイテムを渡せません", index), NamedTextColor.RED))
+      .append(text(String.format("インベントリのスロット%dに既にアイテムがあるため競技用アイテムを渡せません", index), RED))
     );
   }
 

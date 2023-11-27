@@ -12,7 +12,6 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.fight.FightStage
 import com.github.kbinani.holosportsfestival2023.himerace.stage.goal.GoalStage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.solve.SolveStage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -29,7 +28,8 @@ import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 
 class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Delegate, SolveStage.Delegate, FightStage.Delegate, GoalStage.Delegate {
   private final World world;
@@ -141,7 +141,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.PRINCESS.component(),
-      Text("右クリでエントリー！", NamedTextColor.AQUA));
+      text("右クリでエントリー！", AQUA));
 
     Editor.StandingSign(
       world,
@@ -151,7 +151,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       HimeraceEventListener.title,
       color.component(),
       Role.KNIGHT.component(),
-      Text("右クリでエントリー！", NamedTextColor.AQUA));
+      text("右クリでエントリー！", AQUA));
 
     for (var stage : this.stages.values()) {
       stage.reset();

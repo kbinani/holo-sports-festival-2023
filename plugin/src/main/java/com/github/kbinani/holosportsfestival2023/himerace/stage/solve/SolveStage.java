@@ -9,7 +9,6 @@ import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.Team;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
@@ -30,7 +29,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
 public class SolveStage extends AbstractStage {
   public interface Delegate {
@@ -193,12 +193,12 @@ public class SolveStage extends AbstractStage {
   @Override
   public @Nonnull Component getActionBar(Role role) {
     return switch (role) {
-      case KNIGHT -> Text("姫と一緒に問題に答えよう！", NamedTextColor.GREEN);
+      case KNIGHT -> text("姫と一緒に問題に答えよう！", GREEN);
       case PRINCESS -> {
         if (quizStarted) {
-          yield Text("騎士と一緒に問題に答えよう！", NamedTextColor.GREEN);
+          yield text("騎士と一緒に問題に答えよう！", GREEN);
         } else {
-          yield Text("感圧板を踏んだらスタート！", NamedTextColor.GREEN);
+          yield text("感圧板を踏んだらスタート！", GREEN);
         }
       }
     };

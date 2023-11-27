@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -12,8 +11,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.ProductPlaceholderItem;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class CauldronKitchenware extends AbstractKitchenware {
   CauldronKitchenware() {
@@ -22,17 +22,17 @@ class CauldronKitchenware extends AbstractKitchenware {
 
   @Override
   protected @Nonnull Inventory createInventory() {
-    var inventory = Bukkit.createInventory(null, capacity, Text("鍋", NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, capacity, text("鍋", GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
-    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(Text("調理する！", NamedTextColor.GREEN)).build();
+    final var fas = ItemBuilder.For(Material.FLINT_AND_STEEL).displayName(text("調理する！", GREEN)).build();
     final var ob = ProductPlaceholderItem();
     final var wsgp = ItemBuilder.For(Material.WHITE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
     final var c = new ItemStack(Material.CAMPFIRE);
     c.editMeta(ItemMeta.class, it -> {
       it.setCustomModelData(1);
-      it.displayName(Text("🔥🔥🔥", NamedTextColor.DARK_GRAY));
+      it.displayName(text("🔥🔥🔥", DARK_GRAY));
     });
     inventory.setContents(new ItemStack[]{
       bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,
@@ -76,7 +76,7 @@ class CauldronKitchenware extends AbstractKitchenware {
       if (count == 0) {
         it.setCustomModelData(1);
       }
-      it.displayName(Text("🔥🔥🔥", count == 0 ? NamedTextColor.DARK_GRAY : NamedTextColor.RED));
+      it.displayName(text("🔥🔥🔥", count == 0 ? DARK_GRAY : RED));
     });
     for (var i = 47; i <= 51; i++) {
       inventory.setItem(i, campfire);

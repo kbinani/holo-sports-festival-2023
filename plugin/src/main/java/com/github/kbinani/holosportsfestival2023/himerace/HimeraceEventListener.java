@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -23,11 +22,12 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
-  static final Component title = Text("[Himerace]", NamedTextColor.AQUA);
+  static final Component title = text("[Himerace]", AQUA);
   static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
   public static final String itemTag = "hololive_sports_festival_2023_himerace";
@@ -94,7 +94,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("ゲームスタート", NamedTextColor.AQUA)
+      text("ゲームスタート", AQUA)
     );
     Editor.StandingSign(
       world,
@@ -104,7 +104,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("ゲームを中断する", NamedTextColor.RED)
+      text("ゲームを中断する", RED)
     );
     Editor.StandingSign(
       world,
@@ -114,7 +114,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       title,
       Component.empty(),
       Component.empty(),
-      Text("エントリーリスト", NamedTextColor.GREEN)
+      text("エントリーリスト", GREEN)
     );
     if (race != null) {
       race.dispose();
@@ -246,33 +246,33 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       return;
     }
     broadcast(
-      Text("----------", NamedTextColor.GREEN)
+      text("----------", GREEN)
         .appendSpace()
         .append(title)
         .appendSpace()
-        .append(Text("エントリー者", NamedTextColor.AQUA))
+        .append(text("エントリー者", AQUA))
         .appendSpace()
-        .append(Text("----------", NamedTextColor.GREEN))
+        .append(text("----------", GREEN))
     );
     for (int i = 0; i < TeamColor.all.length; i++) {
       var color = TeamColor.all[i];
       var team = teams.get(color);
       broadcast(
-        Component.text(" ")
+        text(" ")
           .append(color.component())
           .appendSpace()
-          .append(Text(String.format(" (%d) ", team == null ? 0 : team.size()), color.textColor))
+          .append(text(String.format(" (%d) ", team == null ? 0 : team.size()), color.textColor))
       );
       if (team != null) {
         var princess = team.getPrincess();
         if (princess != null) {
           broadcast(
-            Text(String.format("  - [姫] %s", princess.getName()), NamedTextColor.RED)
+            text(String.format("  - [姫] %s", princess.getName()), RED)
           );
         }
         for (var knight : team.getKnights()) {
           broadcast(
-            Text(String.format("  - %s", knight.getName()), NamedTextColor.RED)
+            text(String.format("  - %s", knight.getName()), RED)
           );
         }
       }
@@ -315,11 +315,11 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     if (team.add(player, role)) {
       broadcast(title
-        .append(Text(" " + player.getName() + " が"))
+        .append(text(" " + player.getName() + " が", WHITE))
         .append(color.component())
-        .append(Text("の"))
+        .append(text("の", WHITE))
         .append(role.component())
-        .append(Text("にエントリーしました。"))
+        .append(text("にエントリーしました。", WHITE))
       );
     }
   }
@@ -335,12 +335,12 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     if (countdown != null) {
       countdown.cancel();
     }
-    var titlePrefix = Text("スタートまで", NamedTextColor.AQUA);
-    var subtitle = Text("姫護衛レース", NamedTextColor.GREEN);
+    var titlePrefix = text("スタートまで", AQUA);
+    var subtitle = text("姫護衛レース", GREEN);
     countdown = new Countdown(
       owner, world, announceBounds,
-      titlePrefix, NamedTextColor.AQUA, subtitle,
-      10, this::start
+      titlePrefix, AQUA, subtitle,
+      1/*TODO:debug0*/, this::start
     );
     announceParticipants();
     setStatus(Status.COUNTDOWN);

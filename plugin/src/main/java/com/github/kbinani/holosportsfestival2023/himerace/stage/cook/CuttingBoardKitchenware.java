@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -10,8 +9,9 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.ProductPlaceholderItem;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
 class CuttingBoardKitchenware extends AbstractKitchenware {
   CuttingBoardKitchenware() {
@@ -20,11 +20,11 @@ class CuttingBoardKitchenware extends AbstractKitchenware {
 
   @Override
   protected @Nonnull Inventory createInventory() {
-    var inventory = Bukkit.createInventory(null, capacity, Text("まな板", NamedTextColor.GREEN));
+    var inventory = Bukkit.createInventory(null, capacity, text("まな板", GREEN));
     final var bsgp = ItemBuilder.For(Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var gsgp = ItemBuilder.For(Material.GRAY_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     final var a = new ItemStack(Material.AIR);
-    final var ia = ItemBuilder.For(Material.IRON_AXE).displayName(Text("材料を切る！", NamedTextColor.GREEN)).build();
+    final var ia = ItemBuilder.For(Material.IRON_AXE).displayName(text("材料を切る！", GREEN)).build();
     final var ob = ProductPlaceholderItem();
     final var osgp = ItemBuilder.For(Material.ORANGE_STAINED_GLASS_PANE).displayName(Component.empty()).build();
     inventory.setContents(new ItemStack[]{

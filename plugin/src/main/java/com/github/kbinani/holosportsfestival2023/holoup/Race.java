@@ -2,7 +2,6 @@ package com.github.kbinani.holosportsfestival2023.holoup;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -25,8 +24,9 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.kbinani.holosportsfestival2023.ComponentSupport.Text;
 import static com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener.*;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class Race {
   interface Delegate {
@@ -230,7 +230,7 @@ class Race {
         .customByteTag(itemTag)
         .customByteTag(itemTagStrong)
         .flags(ItemFlag.HIDE_ATTRIBUTES)
-        .displayName(Text("HoloUp用トライデント（強）", NamedTextColor.DARK_GRAY))
+        .displayName(text("HoloUp用トライデント（強）", DARK_GRAY))
         .build();
       inventory.setItem(index, clayBall);
       var scheduler = Bukkit.getScheduler();
@@ -248,7 +248,7 @@ class Race {
       return;
     }
     broadcast(prefix
-      .append(Text(String.format("%sが棄権しました", player.getName()))));
+      .append(text(String.format("%sが棄権しました", player.getName()), WHITE)));
 
     participants.remove(color);
     goaledMillis.remove(color);
@@ -268,7 +268,7 @@ class Race {
 
     if (participants.isEmpty()) {
       broadcast(prefix
-        .append(Text("ゲームを中断しました", NamedTextColor.RED)));
+        .append(text("ゲームを中断しました", RED)));
       delegate.raceDidFinish();
     }
   }
@@ -339,7 +339,7 @@ class Race {
 
   private void finish() {
     var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
-    var title = Title.title(Text("ゲームが終了しました！", NamedTextColor.GOLD), Component.empty(), times);
+    var title = Title.title(text("ゲームが終了しました！", GOLD), Component.empty(), times);
     Players.Within(world, announceBounds, (player) -> player.showTitle(title));
 
     timeoutTask.cancel();
@@ -362,13 +362,13 @@ class Race {
       var score = this.score(color);
       var line = Component.empty()
         .appendSpace()
-        .append(Text(String.format(" - %s", player.getName()), color.textColor))
-        .append(Text(String.format(" %dm", score), score >= 200 ? NamedTextColor.GOLD : NamedTextColor.WHITE));
+        .append(text(String.format(" - %s", player.getName()), color.textColor))
+        .append(text(String.format(" %dm", score), score >= 200 ? GOLD : WHITE));
       var goal = goaledMillis.get(color);
       if (goal != null) {
         //NOTE: 秒数の表示は本家にはない
         var result = (goal - startedMillis) / 1000.0;
-        line = line.append(Text(String.format(" (%.3f秒)", result)));
+        line = line.append(text(String.format(" (%.3f秒)", result), WHITE));
       }
       broadcast(line);
       broadcast(Component.empty());
@@ -380,8 +380,8 @@ class Race {
     if (countdown != null) {
       countdown.cancel();
     }
-    var prefix = Text("ゲーム終了まで", NamedTextColor.GREEN);
-    countdown = new Countdown(owner, world, announceBounds, prefix, NamedTextColor.WHITE, Component.empty(), 3, this::finish);
+    var prefix = text("ゲーム終了まで", GREEN);
+    countdown = new Countdown(owner, world, announceBounds, prefix, WHITE, Component.empty(), 3, this::finish);
   }
 
   private void tick() {
@@ -409,10 +409,10 @@ class Race {
       bar.setProgress(score / 200.0f);
       var name = color.component()
         .appendSpace()
-        .append(Text(player.getName()))
+        .append(text(player.getName(), WHITE))
         .appendSpace()
-        .append(Text(String.format("%dm", score), NamedTextColor.GOLD))
-        .append(Text(String.format("/200m 残り時間: %d秒", remaining)));
+        .append(text(String.format("%dm", score), GOLD))
+        .append(text(String.format("/200m 残り時間: %d秒", remaining), WHITE));
       bar.setName(name);
     }
   }
