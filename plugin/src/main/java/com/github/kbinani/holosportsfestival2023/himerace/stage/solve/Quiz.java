@@ -1,9 +1,9 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
+import com.github.kbinani.holosportsfestival2023.Colors;
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -14,10 +14,10 @@ import java.util.function.Function;
 
 class Quiz {
   enum Cell {
-    RED('r', Material.RED_WOOL, NamedTextColor.RED),
-    YELLOW('y', Material.YELLOW_WOOL, NamedTextColor.YELLOW),
-    ORANGE('o', Material.ORANGE_WOOL, NamedTextColor.GOLD),
-    PINK('p', Material.PINK_WOOL, NamedTextColor.LIGHT_PURPLE);
+    RED('r', Material.RED_WOOL, Colors.red),
+    YELLOW('y', Material.YELLOW_WOOL, Colors.yellow),
+    ORANGE('o', Material.ORANGE_WOOL, Colors.darkorange),
+    PINK('p', Material.PINK_WOOL, Colors.hotpink);
 
     final char letter;
     final Material material;
