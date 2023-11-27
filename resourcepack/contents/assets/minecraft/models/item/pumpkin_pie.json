@@ -8,13 +8,13 @@
             "predicate": {
                 "custom_model_data": 1
             },
-            "model": "item/pumpkin_pie_pancake"
+            "model": "item/pumpkin_pie_pancakes"
         },
         {
             "predicate": {
                 "custom_model_data": 2
             },
-            "model": "item/pumpkin_pie_miko_pancake"
+            "model": "item/pumpkin_pie_miko_pancakes"
         }
     ]
 }

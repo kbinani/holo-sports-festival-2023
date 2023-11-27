@@ -1,6 +1,6 @@
 {
     "parent": "minecraft:item/generated",
     "textures": {
-        "layer0": "item/pumpkin_pie_pancake"
+        "layer0": "item/pumpkin_pie_miko_pancakes"
     }
 }
