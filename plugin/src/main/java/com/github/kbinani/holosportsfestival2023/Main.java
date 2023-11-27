@@ -15,6 +15,8 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +104,7 @@ public class Main extends JavaPlugin implements Listener {
     for (var miniGame : miniGames) {
       miniGame.miniGameClearItem(player);
     }
+    player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
   }
 
   @EventHandler
