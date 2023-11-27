@@ -110,7 +110,9 @@ class Quiz {
       int index = random.nextInt(Cell.all.length);
       cells[i] = Cell.all[index];
     }
-    int x = random.nextInt(width - 1);
+    int p = random.nextInt(3);
+    int ix = random.nextInt(4);
+    int x = p * 5 + ix;
     int z = random.nextInt(height - 1);
     return new Quiz(cells, new Point2i(x, z));
   }
