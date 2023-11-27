@@ -328,6 +328,18 @@ public class CookStage extends AbstractStage {
     for (var pos : beetrootCrops) {
       growOrPlant(pos, Material.BEETROOTS);
     }
+    if (cuttingBoard != null) {
+      cuttingBoard.updateValidationMarker();
+    }
+    if (servingTable != null) {
+      servingTable.updateValidationMarker();
+    }
+    if (cauldron != null) {
+      cauldron.updateValidationMarker();
+    }
+    if (hotPlate != null) {
+      hotPlate.updateValidationMarker();
+    }
   }
 
   private void growOrPlant(Point3i pos, Material material) {

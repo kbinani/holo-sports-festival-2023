@@ -1,6 +1,9 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -105,6 +108,24 @@ abstract class AbstractKitchenware {
       }
     } else {
       e.setCancelled(true);
+    }
+  }
+
+  final void updateValidationMarker() {
+    if (cooldownTimer != null) {
+      return;
+    }
+    boolean match = false;
+    for (var recipe : getRecipes()) {
+      if (recipe.match(inventory, materialSlotFrom, materialSlotTo)) {
+        match = true;
+        break;
+      }
+    }
+    var item = ItemBuilder.For(match ? Material.LIME_STAINED_GLASS_PANE : Material.BLACK_STAINED_GLASS_PANE).displayName(Component.empty()).build();
+    for (int row = 0; row < capacity / 9; row++) {
+      inventory.setItem(row * 9, item);
+      inventory.setItem(row * 9 + 8, item);
     }
   }
 
