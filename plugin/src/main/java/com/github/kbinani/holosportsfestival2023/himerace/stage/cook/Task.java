@@ -3,7 +3,6 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.ItemTag;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -156,14 +155,11 @@ public enum Task {
 
   public static @Nonnull ItemStack ToItem(TaskItem taskItem, int amount) {
     var item = switch (taskItem) {
-      case OIL -> AddItemTag(
-        ItemBuilder.For(Material.POTION)
-          .amount(amount)
-          .potion(PotionType.STRENGTH)
-          .displayName(text("油 / Oil", WHITE))
-          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
-          .build()
-      );
+      case OIL -> ItemBuilder.For(taskItem.material)
+        .amount(amount)
+        .potion(PotionType.STRENGTH)
+        .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
+        .build();
       default -> new ItemStack(taskItem.material, amount);
     };
     item.editMeta(ItemMeta.class, it -> {
@@ -182,4 +178,3 @@ public enum Task {
     return AddItemTag(item);
   }
 }
-

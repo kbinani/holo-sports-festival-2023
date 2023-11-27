@@ -20,7 +20,7 @@ public enum TaskItem {
   RABBIT(Material.RABBIT),
   CARROT(Material.CARROT),
   WHEAT(Material.WHEAT),
-  OIL(Material.POTION),
+  OIL(Material.POTION, null, text("油 / Oil", WHITE), null),
   EGG(Material.EGG),
   SWEET_BERRIES(Material.SWEET_BERRIES),
 

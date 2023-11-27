@@ -21,12 +21,10 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionType;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
@@ -396,26 +394,12 @@ public class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.FARMER);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
-      recipes.add(CreateOffer(Material.EMERALD, Material.SWEET_BERRIES));
-      recipes.add(CreateOffer(Material.EMERALD, Material.EGG));
-      recipes.add(CreateOffer(
-        Material.EMERALD,
-        ItemBuilder.For(Material.POTION)
-          .potion(PotionType.STRENGTH)
-          .displayName(text("油 / Oil"))
-          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
-          .build()
-      ));
-      recipes.add(CreateOffer(Material.SWEET_BERRIES, Material.EMERALD));
-      recipes.add(CreateOffer(Material.EGG, Material.EMERALD));
-      recipes.add(CreateOffer(
-        ItemBuilder.For(Material.POTION)
-          .potion(PotionType.STRENGTH)
-          .displayName(text("油 / Oil"))
-          .flags(ItemFlag.HIDE_ITEM_SPECIFICS)
-          .build(),
-        Material.EMERALD
-      ));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.SWEET_BERRIES));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.EGG));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.OIL));
+      recipes.add(CreateOffer(TaskItem.SWEET_BERRIES, TaskItem.EMERALD));
+      recipes.add(CreateOffer(TaskItem.EGG, TaskItem.EMERALD));
+      recipes.add(CreateOffer(TaskItem.OIL, TaskItem.EMERALD));
       it.setRecipes(recipes);
     });
 
@@ -425,14 +409,14 @@ public class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.BUTCHER);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
-      recipes.add(CreateOffer(Material.EMERALD, Material.CHICKEN));
-      recipes.add(CreateOffer(Material.EMERALD, Material.BEEF));
-      recipes.add(CreateOffer(Material.EMERALD, Material.MUTTON));
-      recipes.add(CreateOffer(Material.EMERALD, Material.RABBIT));
-      recipes.add(CreateOffer(Material.CHICKEN, Material.EMERALD));
-      recipes.add(CreateOffer(Material.BEEF, Material.EMERALD));
-      recipes.add(CreateOffer(Material.MUTTON, Material.EMERALD));
-      recipes.add(CreateOffer(Material.RABBIT, Material.EMERALD));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.CHICKEN));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.BEEF));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.MUTTON));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.RABBIT));
+      recipes.add(CreateOffer(TaskItem.CHICKEN, TaskItem.EMERALD));
+      recipes.add(CreateOffer(TaskItem.BEEF, TaskItem.EMERALD));
+      recipes.add(CreateOffer(TaskItem.MUTTON, TaskItem.EMERALD));
+      recipes.add(CreateOffer(TaskItem.RABBIT, TaskItem.EMERALD));
       it.setRecipes(recipes);
     });
 
@@ -442,8 +426,8 @@ public class CookStage extends AbstractStage {
       it.setProfession(Villager.Profession.SHEPHERD);
       it.setVillagerLevel(5);
       var recipes = new ArrayList<MerchantRecipe>();
-      recipes.add(CreateOffer(Material.EMERALD, Material.COAL));
-      recipes.add(CreateOffer(Material.COAL, Material.EMERALD));
+      recipes.add(CreateOffer(TaskItem.EMERALD, TaskItem.COAL));
+      recipes.add(CreateOffer(TaskItem.COAL, TaskItem.EMERALD));
       it.setRecipes(recipes);
     });
   }
@@ -482,22 +466,10 @@ public class CookStage extends AbstractStage {
     return item;
   }
 
-  private static MerchantRecipe CreateOffer(ItemStack from, ItemStack to) {
-    var recipe = new MerchantRecipe(AddItemTag(to), Integer.MAX_VALUE);
-    recipe.addIngredient(AddItemTag(from));
+  private static MerchantRecipe CreateOffer(TaskItem from, TaskItem to) {
+    var recipe = new MerchantRecipe(Task.ToItem(to), Integer.MAX_VALUE);
+    recipe.addIngredient(Task.ToItem(from));
     return recipe;
-  }
-
-  private static MerchantRecipe CreateOffer(Material from, Material to) {
-    return CreateOffer(new ItemStack(from), new ItemStack(to));
-  }
-
-  private static MerchantRecipe CreateOffer(Material from, ItemStack to) {
-    return CreateOffer(new ItemStack(from), to);
-  }
-
-  private static MerchantRecipe CreateOffer(ItemStack from, Material to) {
-    return CreateOffer(from, new ItemStack(to));
   }
 
   private static Task[] GetRecipeBookTasks() {
