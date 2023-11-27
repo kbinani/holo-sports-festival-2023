@@ -74,6 +74,20 @@ public class Team implements Level.Delegate {
           knight.getInventory().setItem(0, emerald);
         }
       }
+      case COOK -> {
+        if (princess != null) {
+          var inventory = princess.getInventory();
+          var materials = new Material[]{Material.RED_WOOL, Material.ORANGE_WOOL, Material.YELLOW_WOOL, Material.PINK_WOOL};
+          for (var i = 0; i < materials.length; i++) {
+            var item = ItemBuilder.For(materials[i])
+              .displayName(text("ブロックを置いて解答！ / Place the block to answer!"))
+              .customByteTag(itemTag)
+              .customByteTag(Stage.SOLVE.tag)
+              .build();
+            inventory.setItem(i, item);
+          }
+        }
+      }
       case GOAL -> {
         if (delegate != null) {
           delegate.teamDidFinish(color);

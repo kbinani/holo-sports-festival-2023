@@ -220,6 +220,20 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   @Override
+  public void solveStageSendTitle(Title title) {
+    this.delegate.use(d -> {
+      d.levelSendTitle(title);
+    });
+  }
+
+  @Override
+  public void solveStagePlaySound(Sound sound) {
+    this.delegate.use(d -> {
+      d.levelPlaySound(sound);
+    });
+  }
+
+  @Override
   public void solveStageDidFinish() {
     this.active = Stage.FIGHT;
     this.delegate.use((delegate) -> {
