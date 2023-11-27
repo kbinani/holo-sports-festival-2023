@@ -50,16 +50,13 @@ abstract class AbstractKitchenware {
     if (e.isCancelled()) {
       return;
     }
-    if (cooldownTimer != null) {
-      e.setCancelled(true);
-      return;
-    }
     var view = e.getView();
     if (view.getTopInventory() != inventory) {
       return;
     }
     var slot = e.getRawSlot();
     var item = e.getCurrentItem();
+    var action = e.getAction();
     var skip = onClickProdctSlot(e, productSlot);
     if (skip != null) {
       if (skip == SkipReason.ALL_PRODUCT_PICKEDUP) {
@@ -74,6 +71,9 @@ abstract class AbstractKitchenware {
       // nop
     } else if (toolSlot == slot) {
       e.setCancelled(true);
+      if (action != InventoryAction.PICKUP_ALL || cooldownTimer != null) {
+        return;
+      }
       Recipe match = null;
       for (var recipe : getRecipes()) {
         if (recipe.match(inventory, materialSlotFrom, materialSlotTo)) {
@@ -91,9 +91,6 @@ abstract class AbstractKitchenware {
           inventory.setItem(productSlot, product);
         }
       } else {
-        if (this.cooldownTimer != null) {
-          this.cooldownTimer.cancel();
-        }
         final var count = new AtomicInteger(cooldown);
         this.onCountdown(cooldown);
         this.cooldownTimer = Bukkit.getScheduler().runTaskTimer(owner, () -> {
@@ -146,7 +143,10 @@ abstract class AbstractKitchenware {
           e.setCancelled(true);
           return SkipReason.SYSTEM;
         } else {
-          if (action == InventoryAction.PICKUP_ALL) {
+          if (cooldownTimer != null) {
+            e.setCancelled(true);
+            return SkipReason.SYSTEM;
+          } else if (action == InventoryAction.PICKUP_ALL) {
             view.setCursor(item);
             view.setItem(e.getRawSlot(), ProductPlaceholderItem());
             e.setCancelled(true);
