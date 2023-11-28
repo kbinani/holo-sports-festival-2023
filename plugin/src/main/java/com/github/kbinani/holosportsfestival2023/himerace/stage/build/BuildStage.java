@@ -77,7 +77,6 @@ public class BuildStage extends AbstractStage {
 
   @Override
   protected void onStart() {
-    openGate();
     this.first = new Question(Question.first);
   }
 
