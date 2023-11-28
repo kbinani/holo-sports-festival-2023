@@ -6,6 +6,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -32,7 +33,8 @@ public class Team implements Level.Delegate {
   private final List<Player> knights = new LinkedList<>();
   private static final int kMaxKnightPlayers = 2;
   private final Level level;
-  @Nullable Delegate delegate;
+  @Nullable
+  Delegate delegate;
 
   Team(TeamColor color, Level level) {
     this.color = color;
@@ -135,6 +137,16 @@ public class Team implements Level.Delegate {
     }
     for (var knight : knights) {
       knight.playSound(knight.getLocation(), sound, 1, 1);
+    }
+  }
+
+  @Override
+  public void levelRequestsTeleport(Location location) {
+    if (princess != null) {
+      princess.teleport(location);
+    }
+    for (var knight : knights) {
+      knight.teleport(location);
     }
   }
 

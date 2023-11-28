@@ -13,6 +13,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.goal.GoalStage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.solve.SolveStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -50,6 +51,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     void levelSignalActionBarUpdate();
     void levelSendTitle(Title title);
     void levelPlaySound(Sound sound);
+    void levelRequestsTeleport(Location location);
     void levelDidClearStage(Stage stage);
   }
 
@@ -260,6 +262,13 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   public void fightStagePlaySound(Sound sound) {
     this.delegate.use(d -> {
       d.levelPlaySound(sound);
+    });
+  }
+
+  @Override
+  public void fightStageRequestsTeleport(Location location) {
+    this.delegate.use(d -> {
+      d.levelRequestsTeleport(location);
     });
   }
 

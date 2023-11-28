@@ -2,7 +2,6 @@ package  com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Kill;
-import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
@@ -10,12 +9,11 @@ import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Spider;
-import org.bukkit.entity.Zombie;
+import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -26,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
+import java.util.UUID;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.title;
@@ -50,6 +49,8 @@ public class FightStage extends AbstractStage {
 
     void fightStageSendTitle(Title title);
 
+    void fightStageRequestsTeleport(Location location);
+
     void fightStageDidFinish();
   }
 
@@ -64,6 +65,7 @@ public class FightStage extends AbstractStage {
   private final Point3i enemyPosCenterLow = pos(-94, 81, 81);
   private final Point3i enemyPosCenterHigh = pos(-94, 89, 81);
   private final Point3i safeArea = pos(-94, 80, 53);
+  private final String stageEnemyTag;
 
   public FightStage(
     @Nonnull World world,
@@ -74,6 +76,7 @@ public class FightStage extends AbstractStage {
   {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
     this.delegate = delegate;
+    this.stageEnemyTag = UUID.randomUUID().toString();
   }
 
   @Override
@@ -102,11 +105,10 @@ public class FightStage extends AbstractStage {
       return;
     }
     var entity = e.getEntity();
-    var location = entity.getLocation();
-    if (!bounds.contains(location.toVector())) {
+    if (!entity.getScoreboardTags().contains(Stage.FIGHT.tag)) {
       return;
     }
-    if (!entity.getScoreboardTags().contains(Stage.FIGHT.tag)) {
+    if (!entity.getScoreboardTags().contains(stageEnemyTag)) {
       return;
     }
     updateWaveProgress();
@@ -122,17 +124,25 @@ public class FightStage extends AbstractStage {
         summonSkeleton(enemyPosCenterLow, wave);
       }
       case Wave2 -> {
-        summonZombie(enemyPosCenterLow, wave);//TODO:仮
+        summonBlaze(enemyPosLeft, wave);
+        summonHoglin(enemyPosMiddleLeft, wave);
+        summonPiglinBrute(enemyPosCenterLow, wave);
+        summonHoglin(enemyPosMiddleRight, wave);
+        summonBlaze(enemyPosRight, wave);
       }
       case Wave3 -> {
-        summonZombie(enemyPosCenterLow, wave);//TODO:仮
+        summonPillager(enemyPosLeft, wave);
+        summonVindicator(enemyPosMiddleLeft, wave);
+        summonIllusioner(enemyPosCenterHigh, wave);
+        summonVindicator(enemyPosMiddleRight, wave);
+        summonPillager(enemyPosRight, wave);
       }
     }
   }
 
   private void updateWaveProgress() {
     var remaining = world.getNearbyEntities(bounds).stream().filter(it -> !it.isDead() && it.getScoreboardTags().contains(this.wave.tag)).count();
-    waveProgress = 5 - (int)remaining;
+    waveProgress = 5 - (int) remaining;
     if (remaining > 0) {
       return;
     }
@@ -151,9 +161,7 @@ public class FightStage extends AbstractStage {
     }
     this.wave = next;
     this.waveProgress = 0;
-    Players.Within(world, bounds, p -> {
-      p.teleport(safeArea.toLocation(world).add(0.5, 0, 0.5));
-    });
+    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5));
     setEnableFence(true);
     updateStandingSign(next);
     var title = Title.title(
@@ -171,10 +179,11 @@ public class FightStage extends AbstractStage {
   }
 
   private void summonZombie(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -189,10 +198,11 @@ public class FightStage extends AbstractStage {
   }
 
   private void summonSpider(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -204,10 +214,11 @@ public class FightStage extends AbstractStage {
   }
 
   private void summonSkeleton(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -220,6 +231,102 @@ public class FightStage extends AbstractStage {
       equipment.setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
       equipment.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
       equipment.setBoots(new ItemStack(Material.CHAINMAIL_BOOTS));
+    });
+  }
+
+  private void summonBlaze(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+    });
+  }
+
+  private void summonHoglin(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+
+      it.setAdult();
+      it.setImmuneToZombification(true);
+    });
+  }
+
+  private void summonPiglinBrute(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+
+      it.setImmuneToZombification(true);
+      var equipment = it.getEquipment();
+      DisableDrop(equipment);
+      equipment.clear();
+      equipment.setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
+    });
+  }
+
+  private void summonPillager(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+
+      var equipment = it.getEquipment();
+      DisableDrop(equipment);
+      equipment.clear();
+      equipment.setItemInMainHand(new ItemStack(Material.CROSSBOW));
+    });
+  }
+
+  private void summonVindicator(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+
+      var equipment = it.getEquipment();
+      DisableDrop(equipment);
+      equipment.clear();
+      equipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
+    });
+  }
+
+  private void summonIllusioner(Point3i location, Wave w) {
+    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.addScoreboardTag(w.tag);
+      it.addScoreboardTag(stageEnemyTag);
+      it.clearLootTable();
+      it.setPersistent(true);
+      it.setCanPickupItems(false);
+
+      it.setAI(false);
+      var equipment = it.getEquipment();
+      DisableDrop(equipment);
+      equipment.clear();
     });
   }
 

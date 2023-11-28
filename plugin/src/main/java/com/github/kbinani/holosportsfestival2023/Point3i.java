@@ -45,7 +45,7 @@ public class Point3i {
   }
 
   public Location toLocation(World world, float pitch, float yaw) {
-    return new Location(world, x, y, z, pitch, yaw);
+    return new Location(world, x, y, z, yaw, pitch);
   }
 
   public Location toLocation(World world) {
