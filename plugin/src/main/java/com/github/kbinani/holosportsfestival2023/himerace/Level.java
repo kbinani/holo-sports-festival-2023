@@ -17,6 +17,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -123,6 +124,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onFurnaceSmelt(FurnaceSmeltEvent e) {
     for (var stage : stages.values()) {
       stage.onFurnaceSmelt(e);
+    }
+  }
+
+  void onEntityDeath(EntityDeathEvent e) {
+    for (var stage : stages.values()) {
+      stage.onEntityDeath(e);
     }
   }
 
@@ -240,6 +247,20 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       delegate.levelDidClearStage(Stage.SOLVE);
     });
     this.fightStage.start();
+  }
+
+  @Override
+  public void fightStageSendTitle(Title title) {
+    this.delegate.use(d -> {
+      d.levelSendTitle(title);
+    });
+  }
+
+  @Override
+  public void fightStagePlaySound(Sound sound) {
+    this.delegate.use(d -> {
+      d.levelPlaySound(sound);
+    });
   }
 
   @Override

@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -27,7 +28,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
-  static final Component title = text("[Himerace]", AQUA);
+  public static final Component title = text("[Himerace]", AQUA);
   static final Component prefix = title.appendSpace();
   static final BoundingBox announceBounds = new BoundingBox(X(-152), Y(-64), Z(-81), X(-72), Y(448), Z(120));
   public static final String itemTag = "hololive_sports_festival_2023_himerace";
@@ -241,6 +242,17 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     level.onPlayerItemConsume(e, participation);
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDeathEvent(EntityDeathEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    for (var level : levels.values()) {
+      level.onEntityDeath(e);
+    }
+  }
+
   private void announceParticipants() {
     if (status != Status.IDLE) {
       return;
@@ -340,7 +352,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     countdown = new Countdown(
       owner, world, announceBounds,
       titlePrefix, AQUA, subtitle,
-      1/*TODO:debug0*/, this::start
+      10, this::start
     );
     announceParticipants();
     setStatus(Status.COUNTDOWN);

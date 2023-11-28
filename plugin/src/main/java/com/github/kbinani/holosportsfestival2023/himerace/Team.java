@@ -1,7 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
@@ -86,6 +85,24 @@ public class Team implements Level.Delegate {
               .build();
             inventory.setItem(i, item);
           }
+        }
+      }
+      case SOLVE -> {
+        if (princess != null) {
+        }
+        for (var knight : knights) {
+          var inventory = knight.getInventory();
+          var sword = ItemBuilder.For(Material.IRON_SWORD)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .build();
+          inventory.setItem(0, sword);
+          inventory.setHeldItemSlot(0);
+          var shield = ItemBuilder.For(Material.SHIELD)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .build();
+          inventory.setItemInOffHand(shield);
         }
       }
       case GOAL -> {

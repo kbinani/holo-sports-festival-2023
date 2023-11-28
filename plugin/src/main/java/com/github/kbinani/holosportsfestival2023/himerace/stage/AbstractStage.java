@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -86,6 +87,9 @@ public abstract class AbstractStage {
   }
 
   public void onFurnaceSmelt(FurnaceSmeltEvent e) {
+  }
+
+  public void onEntityDeath(EntityDeathEvent e) {
   }
 
   protected abstract void onStart();
