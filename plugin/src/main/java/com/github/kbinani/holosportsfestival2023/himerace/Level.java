@@ -17,6 +17,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
@@ -27,8 +28,10 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
@@ -51,7 +54,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     void levelSignalActionBarUpdate();
     void levelSendTitle(Title title);
     void levelPlaySound(Sound sound);
-    void levelRequestsTeleport(Location location);
+    void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
     void levelDidClearStage(Stage stage);
   }
 
@@ -266,9 +269,9 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   @Override
-  public void fightStageRequestsTeleport(Location location) {
+  public void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
     this.delegate.use(d -> {
-      d.levelRequestsTeleport(location);
+        d.levelRequestsTeleport(location, predicate);
     });
   }
 

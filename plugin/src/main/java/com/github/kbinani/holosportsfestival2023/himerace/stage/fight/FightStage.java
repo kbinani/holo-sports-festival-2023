@@ -23,8 +23,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.title;
@@ -49,7 +51,7 @@ public class FightStage extends AbstractStage {
 
     void fightStageSendTitle(Title title);
 
-    void fightStageRequestsTeleport(Location location);
+    void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
 
     void fightStageDidFinish();
   }
@@ -57,6 +59,7 @@ public class FightStage extends AbstractStage {
   final @Nonnull Delegate delegate;
   private Wave wave = Wave.Wave1;
   private int waveProgress = 0;
+  private int waveRound = 0;
   private final Point3i signPos = pos(-94, 80, 55);
   private final Point3i enemyPosLeft = pos(-90, 82, 82);
   private final Point3i enemyPosMiddleLeft = pos(-91, 80, 79);
@@ -94,6 +97,7 @@ public class FightStage extends AbstractStage {
   protected void onReset() {
     wave = Wave.Wave1;
     waveProgress = 0;
+    waveRound = 0;
     updateStandingSign(Wave.Wave1);
     Kill.EntitiesByScoreboardTag(world, Stage.FIGHT.tag);
     setEnableFence(true);
@@ -161,7 +165,8 @@ public class FightStage extends AbstractStage {
     }
     this.wave = next;
     this.waveProgress = 0;
-    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5));
+    this.waveRound = 0;
+    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), null);
     setEnableFence(true);
     updateStandingSign(next);
     var title = Title.title(
@@ -371,6 +376,13 @@ public class FightStage extends AbstractStage {
     var location = new Point3i(block.getLocation());
     if (!location.equals(signPos)) {
       return;
+    }
+    if (wave == Wave.Wave1 && waveRound == 0) {
+      delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
+        var z = p.getLocation().getZ();
+        return z < z(51);
+      });
+      closeGate();
     }
     summonEnemy(wave);
     setEnableFence(false);

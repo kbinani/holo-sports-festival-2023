@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
@@ -141,12 +142,16 @@ public class Team implements Level.Delegate {
   }
 
   @Override
-  public void levelRequestsTeleport(Location location) {
+  public void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
     if (princess != null) {
-      princess.teleport(location);
+      if (predicate == null || predicate.apply(princess)) {
+        princess.teleport(location);
+      }
     }
     for (var knight : knights) {
-      knight.teleport(location);
+      if (predicate == null || predicate.apply(knight)) {
+        knight.teleport(location);
+      }
     }
   }
 

@@ -32,6 +32,7 @@ public abstract class AbstractStage {
   protected boolean started = false;
   protected boolean finished = false;
   private @Nullable BukkitTask openGateTask;
+  private Boolean gateOpened;
 
   protected AbstractStage(World world, JavaPlugin owner, Point3i origin, int sizeX, int sizeZ) {
     this.world = world;
@@ -128,6 +129,9 @@ public abstract class AbstractStage {
       openGateTask.cancel();
       openGateTask = null;
     }
+    if (gateOpened != null && gateOpened) {
+      return;
+    }
 
     // origin: dark_oak_fence の一番北西下の位置
     var origin = this.origin.added(4, 0, 0);
@@ -162,6 +166,7 @@ public abstract class AbstractStage {
       Editor.Fill(world, origin.added(4, 6, 0), origin.added(4, 6, 0), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=true]");
       Editor.Fill(world, origin.added(4, 6, 1), origin.added(4, 6, 1), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=true]");
       world.playSound(origin.added(2, 0, 1).toLocation(world), Sound.BLOCK_PISTON_EXTEND, 1.0f, 1.0f);
+      gateOpened = true;
     }, interval * 2);
 
     openGateTask = task;
@@ -172,6 +177,9 @@ public abstract class AbstractStage {
       openGateTask.cancel();
       openGateTask = null;
     }
+    if (gateOpened != null && !gateOpened) {
+      return;
+    }
     var origin = this.origin.added(4, 0, 0);
     Editor.Fill(world, origin, origin.added(4, 2, 0), "dark_oak_fence[east=true,north=false,south=true,waterlogged=false,west=true]");
     Editor.Fill(world, origin.added(0, 0, 1), origin.added(4, 2, 1), "dark_oak_fence[east=true,north=true,south=false,waterlogged=false,west=true]");
@@ -179,5 +187,6 @@ public abstract class AbstractStage {
     Editor.Fill(world, origin.added(0, 4, 0), origin.added(0, 6, 1), "chain[axis=y]");
     Editor.Fill(world, origin.added(4, 4, 0), origin.added(4, 6, 1), "chain[axis=y]");
     world.playSound(origin.added(2, 0, 1).toLocation(world), Sound.BLOCK_PISTON_EXTEND, 1.0f, 1.0f);
+    gateOpened = false;
   }
 }
