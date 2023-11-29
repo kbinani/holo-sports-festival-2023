@@ -177,17 +177,17 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       }
       Point3i location = new Point3i(block.getLocation());
       if (location.equals(Pos(-93, 80, -65))) {
-        join(player, TeamColor.RED, Role.PRINCESS);
+        onClickJoin(player, TeamColor.RED, Role.PRINCESS);
       } else if (location.equals(Pos(-95, 80, -65))) {
-        join(player, TeamColor.RED, Role.KNIGHT);
+        onClickJoin(player, TeamColor.RED, Role.KNIGHT);
       } else if (location.equals(Pos(-109, 80, -65))) {
-        join(player, TeamColor.WHITE, Role.PRINCESS);
+        onClickJoin(player, TeamColor.WHITE, Role.PRINCESS);
       } else if (location.equals(Pos(-111, 80, -65))) {
-        join(player, TeamColor.WHITE, Role.KNIGHT);
+        onClickJoin(player, TeamColor.WHITE, Role.KNIGHT);
       } else if (location.equals(Pos(-125, 80, -65))) {
-        join(player, TeamColor.YELLOW, Role.PRINCESS);
+        onClickJoin(player, TeamColor.YELLOW, Role.PRINCESS);
       } else if (location.equals(Pos(-127, 80, -65))) {
-        join(player, TeamColor.YELLOW, Role.KNIGHT);
+        onClickJoin(player, TeamColor.YELLOW, Role.KNIGHT);
       } else if (location.equals(Pos(-89, 80, -65))) {
         startCountdown();
       } else if (location.equals(Pos(-90, 80, -65))) {
@@ -328,7 +328,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
   }
 
-  private void join(Player player, TeamColor color, Role role) {
+  private void onClickJoin(Player player, TeamColor color, Role role) {
     if (status != Status.IDLE) {
       return;
     }
@@ -336,6 +336,24 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     if (team == null) {
       team = new Team(color, levels.get(color));
       teams.put(color, team);
+    }
+    var current = getCurrentParticipation(player);
+    if (current != null) {
+      var inventory = player.getInventory();
+      for (var i = 0; i < inventory.getSize(); i++) {
+        var item = inventory.getItem(i);
+        if (item == null) {
+          continue;
+        }
+        if (ItemTag.HasByte(item, itemTag)) {
+          inventory.clear(i);
+        }
+      }
+      team.remove(player);
+      player.sendMessage(prefix
+        .append(text("エントリー登録を解除しました。", WHITE))
+      );
+      return;
     }
     if (team.add(player, role)) {
       broadcast(title
@@ -345,6 +363,23 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         .append(role.component())
         .append(text("にエントリーしました。", WHITE))
       );
+      var equipment = player.getEquipment();
+      equipment.setHelmet(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_HELMET : Material.IRON_HELMET)
+        .customByteTag(itemTag)
+        .customByteTag(Stage.FIGHT.tag)
+        .build());
+      equipment.setChestplate(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_CHESTPLATE : Material.IRON_CHESTPLATE)
+        .customByteTag(itemTag)
+        .customByteTag(Stage.FIGHT.tag)
+        .build());
+      equipment.setLeggings(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_LEGGINGS : Material.IRON_LEGGINGS)
+        .customByteTag(itemTag)
+        .customByteTag(Stage.FIGHT.tag)
+        .build());
+      equipment.setBoots(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_BOOTS : Material.IRON_BOOTS)
+        .customByteTag(itemTag)
+        .customByteTag(Stage.FIGHT.tag)
+        .build());
     }
   }
 

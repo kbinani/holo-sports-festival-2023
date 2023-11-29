@@ -191,6 +191,13 @@ public class Team implements Level.Delegate {
     };
   }
 
+  void remove(Player player) {
+    if (player == princess) {
+      princess = null;
+    }
+    knights.remove(player);
+  }
+
   public List<Player> getKnights() {
     return new LinkedList<>(knights);
   }
