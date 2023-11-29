@@ -19,6 +19,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -27,7 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
@@ -71,6 +72,8 @@ public class FightStage extends AbstractStage {
   private final Point3i enemyPosCenterHigh = pos(-94, 89, 81);
   private final Point3i safeArea = pos(-94, 80, 53);
   private final String stageEnemyTag;
+  private final Map<UUID, Entity> deadPlayerSeats = new HashMap<>();
+  private final List<Entity> enemies = new ArrayList<>();
 
   public FightStage(
     @Nonnull World world,
@@ -103,6 +106,14 @@ public class FightStage extends AbstractStage {
     updateStandingSign(Wave.Wave1);
     Kill.EntitiesByScoreboardTag(world, Stage.FIGHT.tag);
     setEnableFence(true);
+    for (var seat : deadPlayerSeats.values()) {
+      seat.remove();
+    }
+    deadPlayerSeats.clear();
+    for (var enemy : enemies) {
+      enemy.remove();
+    }
+    enemies.clear();
   }
 
   @Override
@@ -111,10 +122,7 @@ public class FightStage extends AbstractStage {
       return;
     }
     var entity = e.getEntity();
-    if (!entity.getScoreboardTags().contains(Stage.FIGHT.tag)) {
-      return;
-    }
-    if (!entity.getScoreboardTags().contains(stageEnemyTag)) {
+    if (!enemies.remove(entity)) {
       return;
     }
     e.setDroppedExp(0);
@@ -141,35 +149,56 @@ public class FightStage extends AbstractStage {
     item.remove();
   }
 
-  private void summonEnemy(Wave wave) {
+  @Override
+  public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
+    e.setCancelled(true);
+    var player = e.getPlayer();
+    var location = player.getLocation();
+    location.setY(y(78));
+    var seat = world.spawn(location, ArmorStand.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+      it.addScoreboardTag(itemTag);
+      it.addScoreboardTag(Stage.FIGHT.tag);
+      it.setVisible(false);
+      it.setGravity(false);
+    });
+    seat.addPassenger(player);
+    var id = player.getUniqueId();
+    var current = deadPlayerSeats.get(id);
+    if (current != null) {
+      current.remove();
+    }
+    deadPlayerSeats.put(id, seat);
+  }
+
+  private void summonEnemies(Wave wave) {
     switch (wave) {
       case Wave1 -> {
-        summonSpider(enemyPosLeft, wave);
-        summonSpider(enemyPosRight, wave);
-        summonZombie(enemyPosMiddleLeft, wave);
-        summonZombie(enemyPosMiddleRight, wave);
-        summonSkeleton(enemyPosCenterLow, wave);
+        enemies.add(summonSpider(enemyPosLeft, wave));
+        enemies.add(summonSpider(enemyPosRight, wave));
+        enemies.add(summonZombie(enemyPosMiddleLeft, wave));
+        enemies.add(summonZombie(enemyPosMiddleRight, wave));
+        enemies.add(summonSkeleton(enemyPosCenterLow, wave));
       }
       case Wave2 -> {
-        summonBlaze(enemyPosLeft, wave);
-        summonHoglin(enemyPosMiddleLeft, wave);
-        summonPiglinBrute(enemyPosCenterLow, wave);
-        summonHoglin(enemyPosMiddleRight, wave);
-        summonBlaze(enemyPosRight, wave);
+        enemies.add(summonBlaze(enemyPosLeft, wave));
+        enemies.add(summonHoglin(enemyPosMiddleLeft, wave));
+        enemies.add(summonPiglinBrute(enemyPosCenterLow, wave));
+        enemies.add(summonHoglin(enemyPosMiddleRight, wave));
+        enemies.add(summonBlaze(enemyPosRight, wave));
       }
       case Wave3 -> {
-        summonPillager(enemyPosLeft, wave);
-        summonVindicator(enemyPosMiddleLeft, wave);
-        summonIllusioner(enemyPosCenterHigh, wave);
-        summonVindicator(enemyPosMiddleRight, wave);
-        summonPillager(enemyPosRight, wave);
+        enemies.add(summonPillager(enemyPosLeft, wave));
+        enemies.add(summonVindicator(enemyPosMiddleLeft, wave));
+        enemies.add(summonIllusioner(enemyPosCenterHigh, wave));
+        enemies.add(summonVindicator(enemyPosMiddleRight, wave));
+        enemies.add(summonPillager(enemyPosRight, wave));
       }
     }
   }
 
   private void updateWaveProgress() {
-    var remaining = world.getNearbyEntities(bounds).stream().filter(it -> !it.isDead() && it.getScoreboardTags().contains(this.wave.tag)).count();
-    waveProgress = 5 - (int) remaining;
+    var remaining = enemies.size();
+    waveProgress = 5 - remaining;
     if (remaining > 0) {
       return;
     }
@@ -209,8 +238,8 @@ public class FightStage extends AbstractStage {
     Editor.Fill(world, pos(-98, 80, 56), pos(-90, 80, 56), material);
   }
 
-  private void summonZombie(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonZombie(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -229,8 +258,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonSpider(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonSpider(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -246,8 +275,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonSkeleton(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonSkeleton(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -268,8 +297,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonBlaze(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonBlaze(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -281,8 +310,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonHoglin(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonHoglin(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -297,8 +326,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonPiglinBrute(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonPiglinBrute(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -316,8 +345,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonPillager(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonPillager(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -334,8 +363,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonVindicator(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonVindicator(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -352,8 +381,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void summonIllusioner(Point3i location, Wave w) {
-    world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Entity summonIllusioner(Point3i location, Wave w) {
+    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
@@ -419,7 +448,7 @@ public class FightStage extends AbstractStage {
       });
       closeGate();
     }
-    summonEnemy(wave);
+    summonEnemies(wave);
     setEnableFence(false);
     Editor.Set(world, signPos, Material.AIR);
   }

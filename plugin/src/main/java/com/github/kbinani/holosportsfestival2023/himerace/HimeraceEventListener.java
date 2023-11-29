@@ -12,6 +12,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -302,6 +303,21 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     for (var level : levels.values()) {
       level.onEntitySpawn(e);
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerDeath(PlayerDeathEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    var player = e.getPlayer();
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onPlayerDeath(e, participation);
   }
 
   private void onClickJoin(Player player, TeamColor color, Role role) {
