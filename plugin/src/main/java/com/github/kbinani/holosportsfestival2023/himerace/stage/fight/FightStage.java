@@ -189,7 +189,10 @@ public class FightStage extends AbstractStage {
     this.wave = next;
     this.waveProgress = 0;
     this.waveRound = 0;
-    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), null);
+    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
+      var z = p.getZ();
+      return z < z(15) || z(57) < z;
+    });
     setEnableFence(true);
     updateStandingSign(next);
     var title = Title.title(
