@@ -114,9 +114,6 @@ public class FightStage extends AbstractStage {
 
   @Override
   public void onEntityDeath(EntityDeathEvent e) {
-    if (finished || !started) {
-      return;
-    }
     var entity = e.getEntity();
     if (!enemies.remove(entity)) {
       return;
@@ -128,9 +125,6 @@ public class FightStage extends AbstractStage {
 
   @Override
   public void onEntitySpawn(EntitySpawnEvent e) {
-    if (finished || !started) {
-      return;
-    }
     if (!(e.getEntity() instanceof Item item)) {
       return;
     }
@@ -147,9 +141,6 @@ public class FightStage extends AbstractStage {
 
   @Override
   public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     e.setCancelled(true);
 
     switch (participation.role) {
@@ -210,9 +201,6 @@ public class FightStage extends AbstractStage {
 
   @Override
   public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     if (!(e.getTarget() instanceof Player player)) {
       return;
     }

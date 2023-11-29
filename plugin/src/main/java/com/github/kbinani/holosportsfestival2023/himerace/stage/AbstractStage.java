@@ -60,6 +60,9 @@ public abstract class AbstractStage {
     started = false;
   }
 
+  public void tick() {
+  }
+
   public final void playerMove(PlayerMoveEvent e, Participation participation) {
     if (started && !finished) {
       onPlayerMove(e, participation);
@@ -72,7 +75,53 @@ public abstract class AbstractStage {
     }
   }
 
-  public void tick() {
+
+  public final void inventoryClick(InventoryClickEvent e, Participation participation) {
+    if (started && !finished) {
+      onInventoryClick(e, participation);
+    }
+  }
+
+  public final void playerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
+    if (started && !finished) {
+      onPlayerItemConsume(e, participation);
+    }
+  }
+
+  public final void blockDropItem(BlockDropItemEvent e) {
+    if (started && !finished) {
+      onBlockDropItem(e);
+    }
+  }
+
+  public final void furnaceSmelt(FurnaceSmeltEvent e) {
+    if (started && !finished) {
+      onFurnaceSmelt(e);
+    }
+  }
+
+  public final void entityDeath(EntityDeathEvent e) {
+    if (started && !finished) {
+      onEntityDeath(e);
+    }
+  }
+
+  public final void entitySpawn(EntitySpawnEvent e) {
+    if (started && !finished) {
+      onEntitySpawn(e);
+    }
+  }
+
+  public final void playerDeath(PlayerDeathEvent e, Participation participation) {
+    if (started && !finished) {
+      onPlayerDeath(e, participation);
+    }
+  }
+
+  public final void entityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+    if (started && !finished) {
+      onEntityTargetLivingEntity(e, participation);
+    }
   }
 
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
@@ -81,28 +130,28 @@ public abstract class AbstractStage {
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
   }
 
-  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
   }
 
-  public void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
+  protected void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
   }
 
-  public void onBlockDropItem(BlockDropItemEvent e) {
+  protected void onBlockDropItem(BlockDropItemEvent e) {
   }
 
-  public void onFurnaceSmelt(FurnaceSmeltEvent e) {
+  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
   }
 
-  public void onEntityDeath(EntityDeathEvent e) {
+  protected void onEntityDeath(EntityDeathEvent e) {
   }
 
-  public void onEntitySpawn(EntitySpawnEvent e) {
+  protected void onEntitySpawn(EntitySpawnEvent e) {
   }
 
-  public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
+  protected void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
   }
 
-  public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+  protected void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
   }
 
   protected abstract void onStart();

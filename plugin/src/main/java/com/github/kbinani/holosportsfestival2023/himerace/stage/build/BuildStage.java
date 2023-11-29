@@ -99,9 +99,6 @@ public class BuildStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     var action = e.getAction();
     var item = e.getItem();
     var player = e.getPlayer();
@@ -161,9 +158,6 @@ public class BuildStage extends AbstractStage {
 
   @Override
   public void onInventoryClick(InventoryClickEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     if (participation.role != Role.PRINCESS) {
       return;
     }

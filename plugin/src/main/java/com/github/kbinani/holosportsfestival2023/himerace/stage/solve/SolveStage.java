@@ -163,9 +163,6 @@ public class SolveStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     if (participation.role != Role.PRINCESS) {
       return;
     }

@@ -149,9 +149,6 @@ public class CookStage extends AbstractStage {
 
   @Override
   protected void onPlayerInteract(PlayerInteractEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     var action = e.getAction();
     var block = e.getClickedBlock();
     if (block == null) {
@@ -191,9 +188,6 @@ public class CookStage extends AbstractStage {
 
   @Override
   public void onInventoryClick(InventoryClickEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     if (cuttingBoard != null) {
       cuttingBoard.onInventoryClick(e, owner);
     }
@@ -210,9 +204,6 @@ public class CookStage extends AbstractStage {
 
   @Override
   public void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
-    if (finished || !started) {
-      return;
-    }
     if (participation.role != Role.PRINCESS) {
       return;
     }

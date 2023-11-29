@@ -120,49 +120,49 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   void onInventoryClick(InventoryClickEvent e, Participation participation) {
     for (var stage : stages.values()) {
-      stage.onInventoryClick(e, participation);
+      stage.inventoryClick(e, participation);
     }
   }
 
   void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
     for (var stage : stages.values()) {
-      stage.onPlayerItemConsume(e, participation);
+      stage.playerItemConsume(e, participation);
     }
   }
 
   void onBlockDropItem(BlockDropItemEvent e) {
     for (var stage : stages.values()) {
-      stage.onBlockDropItem(e);
+      stage.blockDropItem(e);
     }
   }
 
   void onFurnaceSmelt(FurnaceSmeltEvent e) {
     for (var stage : stages.values()) {
-      stage.onFurnaceSmelt(e);
+      stage.furnaceSmelt(e);
     }
   }
 
   void onEntityDeath(EntityDeathEvent e) {
     for (var stage : stages.values()) {
-      stage.onEntityDeath(e);
+      stage.entityDeath(e);
     }
   }
 
   void onEntitySpawn(EntitySpawnEvent e) {
     for (var stage : stages.values()) {
-      stage.onEntitySpawn(e);
+      stage.entitySpawn(e);
     }
   }
 
   void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
     for (var stage : stages.values()) {
-      stage.onPlayerDeath(e, participation);
+      stage.playerDeath(e, participation);
     }
   }
 
   void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
     for (var stage : stages.values()) {
-      stage.onEntityTargetLivingEntity(e, participation);
+      stage.entityTargetLivingEntity(e, participation);
     }
   }
 
