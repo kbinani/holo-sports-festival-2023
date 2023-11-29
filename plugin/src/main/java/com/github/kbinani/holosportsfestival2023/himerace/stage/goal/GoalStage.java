@@ -41,6 +41,7 @@ public class GoalStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    openGate();
   }
 
   @Override

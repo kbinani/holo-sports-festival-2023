@@ -118,6 +118,7 @@ public class CookStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    closeGate();
     Kill.EntitiesByScoreboardTag(world, Stage.COOK.tag);
     if (cauldron != null) {
       cauldron.dispose();

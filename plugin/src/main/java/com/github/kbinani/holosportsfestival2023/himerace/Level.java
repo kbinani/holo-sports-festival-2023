@@ -252,6 +252,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       delegate.levelDidClearStage(Stage.SOLVE);
     });
     this.fightStage.start();
+    this.goalStage.closeGate();
   }
 
   @Override

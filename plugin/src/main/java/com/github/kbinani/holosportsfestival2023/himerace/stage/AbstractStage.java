@@ -52,7 +52,6 @@ public abstract class AbstractStage {
   }
 
   public final void reset() {
-    closeGate();
     onReset();
     finished = false;
     started = false;
@@ -125,10 +124,13 @@ public abstract class AbstractStage {
     }
   }
 
-  protected final void openGate() {
+  public final void openGate() {
     if (openGateTask != null) {
       openGateTask.cancel();
       openGateTask = null;
+    }
+    if (gateState != null && gateState == 3) {
+      return;
     }
 
     var scheduler = Bukkit.getScheduler();
@@ -147,7 +149,7 @@ public abstract class AbstractStage {
     }, interval, interval);
   }
 
-  protected final void closeGate() {
+  public final void closeGate() {
     if (openGateTask != null) {
       openGateTask.cancel();
       openGateTask = null;

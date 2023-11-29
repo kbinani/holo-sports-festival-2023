@@ -88,6 +88,7 @@ public class CarryStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    closeGate();
     resetFloors();
     headBlocks.clear();
     Kill.EntitiesByScoreboardTag(world, scoreboardTag);

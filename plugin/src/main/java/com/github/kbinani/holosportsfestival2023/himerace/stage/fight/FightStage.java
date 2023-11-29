@@ -85,7 +85,6 @@ public class FightStage extends AbstractStage {
   @Override
   protected void onStart() {
     updateStandingSign(Wave.Wave1);
-    //TODO: ゲートいつ閉じる?
   }
 
   @Override
@@ -95,6 +94,7 @@ public class FightStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    closeGate();
     wave = Wave.Wave1;
     waveProgress = 0;
     waveRound = 0;

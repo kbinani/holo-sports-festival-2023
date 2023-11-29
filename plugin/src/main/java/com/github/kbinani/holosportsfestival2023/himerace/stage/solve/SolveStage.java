@@ -144,6 +144,7 @@ public class SolveStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    closeGate();
     quizStarted = false;
     Quiz.Conceal(world, quizOrigin, quizConcealer);
     setGateOpened(false);

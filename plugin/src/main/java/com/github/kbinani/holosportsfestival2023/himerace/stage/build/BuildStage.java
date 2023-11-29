@@ -87,6 +87,7 @@ public class BuildStage extends AbstractStage {
 
   @Override
   protected void onReset() {
+    closeGate();
     step = 0;
     first = null;
     second = null;
