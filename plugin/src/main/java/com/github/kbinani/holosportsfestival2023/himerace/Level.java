@@ -20,6 +20,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -135,6 +136,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onEntityDeath(EntityDeathEvent e) {
     for (var stage : stages.values()) {
       stage.onEntityDeath(e);
+    }
+  }
+
+  void onEntitySpawn(EntitySpawnEvent e) {
+    for (var stage : stages.values()) {
+      stage.onEntitySpawn(e);
     }
   }
 

@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -313,6 +314,17 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     for (var level : levels.values()) {
       level.onFurnaceSmelt(e);
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntitySpawn(EntitySpawnEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    for (var level : levels.values()) {
+      level.onEntitySpawn(e);
     }
   }
 

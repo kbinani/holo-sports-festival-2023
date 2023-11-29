@@ -1,6 +1,7 @@
 package  com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
+import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
@@ -17,6 +18,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -115,7 +117,28 @@ public class FightStage extends AbstractStage {
     if (!entity.getScoreboardTags().contains(stageEnemyTag)) {
       return;
     }
+    e.setDroppedExp(0);
+
     updateWaveProgress();
+  }
+
+  @Override
+  public void onEntitySpawn(EntitySpawnEvent e) {
+    if (finished || !started) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Item item)) {
+      return;
+    }
+    if (!bounds.contains(e.getLocation().toVector())) {
+      return;
+    }
+    var stack = item.getItemStack();
+    if (ItemTag.HasByte(stack, itemTag)) {
+      return;
+    }
+    //NOTE: Entity#clearLootTable が効いていないのでここで削除する
+    item.remove();
   }
 
   private void summonEnemy(Wave wave) {
@@ -189,6 +212,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -208,6 +232,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -224,6 +249,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -245,6 +271,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -257,6 +284,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -272,6 +300,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -290,6 +319,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -307,6 +337,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
@@ -324,6 +355,7 @@ public class FightStage extends AbstractStage {
       it.addScoreboardTag(Stage.FIGHT.tag);
       it.addScoreboardTag(w.tag);
       it.addScoreboardTag(stageEnemyTag);
+      //NOTE: clearLootTable が効いていない
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
