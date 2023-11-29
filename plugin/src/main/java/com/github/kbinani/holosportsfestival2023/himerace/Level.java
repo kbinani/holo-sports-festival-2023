@@ -62,6 +62,8 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
 
+    void levelRequestsHealthRecovery();
+
     void levelDidClearStage(Stage stage);
   }
 
@@ -300,6 +302,11 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     this.delegate.use(d -> {
       d.levelRequestsTeleport(location, predicate);
     });
+  }
+
+  @Override
+  public void fightStageRequestsHealthRecovery() {
+    this.delegate.use(Delegate::levelRequestsHealthRecovery);
   }
 
   @Override

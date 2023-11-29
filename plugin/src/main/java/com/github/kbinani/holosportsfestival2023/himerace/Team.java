@@ -5,6 +5,7 @@ import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
+import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -12,6 +13,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -252,12 +254,28 @@ public class Team implements Level.Delegate {
   public void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
     if (princess != null) {
       if (predicate == null || predicate.apply(princess)) {
-        princess.teleport(location);
+        princess.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
       }
     }
     for (var knight : knights) {
       if (predicate == null || predicate.apply(knight)) {
-        knight.teleport(location);
+        knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+      }
+    }
+  }
+
+  @Override
+  public void levelRequestsHealthRecovery() {
+    if (princess != null) {
+      var maxHealth = princess.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+      if (maxHealth != null) {
+        princess.setHealth(maxHealth.getValue());
+      }
+    }
+    for (var knight : knights) {
+      var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+      if (maxHealth != null) {
+        knight.setHealth(maxHealth.getValue());
       }
     }
   }

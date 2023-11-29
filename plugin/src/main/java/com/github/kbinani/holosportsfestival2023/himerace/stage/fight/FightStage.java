@@ -10,10 +10,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
@@ -52,6 +49,8 @@ public class FightStage extends AbstractStage {
     void fightStageSendTitle(Title title);
 
     void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
+
+    void fightStageRequestsHealthRecovery();
 
     void fightStageDidFinish();
   }
@@ -148,32 +147,72 @@ public class FightStage extends AbstractStage {
 
   @Override
   public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
-    e.setCancelled(true);
-    var player = e.getPlayer();
-    var location = player.getLocation();
-    location.setY(y(78));
-    var seat = world.spawn(location, ArmorStand.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.setVisible(false);
-      it.setGravity(false);
-    });
-    seat.addPassenger(player);
-    var id = player.getUniqueId();
-    var current = deadPlayerSeats.get(id);
-    if (current != null) {
-      current.remove();
+    if (finished || !started) {
+      return;
     }
-    deadPlayerSeats.put(id, seat);
-    for (var enemy : enemies) {
-      if (enemy.getTarget() == player) {
-        enemy.setTarget(null);
+    e.setCancelled(true);
+
+    switch (participation.role) {
+      case PRINCESS -> {
+        waveRound++;
+        waveProgress = 0;
+
+        // https://youtu.be/dDv4L4rHwGU?t=726
+        var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+        var title = Title.title(
+          text("姫が倒されました・・・", RED),
+          Component.empty(),
+          times
+        );
+        delegate.fightStageSendTitle(title);
+
+        enemies.forEach(Mob::remove);
+        enemies.clear();
+        deadPlayerSeats.values().forEach(it -> {
+          it.getPassengers().forEach(it::removePassenger);
+        });
+        deadPlayerSeats.clear();
+        setEnableFence(true);
+        updateStandingSign(wave);
+        Bukkit.getScheduler().runTaskLater(owner, () -> {
+          delegate.fightStageRequestsTeleport(
+            safeArea.toLocation(world).add(0.5, 0, 0.5),
+            this::playerNeedsEvacuation
+          );
+        }, 0);
+        delegate.fightStageRequestsHealthRecovery();
+      }
+      case KNIGHT -> {
+        var player = e.getPlayer();
+        var location = player.getLocation();
+        location.setY(y(78));
+        var seat = world.spawn(location, ArmorStand.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+          it.addScoreboardTag(itemTag);
+          it.addScoreboardTag(Stage.FIGHT.tag);
+          it.setVisible(false);
+          it.setGravity(false);
+        });
+        seat.addPassenger(player);
+        var id = player.getUniqueId();
+        var current = deadPlayerSeats.get(id);
+        if (current != null) {
+          current.remove();
+        }
+        deadPlayerSeats.put(id, seat);
+        for (var enemy : enemies) {
+          if (enemy.getTarget() == player) {
+            enemy.setTarget(null);
+          }
+        }
       }
     }
   }
 
   @Override
   public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+    if (finished || !started) {
+      return;
+    }
     if (!(e.getTarget() instanceof Player player)) {
       return;
     }
@@ -182,28 +221,28 @@ public class FightStage extends AbstractStage {
     }
   }
 
-  private void summonEnemies(Wave wave) {
+  private void summonEnemies(Wave wave, int round) {
     switch (wave) {
       case Wave1 -> {
-        enemies.add(summonSpider(enemyPosLeft, wave));
-        enemies.add(summonSpider(enemyPosRight, wave));
-        enemies.add(summonZombie(enemyPosMiddleLeft, wave));
-        enemies.add(summonZombie(enemyPosMiddleRight, wave));
-        enemies.add(summonSkeleton(enemyPosCenterLow, wave));
+        enemies.add(summonSpider(enemyPosLeft, wave, round));
+        enemies.add(summonSpider(enemyPosRight, wave, round));
+        enemies.add(summonZombie(enemyPosMiddleLeft, wave, round));
+        enemies.add(summonZombie(enemyPosMiddleRight, wave, round));
+        enemies.add(summonSkeleton(enemyPosCenterLow, wave, round));
       }
       case Wave2 -> {
-        enemies.add(summonBlaze(enemyPosLeft, wave));
-        enemies.add(summonHoglin(enemyPosMiddleLeft, wave));
-        enemies.add(summonPiglinBrute(enemyPosCenterLow, wave));
-        enemies.add(summonHoglin(enemyPosMiddleRight, wave));
-        enemies.add(summonBlaze(enemyPosRight, wave));
+        enemies.add(summonBlaze(enemyPosLeft, wave, round));
+        enemies.add(summonHoglin(enemyPosMiddleLeft, wave, round));
+        enemies.add(summonPiglinBrute(enemyPosCenterLow, wave, round));
+        enemies.add(summonHoglin(enemyPosMiddleRight, wave, round));
+        enemies.add(summonBlaze(enemyPosRight, wave, round));
       }
       case Wave3 -> {
-        enemies.add(summonPillager(enemyPosLeft, wave));
-        enemies.add(summonVindicator(enemyPosMiddleLeft, wave));
-        enemies.add(summonIllusioner(enemyPosCenterHigh, wave));
-        enemies.add(summonVindicator(enemyPosMiddleRight, wave));
-        enemies.add(summonPillager(enemyPosRight, wave));
+        enemies.add(summonPillager(enemyPosLeft, wave, round));
+        enemies.add(summonVindicator(enemyPosMiddleLeft, wave, round));
+        enemies.add(summonIllusioner(enemyPosCenterHigh, wave, round));
+        enemies.add(summonVindicator(enemyPosMiddleRight, wave, round));
+        enemies.add(summonPillager(enemyPosRight, wave, round));
       }
     }
   }
@@ -230,10 +269,10 @@ public class FightStage extends AbstractStage {
     this.wave = next;
     this.waveProgress = 0;
     this.waveRound = 0;
-    delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
-      var z = p.getZ();
-      return z < z(15) || z(57) < z;
-    });
+    delegate.fightStageRequestsTeleport(
+      safeArea.toLocation(world).add(0.5, 0, 0.5),
+      this::playerNeedsEvacuation
+    );
     setEnableFence(true);
     updateStandingSign(next);
     var title = Title.title(
@@ -245,12 +284,17 @@ public class FightStage extends AbstractStage {
     delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
   }
 
+  private boolean playerNeedsEvacuation(Player player) {
+    var z = player.getZ();
+    return z < z(51) || z(56) < z;
+  }
+
   private void setEnableFence(boolean enable) {
     var material = enable ? "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]" : "air";
     Editor.Fill(world, pos(-98, 80, 56), pos(-90, 80, 56), material);
   }
 
-  private Mob summonZombie(Point3i location, Wave w) {
+  private Mob summonZombie(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -271,7 +315,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonSpider(Point3i location, Wave w) {
+  private Mob summonSpider(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -289,7 +333,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonSkeleton(Point3i location, Wave w) {
+  private Mob summonSkeleton(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -312,7 +356,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonBlaze(Point3i location, Wave w) {
+  private Mob summonBlaze(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -326,7 +370,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonHoglin(Point3i location, Wave w) {
+  private Mob summonHoglin(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -343,7 +387,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonPiglinBrute(Point3i location, Wave w) {
+  private Mob summonPiglinBrute(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -363,7 +407,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonPillager(Point3i location, Wave w) {
+  private Mob summonPillager(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -382,7 +426,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonVindicator(Point3i location, Wave w) {
+  private Mob summonVindicator(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -401,7 +445,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonIllusioner(Point3i location, Wave w) {
+  private Mob summonIllusioner(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -469,7 +513,7 @@ public class FightStage extends AbstractStage {
       });
       closeGate();
     }
-    summonEnemies(wave);
+    summonEnemies(wave, waveRound);
     setEnableFence(false);
     Editor.Set(world, signPos, Material.AIR);
   }
