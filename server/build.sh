@@ -22,5 +22,6 @@ set -ue
     cd ./Paper
     ./gradlew applyPatches
     ./gradlew createReobfBundlerJar
+    ./gradlew publishToMavenLocal
   )
 )
