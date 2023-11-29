@@ -40,6 +40,7 @@ class Race implements Team.Delegate {
     this.world = world;
     for (var team : teams.values()) {
       team.delegate = this;
+      team.onStart();
     }
     this.teams = new HashMap<>(teams);
     this.delegate = delegate;

@@ -8,12 +8,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.MusicInstrument;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.MusicInstrumentMeta;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
@@ -21,13 +28,15 @@ import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventLi
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook0;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook1;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class Team implements Level.Delegate {
   interface Delegate {
     void teamDidFinish(TeamColor color);
   }
+
+  private static final @Nonnull UUID maxHealthModifierUUID = UUID.fromString("CA4218FF-B7D7-4E16-8ECD-942513E88E22");
+  private static final @Nonnull String maxHealthModifierName = "hololive_sports_festival_2023_himerace";
 
   private final TeamColor color;
   private @Nullable Player princess;
@@ -41,6 +50,12 @@ public class Team implements Level.Delegate {
     this.color = color;
     level.delegate.set(this);
     this.level = level;
+  }
+
+  void onStart() {
+    if (princess != null) {
+      activateHealthModifier(princess);
+    }
   }
 
   @Override
@@ -92,6 +107,25 @@ public class Team implements Level.Delegate {
       }
       case SOLVE -> {
         if (princess != null) {
+          var inventory = princess.getInventory();
+          inventory.setItem(0, ItemBuilder.For(Material.GOLDEN_SHOVEL)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .displayName(text("回復の杖 (右クリックで使用) / Healing Wand (Right click to use)", GOLD))
+            .build());
+          inventory.setItem(1, ItemBuilder.For(Material.GOAT_HORN)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .displayName(text("ヤギの角笛 (右クリックで使用) / Goat Horn (Right click to use)", GOLD))
+            .meta(MusicInstrumentMeta.class, (it) -> {
+              it.setInstrument(MusicInstrument.SING);
+            })
+            .build());
+          inventory.setItem(2, ItemBuilder.For(Material.RED_BED)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .displayName(text("ベッド (右クリックで使用) / Bed (Right click to use)", GOLD))
+            .build());
         }
         for (var knight : knights) {
           var inventory = knight.getInventory();
@@ -106,14 +140,53 @@ public class Team implements Level.Delegate {
             .customByteTag(Stage.FIGHT.tag)
             .build();
           inventory.setItemInOffHand(shield);
+          var bow = ItemBuilder.For(Material.BOW)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .enchant(Enchantment.ARROW_INFINITE, 1)
+            .enchant(Enchantment.ARROW_DAMAGE, 5)
+            .build();
+          inventory.setItem(1, bow);
+          var arrow = ItemBuilder.For(Material.ARROW)
+            .customByteTag(itemTag)
+            .customByteTag(Stage.FIGHT.tag)
+            .build();
+          inventory.setItem(2, arrow);
         }
       }
       case GOAL -> {
+        if (princess != null) {
+          deactivateHealthModifier(princess);
+        }
         if (delegate != null) {
           delegate.teamDidFinish(color);
         }
       }
     }
+  }
+
+  private void activateHealthModifier(Player player) {
+    var attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (attribute == null) {
+      return;
+    }
+    player.setHealth(6);
+    attribute.removeModifier(maxHealthModifierUUID);
+    attribute.addModifier(createHealthModifier());
+  }
+
+  private AttributeModifier createHealthModifier() {
+    return new AttributeModifier(
+      maxHealthModifierUUID, maxHealthModifierName, 6 - 20, AttributeModifier.Operation.ADD_NUMBER);
+  }
+
+  private void deactivateHealthModifier(Player player) {
+    var attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (attribute == null) {
+      return;
+    }
+    attribute.removeModifier(maxHealthModifierUUID);
+    player.setHealth(attribute.getValue());
   }
 
   @Override

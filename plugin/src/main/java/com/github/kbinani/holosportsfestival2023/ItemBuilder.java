@@ -15,6 +15,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class ItemBuilder {
   private final ItemStack item;
@@ -87,6 +88,11 @@ public class ItemBuilder {
       meta.addItemFlags(flags);
       item.setItemMeta(meta);
     }
+    return this;
+  }
+
+  public <M extends ItemMeta> ItemBuilder meta(Class<M> metaClass, Consumer<? super M> consumer) {
+    item.editMeta(metaClass, consumer);
     return this;
   }
 
