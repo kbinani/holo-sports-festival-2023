@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -54,9 +55,13 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   interface Delegate {
     void levelSignalActionBarUpdate();
+
     void levelSendTitle(Title title);
+
     void levelPlaySound(Sound sound);
+
     void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
+
     void levelDidClearStage(Stage stage);
   }
 
@@ -93,7 +98,8 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     return stage.getProgress();
   }
 
-  @Nonnull Component getActionBar(Role role) {
+  @Nonnull
+  Component getActionBar(Role role) {
     var stage = stages.get(active);
     return stage.getActionBar(role);
   }
@@ -149,6 +155,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.onPlayerDeath(e, participation);
+    }
+  }
+
+  void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.onEntityTargetLivingEntity(e, participation);
     }
   }
 
@@ -286,7 +298,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   @Override
   public void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
     this.delegate.use(d -> {
-        d.levelRequestsTeleport(location, predicate);
+      d.levelRequestsTeleport(location, predicate);
     });
   }
 

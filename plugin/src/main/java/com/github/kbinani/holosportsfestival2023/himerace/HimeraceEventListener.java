@@ -12,6 +12,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -320,6 +321,27 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     level.onPlayerDeath(e, participation);
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    if (!(e.getTarget() instanceof Player player)) {
+      return;
+    }
+    if (!announceBounds.contains(e.getEntity().getLocation().toVector())) {
+      return;
+    }
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      e.setCancelled(true);
+    } else {
+      var level = levels.get(participation.color);
+      level.onEntityTargetLivingEntity(e, participation);
+    }
+  }
+
   private void onClickJoin(Player player, TeamColor color, Role role) {
     if (status != Status.IDLE) {
       return;
@@ -440,9 +462,18 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     return null;
   }
 
-  private static int X(int x) { return x + offset.x; }
-  private static int Y(int y) { return y + offset.y; }
-  private static int Z(int z) { return z + offset.z; }
+  private static int X(int x) {
+    return x + offset.x;
+  }
+
+  private static int Y(int y) {
+    return y + offset.y;
+  }
+
+  private static int Z(int z) {
+    return z + offset.z;
+  }
+
   private static Point3i Pos(int x, int y, int z) {
     return new Point3i(x + offset.x, y + offset.y, z + offset.z);
   }

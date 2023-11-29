@@ -11,6 +11,7 @@ import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -99,6 +100,9 @@ public abstract class AbstractStage {
   }
 
   public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
+  }
+
+  public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
   }
 
   protected abstract void onStart();

@@ -16,10 +16,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -73,7 +70,7 @@ public class FightStage extends AbstractStage {
   private final Point3i safeArea = pos(-94, 80, 53);
   private final String stageEnemyTag;
   private final Map<UUID, Entity> deadPlayerSeats = new HashMap<>();
-  private final List<Entity> enemies = new ArrayList<>();
+  private final List<Mob> enemies = new ArrayList<>();
 
   public FightStage(
     @Nonnull World world,
@@ -168,6 +165,21 @@ public class FightStage extends AbstractStage {
       current.remove();
     }
     deadPlayerSeats.put(id, seat);
+    for (var enemy : enemies) {
+      if (enemy.getTarget() == player) {
+        enemy.setTarget(null);
+      }
+    }
+  }
+
+  @Override
+  public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+    if (!(e.getTarget() instanceof Player player)) {
+      return;
+    }
+    if (deadPlayerSeats.containsKey(player.getUniqueId())) {
+      e.setCancelled(true);
+    }
   }
 
   private void summonEnemies(Wave wave) {
@@ -238,7 +250,7 @@ public class FightStage extends AbstractStage {
     Editor.Fill(world, pos(-98, 80, 56), pos(-90, 80, 56), material);
   }
 
-  private Entity summonZombie(Point3i location, Wave w) {
+  private Mob summonZombie(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -248,6 +260,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       it.setAdult();
       var equipment = it.getEquipment();
@@ -258,7 +271,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonSpider(Point3i location, Wave w) {
+  private Mob summonSpider(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -268,6 +281,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       for (var passenger : it.getPassengers()) {
         passenger.remove();
@@ -275,7 +289,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonSkeleton(Point3i location, Wave w) {
+  private Mob summonSkeleton(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -285,6 +299,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -297,7 +312,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonBlaze(Point3i location, Wave w) {
+  private Mob summonBlaze(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -307,10 +322,11 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
     });
   }
 
-  private Entity summonHoglin(Point3i location, Wave w) {
+  private Mob summonHoglin(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -320,13 +336,14 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       it.setAdult();
       it.setImmuneToZombification(true);
     });
   }
 
-  private Entity summonPiglinBrute(Point3i location, Wave w) {
+  private Mob summonPiglinBrute(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -336,6 +353,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       it.setImmuneToZombification(true);
       var equipment = it.getEquipment();
@@ -345,7 +363,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonPillager(Point3i location, Wave w) {
+  private Mob summonPillager(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -355,6 +373,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -363,7 +382,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonVindicator(Point3i location, Wave w) {
+  private Mob summonVindicator(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -373,6 +392,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -381,7 +401,7 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Entity summonIllusioner(Point3i location, Wave w) {
+  private Mob summonIllusioner(Point3i location, Wave w) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       it.addScoreboardTag(itemTag);
       it.addScoreboardTag(Stage.FIGHT.tag);
@@ -391,6 +411,7 @@ public class FightStage extends AbstractStage {
       it.clearLootTable();
       it.setPersistent(true);
       it.setCanPickupItems(false);
+      it.setRemoveWhenFarAway(false);
 
       it.setAI(false);
       var equipment = it.getEquipment();
