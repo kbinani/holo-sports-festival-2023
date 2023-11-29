@@ -8,13 +8,17 @@ import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
+import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -113,7 +117,7 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  public void onEntityDeath(EntityDeathEvent e) {
+  protected void onEntityDeath(EntityDeathEvent e) {
     var entity = e.getEntity();
     if (!enemies.remove(entity)) {
       return;
@@ -124,7 +128,7 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  public void onEntitySpawn(EntitySpawnEvent e) {
+  protected void onEntitySpawn(EntitySpawnEvent e) {
     if (!(e.getEntity() instanceof Item item)) {
       return;
     }
@@ -140,7 +144,7 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  public void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
+  protected void onPlayerDeath(PlayerDeathEvent e, Participation participation) {
     e.setCancelled(true);
 
     switch (participation.role) {
@@ -200,12 +204,43 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  public void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+  protected void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
     if (!(e.getTarget() instanceof Player player)) {
       return;
     }
     if (deadPlayerSeats.containsKey(player.getUniqueId())) {
       e.setCancelled(true);
+    }
+  }
+
+  @Override
+  protected void onPlayerInteractEntity(PlayerInteractEntityEvent e, Role actor, Role rightClicked) {
+    if (actor != Role.PRINCESS || rightClicked != Role.KNIGHT) {
+      return;
+    }
+    var hand = e.getHand();
+    var princess = e.getPlayer();
+    var inventory = princess.getInventory();
+    var usedItem = inventory.getItem(hand);
+    if (usedItem.getType() == Material.RED_BED && ItemTag.HasByte(usedItem, Stage.FIGHT.tag) && ItemTag.HasByte(usedItem, itemTag)) {
+      if (e.getRightClicked() instanceof Player knight) {
+        var seat = deadPlayerSeats.get(knight.getUniqueId());
+        if (seat != null) {
+          seat.removePassenger(knight);
+          seat.remove();
+          deadPlayerSeats.remove(knight.getUniqueId());
+          var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+          if (maxHealth != null) {
+            knight.setHealth(maxHealth.getValue());
+          }
+          knight.setFoodLevel(20);
+          var location = knight.getLocation();
+          location.setY(y(80));
+          Bukkit.getScheduler().runTaskLater(owner, () -> {
+            knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+          }, 0);
+        }
+      }
     }
   }
 
@@ -489,6 +524,10 @@ public class FightStage extends AbstractStage {
     var block = e.getClickedBlock();
     if (block == null) {
       return;
+    }
+    var item = e.getItem();
+    if (item != null && item.getType() == Material.RED_BED && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+      e.setCancelled(true);
     }
     var location = new Point3i(block.getLocation());
     if (!location.equals(signPos)) {

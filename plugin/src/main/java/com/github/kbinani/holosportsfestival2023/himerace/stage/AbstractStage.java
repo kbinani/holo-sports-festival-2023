@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -124,6 +125,12 @@ public abstract class AbstractStage {
     }
   }
 
+  public final void playerInteractEntity(PlayerInteractEntityEvent e, Role player, Role rightClicked) {
+    if (started && !finished) {
+      onPlayerInteractEntity(e, player, rightClicked);
+    }
+  }
+
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
   }
 
@@ -152,6 +159,9 @@ public abstract class AbstractStage {
   }
 
   protected void onEntityTargetLivingEntity(EntityTargetLivingEntityEvent e, Participation participation) {
+  }
+
+  protected void onPlayerInteractEntity(PlayerInteractEntityEvent e, Role player, Role rightClicked) {
   }
 
   protected abstract void onStart();

@@ -362,6 +362,7 @@ public class Team implements Level.Delegate {
   void tick() {
     level.tick();
     updateActionBar();
+    healthDisplays.values().forEach(HealthDisplay::update);
   }
 
   private void updateActionBar() {
