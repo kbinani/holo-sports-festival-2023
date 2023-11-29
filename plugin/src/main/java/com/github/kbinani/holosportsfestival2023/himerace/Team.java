@@ -6,10 +6,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.MusicInstrument;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
@@ -55,6 +52,10 @@ public class Team implements Level.Delegate {
   void onStart() {
     if (princess != null) {
       activateHealthModifier(princess);
+      princess.setGameMode(GameMode.SURVIVAL);
+    }
+    for (var knight : knights) {
+      knight.setGameMode(GameMode.SURVIVAL);
     }
   }
 
@@ -77,6 +78,9 @@ public class Team implements Level.Delegate {
           var inventory = princess.getInventory();
           inventory.setItem(0, book);
         }
+        for (var knight : knights) {
+          knight.setGameMode(GameMode.CREATIVE);
+        }
       }
       case BUILD -> {
         if (princess != null) {
@@ -89,6 +93,7 @@ public class Team implements Level.Delegate {
         for (var knight : knights) {
           var emerald = Task.ToItem(TaskItem.EMERALD, 20);
           knight.getInventory().setItem(0, emerald);
+          knight.setGameMode(GameMode.SURVIVAL);
         }
       }
       case COOK -> {
