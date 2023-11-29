@@ -88,36 +88,12 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       team.dispose();
     }
     teams.clear();
-    Editor.StandingSign(
-      world,
-      Pos(-89, 80, -65),
-      Material.OAK_SIGN,
-      8,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームスタート", AQUA)
-    );
-    Editor.StandingSign(
-      world,
-      Pos(-90, 80, -65),
-      Material.OAK_SIGN,
-      8,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームを中断する", RED)
-    );
-    Editor.StandingSign(
-      world,
-      Pos(-91, 80, -65),
-      Material.OAK_SIGN,
-      8,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("エントリーリスト", GREEN)
-    );
+    Editor.StandingSign(world, Pos(-89, 80, -65), Material.OAK_SIGN, 8,
+      title, Component.empty(), Component.empty(), text("ゲームスタート", AQUA));
+    Editor.StandingSign(world, Pos(-90, 80, -65), Material.OAK_SIGN, 8,
+      title, Component.empty(), Component.empty(), text("ゲームを中断する", RED));
+    Editor.StandingSign(world, Pos(-91, 80, -65), Material.OAK_SIGN, 8,
+      title, Component.empty(), Component.empty(), text("エントリーリスト", GREEN));
     if (race != null) {
       race.dispose();
       race = null;
@@ -334,7 +310,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     Team team = teams.get(color);
     if (team == null) {
-      team = new Team(color, levels.get(color));
+      team = new Team(owner, color, levels.get(color));
       teams.put(color, team);
     }
     var current = getCurrentParticipation(player);

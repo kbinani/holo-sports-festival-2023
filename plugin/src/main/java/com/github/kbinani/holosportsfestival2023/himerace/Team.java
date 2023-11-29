@@ -1,5 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.HealthDisplay;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
@@ -12,12 +13,11 @@ import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
@@ -35,15 +35,18 @@ public class Team implements Level.Delegate {
   private static final @Nonnull UUID maxHealthModifierUUID = UUID.fromString("CA4218FF-B7D7-4E16-8ECD-942513E88E22");
   private static final @Nonnull String maxHealthModifierName = "hololive_sports_festival_2023_himerace";
 
+  private final JavaPlugin owner;
   private final TeamColor color;
   private @Nullable Player princess;
   private final List<Player> knights = new LinkedList<>();
+  private final Map<UUID, HealthDisplay> healthDisplays = new HashMap<>();
   private static final int kMaxKnightPlayers = 2;
   private final Level level;
   @Nullable
   Delegate delegate;
 
-  Team(TeamColor color, Level level) {
+  Team(JavaPlugin owner, TeamColor color, Level level) {
+    this.owner = owner;
     this.color = color;
     level.delegate.set(this);
     this.level = level;
@@ -111,6 +114,7 @@ public class Team implements Level.Delegate {
         }
       }
       case SOLVE -> {
+        activateHealthDisplays();
         if (princess != null) {
           var inventory = princess.getInventory();
           inventory.setItem(0, ItemBuilder.For(Material.GOLDEN_SHOVEL)
@@ -159,15 +163,40 @@ public class Team implements Level.Delegate {
           inventory.setItem(2, arrow);
         }
       }
-      case GOAL -> {
+      case FIGHT -> {
+        deactivateHealthDisplays();
         if (princess != null) {
           deactivateHealthModifier(princess);
         }
+      }
+      case GOAL -> {
         if (delegate != null) {
           delegate.teamDidFinish(color);
         }
       }
     }
+  }
+
+  private void activateHealthDisplays() {
+    for (var display : healthDisplays.values()) {
+      display.dispose();
+    }
+    healthDisplays.clear();
+    if (princess != null) {
+      var display = new HealthDisplay(owner, princess, itemTag);
+      healthDisplays.put(princess.getUniqueId(), display);
+    }
+    for (var knight : knights) {
+      var display = new HealthDisplay(owner, knight, itemTag);
+      healthDisplays.put(knight.getUniqueId(), display);
+    }
+  }
+
+  private void deactivateHealthDisplays() {
+    for (var display : healthDisplays.values()) {
+      display.dispose();
+    }
+    healthDisplays.clear();
   }
 
   private void activateHealthModifier(Player player) {
