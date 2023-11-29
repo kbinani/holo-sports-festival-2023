@@ -20,7 +20,6 @@ set -ue
 
   (
     cd ./Paper
-    ./gradlew rebuildPatches || true
     ./gradlew applyPatches
     ./gradlew createReobfBundlerJar
   )
