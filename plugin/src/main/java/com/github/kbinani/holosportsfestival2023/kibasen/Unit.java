@@ -1,25 +1,22 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
+import com.github.kbinani.holosportsfestival2023.HealthDisplay;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.block.Barrel;
-import org.bukkit.entity.AreaEffectCloud;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,19 +26,19 @@ import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventList
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierName;
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierUUID;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
 class Unit {
   private final JavaPlugin owner;
   final @Nonnull TeamColor color;
   final @Nonnull Player attacker;
   final @Nonnull Player vehicle;
-  private @Nullable Entity healthDisplay;
+  private @Nullable HealthDisplay healthDisplay;
   final boolean isLeader;
   private int kills = 0;
   private int health;
   private final int maxHealth;
-  private @Nullable BukkitTask delayMountTask;
 
   Unit(JavaPlugin owner, @Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, boolean isLeader) {
     this.owner = owner;
@@ -88,8 +85,8 @@ class Unit {
       attacker.showTitle(title);
       vehicle.showTitle(title);
     }
-    var display = ensureHealthDisplayEntity();
-    display.customName(createHealthDisplayComponent());
+    var display = ensureHealthDisplay();
+    display.update();
     attacker.setHealth(2 * health);
     vehicle.setHealth(2 * health);
     return health == maxHealth;
@@ -105,17 +102,13 @@ class Unit {
     setupHealth();
     setupGameMode();
     updateActionBar();
-    ensureHealthDisplayEntity();
+    ensureHealthDisplay();
   }
 
   void clean() {
     vehicle.removePassenger(attacker);
-    if (delayMountTask != null) {
-      delayMountTask.cancel();
-      delayMountTask = null;
-    }
     if (healthDisplay != null) {
-      healthDisplay.remove();
+      healthDisplay.dispose();
     }
     attacker.removePotionEffect(PotionEffectType.GLOWING);
     vehicle.removePotionEffect(PotionEffectType.GLOWING);
@@ -129,36 +122,13 @@ class Unit {
     updateActionBar();
   }
 
-  private Component createHealthDisplayComponent() {
-    return text("♥".repeat(health), RED)
-      .append(text("♡".repeat(maxHealth - health), WHITE));
-  }
-
-  private @Nonnull Entity ensureHealthDisplayEntity() {
+  private @Nonnull HealthDisplay ensureHealthDisplay() {
     if (this.healthDisplay != null) {
       return this.healthDisplay;
     }
-    if (this.delayMountTask != null) {
-      this.delayMountTask.cancel();
-    }
-    var location = attacker.getLocation();
-    location.setY(location.getBlockY() - 8);
-    var display = attacker.getWorld().spawn(location, AreaEffectCloud.class, (it) -> {
-      it.setCustomNameVisible(false);
-      it.setInvulnerable(true);
-      it.setDuration(365 * 24 * 60 * 60 * 20);
-      it.setRadius(0);
-      it.addScoreboardTag(healthDisplayScoreboardTag);
-    });
-    this.delayMountTask = Bukkit.getScheduler().runTaskLater(owner, () -> {
-      // particle が出現する瞬間が見えないように ride を遅らせる
-      attacker.addPassenger(display);
-      display.customName(createHealthDisplayComponent());
-      display.setCustomNameVisible(true);
-      this.delayMountTask = null;
-    }, 30);
+    var display = new HealthDisplay(owner, attacker, healthDisplayScoreboardTag);
     this.healthDisplay = display;
-    return healthDisplay;
+    return display;
   }
 
   private void updateActionBar() {
