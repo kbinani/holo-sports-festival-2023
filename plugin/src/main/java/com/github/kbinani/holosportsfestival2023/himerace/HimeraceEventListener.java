@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -407,6 +408,41 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     var level = levels.get(participacion.color);
     level.onEntityDismount(e, participacion);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onBlockPlace(BlockPlaceEvent e) {
+    var block = e.getBlock();
+    var location = block.getLocation();
+    if (!announceBounds.contains(location.toVector())) {
+      return;
+    }
+    var player = e.getPlayer();
+    switch (block.getType()) {
+      case TNT, RESPAWN_ANCHOR, SPAWNER, COMMAND_BLOCK, DISPENSER, PISTON, PISTON_HEAD,
+        INFESTED_STONE, INFESTED_COBBLESTONE, INFESTED_STONE_BRICKS, INFESTED_MOSSY_STONE_BRICKS,
+        INFESTED_CRACKED_STONE_BRICKS, INFESTED_CHISELED_STONE_BRICKS, INFESTED_DEEPSLATE,
+        TURTLE_EGG, SNIFFER_EGG -> e.setCancelled(true);
+      case BARRIER -> {
+        if (!player.isOp()) {
+          e.setCancelled(true);
+        }
+      }
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityPlace(EntityPlaceEvent e) {
+    var entity = e.getEntity();
+    var location = entity.getLocation();
+    if (!announceBounds.contains(location.toVector())) {
+      return;
+    }
+    switch (entity.getType()) {
+      case MINECART_TNT, MINECART_COMMAND, ENDER_CRYSTAL -> e.setCancelled(true);
+    }
   }
 
   private void onClickJoin(Player player, TeamColor color, Role role) {
