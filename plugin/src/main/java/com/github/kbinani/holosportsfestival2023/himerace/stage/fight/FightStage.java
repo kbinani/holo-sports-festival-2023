@@ -97,6 +97,7 @@ public class FightStage extends AbstractStage {
 
   @Override
   protected void onStart() {
+    setEnableFence(true);
     updateStandingSign(Wave.Wave1);
   }
 
@@ -111,9 +112,9 @@ public class FightStage extends AbstractStage {
     wave = Wave.Wave1;
     waveProgress = 0;
     waveRound = 0;
-    updateStandingSign(Wave.Wave1);
+    updateStandingSign(null);
     Kill.EntitiesByScoreboardTag(world, Stage.FIGHT.tag);
-    setEnableFence(true);
+    setEnableFence(false);
     for (var seat : deadPlayerSeats.values()) {
       seat.remove();
     }
@@ -575,12 +576,16 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private void updateStandingSign(Wave wave) {
-    Editor.StandingSign(world, signPos, Material.CRIMSON_SIGN, 8,
-      title,
-      text("右クリでスタート！", GOLD),
-      text(String.format("Wave.%d", wave.ordinal() + 1), GOLD),
-      text("姫専用", LIGHT_PURPLE));
+  private void updateStandingSign(@Nullable  Wave wave) {
+    if (wave == null) {
+      Editor.Set(world, signPos, Material.AIR);
+    } else {
+      Editor.StandingSign(world, signPos, Material.CRIMSON_SIGN, 8,
+        title,
+        text("右クリでスタート！", GOLD),
+        text(String.format("Wave.%d", wave.ordinal() + 1), GOLD),
+        text("姫専用", LIGHT_PURPLE));
+    }
   }
 
   @Override
@@ -633,7 +638,7 @@ public class FightStage extends AbstractStage {
         }
         summonEnemies(wave, waveRound);
         setEnableFence(false);
-        Editor.Set(world, signPos, Material.AIR);
+        updateStandingSign(null);
       }
       case RIGHT_CLICK_AIR -> {
         var item = e.getItem();
