@@ -13,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
@@ -58,6 +59,9 @@ public class FightStage extends AbstractStage {
 
     void fightStageDidFinish();
   }
+
+  private static final @Nonnull UUID attackDamageModifierUUID = UUID.fromString("8968EEE4-6CA0-4AE9-93DA-108A1278B2B5");
+  private static final @Nonnull String attackDamageModifierName = "hololive_sports_festival_2023_himerace_fight_stage";
 
   final @Nonnull Delegate delegate;
   private Wave wave = Wave.Wave1;
@@ -229,11 +233,7 @@ public class FightStage extends AbstractStage {
           seat.removePassenger(knight);
           seat.remove();
           deadPlayerSeats.remove(knight.getUniqueId());
-          var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-          if (maxHealth != null) {
-            knight.setHealth(maxHealth.getValue());
-          }
-          knight.setFoodLevel(20);
+          Recover(knight);
           var location = knight.getLocation();
           location.setY(y(80));
           Bukkit.getScheduler().runTaskLater(owner, () -> {
@@ -242,6 +242,14 @@ public class FightStage extends AbstractStage {
         }
       }
     }
+  }
+
+  private static void Recover(Player player) {
+    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (maxHealth != null) {
+      player.setHealth(maxHealth.getValue());
+    }
+    player.setFoodLevel(20);
   }
 
   private void summonEnemies(Wave wave, int round) {
@@ -317,17 +325,30 @@ public class FightStage extends AbstractStage {
     Editor.Fill(world, pos(-98, 80, 56), pos(-90, 80, 56), material);
   }
 
+  private void setupEnemy(Mob mob, Wave wave, int round) {
+    mob.addScoreboardTag(itemTag);
+    mob.addScoreboardTag(Stage.FIGHT.tag);
+    mob.addScoreboardTag(wave.tag);
+    mob.addScoreboardTag(stageEnemyTag);
+    //NOTE: clearLootTable が効いていない
+    mob.clearLootTable();
+    mob.setPersistent(true);
+    mob.setCanPickupItems(false);
+    mob.setRemoveWhenFarAway(false);
+
+    var attackDamage = mob.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+    if (attackDamage != null) {
+      var modifier = new AttributeModifier(
+        attackDamageModifierUUID, attackDamageModifierName,
+        Math.pow(0.8, round) - 1, AttributeModifier.Operation.MULTIPLY_SCALAR_1
+      );
+      attackDamage.addModifier(modifier);
+    }
+  }
+
   private Mob summonZombie(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       it.setAdult();
       var equipment = it.getEquipment();
@@ -340,15 +361,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonSpider(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       for (var passenger : it.getPassengers()) {
         passenger.remove();
@@ -358,15 +371,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonSkeleton(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -381,29 +386,13 @@ public class FightStage extends AbstractStage {
 
   private Mob summonBlaze(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
     });
   }
 
   private Mob summonHoglin(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       it.setAdult();
       it.setImmuneToZombification(true);
@@ -412,15 +401,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonPiglinBrute(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       it.setImmuneToZombification(true);
       var equipment = it.getEquipment();
@@ -432,15 +413,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonPillager(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -451,15 +424,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonVindicator(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
       DisableDrop(equipment);
@@ -470,15 +435,7 @@ public class FightStage extends AbstractStage {
 
   private Mob summonIllusioner(Point3i location, Wave w, int round) {
     return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-      it.addScoreboardTag(itemTag);
-      it.addScoreboardTag(Stage.FIGHT.tag);
-      it.addScoreboardTag(w.tag);
-      it.addScoreboardTag(stageEnemyTag);
-      //NOTE: clearLootTable が効いていない
-      it.clearLootTable();
-      it.setPersistent(true);
-      it.setCanPickupItems(false);
-      it.setRemoveWhenFarAway(false);
+      setupEnemy(it, w, round);
 
       it.setAI(false);
       var equipment = it.getEquipment();
