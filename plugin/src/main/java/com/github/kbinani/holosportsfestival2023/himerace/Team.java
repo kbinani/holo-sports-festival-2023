@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.HealthDisplay;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.Teams;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import io.papermc.paper.entity.TeleportFlag;
@@ -44,23 +45,28 @@ public class Team implements Level.Delegate {
   private final Map<UUID, HealthDisplay> healthDisplays = new HashMap<>();
   private static final int kMaxKnightPlayers = 2;
   private final Level level;
+  private final Teams teams;
   @Nullable
   Delegate delegate;
 
-  Team(JavaPlugin owner, TeamColor color, Level level) {
+  Team(JavaPlugin owner, TeamColor color, Level level, Teams teams) {
     this.owner = owner;
     this.color = color;
     level.delegate.set(this);
     this.level = level;
+    this.teams = teams;
   }
 
   void onStart() {
+    var team = this.teams.ensure(color);
     if (princess != null) {
       activateHealthModifier(princess);
       princess.setGameMode(GameMode.SURVIVAL);
+      team.addEntity(princess);
     }
     for (var knight : knights) {
       knight.setGameMode(GameMode.SURVIVAL);
+      team.addEntity(knight);
     }
   }
 

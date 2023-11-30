@@ -122,7 +122,8 @@ class Race implements Team.Delegate {
 
   private void start() {
     for (var color : TeamColor.all) {
-      if (!teams.containsKey(color)) {
+      var team = teams.get(color);
+      if (team == null) {
         continue;
       }
       var bar = new BossBar(owner, world, announceBounds, 0, color.barColor);

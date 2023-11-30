@@ -9,10 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -131,6 +128,12 @@ public abstract class AbstractStage {
     }
   }
 
+  public final void entityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (started && !finished) {
+      onEntityDamageByEntity(e);
+    }
+  }
+
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
   }
 
@@ -162,6 +165,9 @@ public abstract class AbstractStage {
   }
 
   protected void onPlayerInteractEntity(PlayerInteractEntityEvent e, Role player, Role rightClicked) {
+  }
+
+  protected void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
   }
 
   protected abstract void onStart();

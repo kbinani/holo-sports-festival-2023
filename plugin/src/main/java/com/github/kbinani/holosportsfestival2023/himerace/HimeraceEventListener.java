@@ -11,10 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -46,6 +43,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private Status status = Status.IDLE;
   private @Nullable Race race;
   private @Nullable Cancellable countdown;
+  private final Teams scoreboardTeams = new Teams("hololive_sports_festival_2023_himerace");
 
   public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs) {
     if (mapIDs.length < 3) {
@@ -377,13 +375,24 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     level.onPlayerInteractEntity(e, playerParticipation.role, rightClickedParticipation.role);
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    for (var level : levels.values()) {
+      level.onEntityDamageByEntity(e);
+    }
+  }
+
   private void onClickJoin(Player player, TeamColor color, Role role) {
     if (status != Status.IDLE) {
       return;
     }
     Team team = teams.get(color);
     if (team == null) {
-      team = new Team(owner, color, levels.get(color));
+      team = new Team(owner, color, levels.get(color), scoreboardTeams);
       teams.put(color, team);
     }
     var current = getCurrentParticipation(player);

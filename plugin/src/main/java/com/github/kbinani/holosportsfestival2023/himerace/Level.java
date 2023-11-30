@@ -19,10 +19,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntitySpawnEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -173,6 +170,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     }
   }
 
+  void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    for (var stage : stages.values()) {
+      stage.entityDamageByEntity(e);
+    }
+  }
+
   void tick() {
     for (var stage : stages.values()) {
       stage.tick();
@@ -180,26 +183,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   void reset() {
-    Editor.StandingSign(
-      world,
-      pos(-93, 80, -65),
-      Material.OAK_SIGN,
-      8,
-      HimeraceEventListener.title,
-      color.component(),
-      Role.PRINCESS.component(),
-      text("右クリでエントリー！", AQUA));
-
-    Editor.StandingSign(
-      world,
-      pos(-95, 80, -65),
-      Material.OAK_SIGN,
-      8,
-      HimeraceEventListener.title,
-      color.component(),
-      Role.KNIGHT.component(),
-      text("右クリでエントリー！", AQUA));
-
+    Editor.StandingSign(world, pos(-93, 80, -65), Material.OAK_SIGN, 8,
+      HimeraceEventListener.title, color.component(), Role.PRINCESS.component(), text("右クリでエントリー！", AQUA)
+    );
+    Editor.StandingSign(world, pos(-95, 80, -65), Material.OAK_SIGN, 8,
+      HimeraceEventListener.title, color.component(), Role.KNIGHT.component(), text("右クリでエントリー！", AQUA)
+    );
     for (var stage : this.stages.values()) {
       stage.reset();
     }

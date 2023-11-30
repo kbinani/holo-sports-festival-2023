@@ -167,10 +167,7 @@ public class FightStage extends AbstractStage {
 
         enemies.forEach(Mob::remove);
         enemies.clear();
-        deadPlayerSeats.values().forEach(it -> {
-          it.getPassengers().forEach(it::removePassenger);
-        });
-        deadPlayerSeats.clear();
+        clearDeadPlayerSeats();
         setEnableFence(true);
         updateStandingSign(wave);
         Bukkit.getScheduler().runTaskLater(owner, () -> {
@@ -198,6 +195,7 @@ public class FightStage extends AbstractStage {
           current.remove();
         }
         deadPlayerSeats.put(id, seat);
+
         for (var enemy : enemies) {
           if (enemy.getTarget() == player) {
             enemy.setTarget(null);
@@ -244,6 +242,95 @@ public class FightStage extends AbstractStage {
     }
   }
 
+  @Override
+  protected void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (!(e.getEntity() instanceof LivingEntity defender)) {
+      return;
+    }
+    var isMobDefender = enemies.stream().anyMatch(it -> it.getUniqueId().equals(defender.getUniqueId()));
+    LivingEntity attacker;
+    if (e.getDamager() instanceof LivingEntity damager) {
+      attacker = damager;
+    } else if (e.getDamager() instanceof Projectile projectile) {
+      if (projectile.getShooter() instanceof LivingEntity damager) {
+        attacker = damager;
+      } else {
+        return;
+      }
+    } else {
+      return;
+    }
+    var isMobAttacker = enemies.stream().anyMatch(it -> it.getUniqueId().equals(attacker.getUniqueId()));
+    if (isMobAttacker && isMobDefender) {
+      e.setCancelled(true);
+      return;
+    }
+    if (defender instanceof Player defendingPlayer && isMobAttacker) {
+      if (deadPlayerSeats.containsKey(defendingPlayer.getUniqueId())) {
+        e.setCancelled(true);
+        if (attacker instanceof Hoglin) {
+          unlinkHostileHoglins();
+        } else if (attacker instanceof PiglinBrute) {
+          unlinkHostilePiglinBrute();
+        }
+        return;
+      }
+    }
+    if (attacker instanceof Player attackingPlayer) {
+      if (deadPlayerSeats.containsKey(attackingPlayer.getUniqueId())) {
+        e.setCancelled(true);
+        return;
+      }
+    }
+  }
+
+  @Override
+  public void tick() {
+    var enemies = new ArrayList<Mob>(this.enemies);
+    for (var enemy : enemies) {
+      var target = enemy.getTarget();
+      if (target != null) {
+        if (target instanceof Player player) {
+          if (deadPlayerSeats.containsKey(player.getUniqueId())) {
+            enemy.setTarget(null);
+          }
+        } else {
+          enemy.setTarget(null);
+        }
+      }
+    }
+  }
+
+  private void unlinkHostileHoglins() {
+    //NOTE: hoglin は setTarget(null) としても敵対状態が解除されないので, いったん kill して別個体を同じ位置にスポーンさせる.
+    var locations = new ArrayList<Location>();
+    for (var enemy : new ArrayList<Mob>(enemies)) {
+      if (enemy instanceof Hoglin) {
+        locations.add(enemy.getLocation());
+        enemy.remove();
+        this.enemies.remove(enemy);
+      }
+    }
+    for (var location : locations) {
+      this.enemies.add(summonHoglin(location, wave, waveRound));
+    }
+  }
+
+  private void unlinkHostilePiglinBrute() {
+    //NOTE: piglin_brute は setTarget(null) としても敵対状態が解除されないので, いったん kill して別個体を同じ位置にスポーンさせる.
+    var locations = new ArrayList<Location>();
+    for (var enemy : new ArrayList<Mob>(enemies)) {
+      if (enemy instanceof PiglinBrute) {
+        locations.add(enemy.getLocation());
+        enemy.remove();
+        this.enemies.remove(enemy);
+      }
+    }
+    for (var location : locations) {
+      this.enemies.add(summonPiglinBrute(location, wave, waveRound));
+    }
+  }
+
   private static void Recover(Player player) {
     var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
     if (maxHealth != null) {
@@ -263,9 +350,9 @@ public class FightStage extends AbstractStage {
       }
       case Wave2 -> {
         enemies.add(summonBlaze(enemyPosLeft, wave, round));
-        enemies.add(summonHoglin(enemyPosMiddleLeft, wave, round));
-        enemies.add(summonPiglinBrute(enemyPosCenterLow, wave, round));
-        enemies.add(summonHoglin(enemyPosMiddleRight, wave, round));
+        enemies.add(summonHoglin(enemyPosMiddleLeft.toLocation(world, 0, 180).add(0.5, 0, 0.5), wave, round));
+        enemies.add(summonPiglinBrute(enemyPosCenterLow.toLocation(world, 0, 180).add(0.5, 0, 0.5), wave, round));
+        enemies.add(summonHoglin(enemyPosMiddleRight.toLocation(world, 0, 180).add(0.5, 0, 0.5), wave, round));
         enemies.add(summonBlaze(enemyPosRight, wave, round));
       }
       case Wave3 -> {
@@ -292,6 +379,7 @@ public class FightStage extends AbstractStage {
         text("姫が感圧板を踏んだらゴール！", AQUA),
         times
       );
+      clearDeadPlayerSeats();
       delegate.fightStageSendTitle(title);
       delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
       delegate.fightStageDidFinish();
@@ -300,6 +388,7 @@ public class FightStage extends AbstractStage {
     this.wave = next;
     this.waveProgress = 0;
     this.waveRound = 0;
+    clearDeadPlayerSeats();
     delegate.fightStageRequestsTeleport(
       safeArea.toLocation(world).add(0.5, 0, 0.5),
       this::playerNeedsEvacuation
@@ -313,6 +402,14 @@ public class FightStage extends AbstractStage {
     );
     delegate.fightStageSendTitle(title);
     delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+  }
+
+  private void clearDeadPlayerSeats() {
+    for (var entry : deadPlayerSeats.entrySet()) {
+      var seat = entry.getValue();
+      seat.remove();
+    }
+    deadPlayerSeats.clear();
   }
 
   private boolean playerNeedsEvacuation(Player player) {
@@ -390,8 +487,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonHoglin(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Mob summonHoglin(Location location, Wave w, int round) {
+    return world.spawn(location, Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setAdult();
@@ -399,8 +496,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonPiglinBrute(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Mob summonPiglinBrute(Location location, Wave w, int round) {
+    return world.spawn(location, PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setImmuneToZombification(true);
