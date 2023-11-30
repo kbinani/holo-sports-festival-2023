@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -134,6 +135,12 @@ public abstract class AbstractStage {
     }
   }
 
+  public final void entityDismount(EntityDismountEvent e, Participation participation) {
+    if (started && !finished) {
+      onEntityDismount(e, participation);
+    }
+  }
+
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
   }
 
@@ -168,6 +175,9 @@ public abstract class AbstractStage {
   }
 
   protected void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+  }
+
+  protected void onEntityDismount(EntityDismountEvent e, Participation participation) {
   }
 
   protected abstract void onStart();

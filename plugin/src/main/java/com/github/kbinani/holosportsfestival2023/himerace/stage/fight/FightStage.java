@@ -23,6 +23,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -281,6 +282,16 @@ public class FightStage extends AbstractStage {
         e.setCancelled(true);
         return;
       }
+    }
+  }
+
+  @Override
+  protected void onEntityDismount(EntityDismountEvent e, Participation participation) {
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (deadPlayerSeats.containsKey(player.getUniqueId())) {
+      e.setCancelled(true);
     }
   }
 

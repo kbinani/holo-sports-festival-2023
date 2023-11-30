@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -384,6 +385,23 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     for (var level : levels.values()) {
       level.onEntityDamageByEntity(e);
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDismount(EntityDismountEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    var participacion = getCurrentParticipation(player);
+    if (participacion == null) {
+      return;
+    }
+    var level = levels.get(participacion.color);
+    level.onEntityDismount(e, participacion);
   }
 
   private void onClickJoin(Player player, TeamColor color, Role role) {

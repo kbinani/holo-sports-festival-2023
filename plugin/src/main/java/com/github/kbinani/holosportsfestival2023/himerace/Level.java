@@ -27,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -173,6 +174,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
     for (var stage : stages.values()) {
       stage.entityDamageByEntity(e);
+    }
+  }
+
+  void onEntityDismount(EntityDismountEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.entityDismount(e, participation);
     }
   }
 
