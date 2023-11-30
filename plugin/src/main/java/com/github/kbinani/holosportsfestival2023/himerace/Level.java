@@ -18,7 +18,9 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -186,6 +188,33 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onEntityDismount(EntityDismountEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.entityDismount(e, participation);
+    }
+  }
+
+  void onBlockBreak(BlockBreakEvent e, Participation participation) {
+    var stage = stages.get(active);
+    if (stage == null) {
+      e.setCancelled(true);
+    } else {
+      stage.blockBreak(e, participation);
+    }
+  }
+
+  void onBlockPlace(BlockPlaceEvent e, Participation participation) {
+    var stage = stages.get(active);
+    if (stage == null) {
+      e.setCancelled(true);
+    } else {
+      stage.blockPlace(e, participation);
+    }
+  }
+
+  void onEntityPlace(EntityPlaceEvent e, Participation participation) {
+    var stage = stages.get(active);
+    if (stage == null) {
+      e.setCancelled(true);
+    } else {
+      stage.entityPlace(e, participation);
     }
   }
 

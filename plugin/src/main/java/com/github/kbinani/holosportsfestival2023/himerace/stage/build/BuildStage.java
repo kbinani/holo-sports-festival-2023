@@ -1,5 +1,6 @@
 package  com.github.kbinani.holosportsfestival2023.himerace.stage.build;
 
+import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.ItemTag;
 import com.github.kbinani.holosportsfestival2023.Point3i;
@@ -14,10 +15,14 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,6 +74,12 @@ public class BuildStage extends AbstractStage {
   private @Nullable Question second;
   private int step = 0;
   private @Nullable BukkitTask penaltyCooldown;
+  private final Point3i buildAreaFrom = pos(-99, 80, -16);
+  private final Point3i buildAreaTo = pos(-89, 92, 0);
+  private final BoundingBox buildArea = new BoundingBox(
+    buildAreaFrom.x - 1, buildAreaFrom.y - 1, buildAreaFrom.z - 1,
+    buildAreaTo.x + 1, buildAreaTo.y + 1, buildAreaTo.z + 1
+  );
 
   public BuildStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
@@ -82,6 +93,7 @@ public class BuildStage extends AbstractStage {
 
   @Override
   protected void onFinish() {
+    cleanupBuildArea();
     delegate.buildStageDidFinish();
   }
 
@@ -166,6 +178,7 @@ public class BuildStage extends AbstractStage {
     if (index < 0) {
       return;
     }
+    cleanupBuildArea();
     // 「はずれ」の時の様子
     //    - 騎士側: https://youtu.be/uEpmE5WJPW8?t=3342
     //    - 姫側: https://youtu.be/vHk29E_TIDc?t=3027
@@ -218,6 +231,72 @@ public class BuildStage extends AbstractStage {
         delegate.buildStageSendTitle(CreateQuestionChangedTitle());
       }
     }, 0, 20);
+  }
+
+  @Override
+  protected void onBlockBreak(BlockBreakEvent e, Participation participation) {
+    if (participation.role != Role.KNIGHT) {
+      e.setCancelled(true);
+      return;
+    }
+    var block = e.getBlock();
+    var p = new Point3i(block.getLocation());
+    if (!isInBuildArea(p)) {
+      e.setCancelled(true);
+    }
+  }
+
+  private boolean isInBuildArea(Point3i p) {
+    var min = buildAreaFrom;
+    var max = buildAreaTo;
+    return min.x <= p.x && p.x <= max.x && min.y <= p.y && p.y <= max.y && min.z <= p.z && p.z <= max.z;
+  }
+
+  @Override
+  protected void onBlockPlace(BlockPlaceEvent e, Participation participation) {
+    if (participation.role != Role.KNIGHT) {
+      e.setCancelled(true);
+      return;
+    }
+    var block = e.getBlock();
+    if (!isInBuildArea(new Point3i(block.getLocation()))) {
+      e.setCancelled(true);
+      return;
+    }
+    switch (block.getType()) {
+      case TNT, RESPAWN_ANCHOR, SPAWNER, COMMAND_BLOCK, DISPENSER, PISTON, PISTON_HEAD,
+        INFESTED_STONE, INFESTED_COBBLESTONE, INFESTED_STONE_BRICKS, INFESTED_MOSSY_STONE_BRICKS,
+        INFESTED_CRACKED_STONE_BRICKS, INFESTED_CHISELED_STONE_BRICKS, INFESTED_DEEPSLATE,
+        TURTLE_EGG, SNIFFER_EGG -> e.setCancelled(true);
+    }
+  }
+
+  @Override
+  protected void onEntityPlace(EntityPlaceEvent e, Participation participation) {
+    if (participation.role != Role.KNIGHT) {
+      e.setCancelled(true);
+      return;
+    }
+    var entity = e.getEntity();
+    if (!isInBuildArea(new Point3i(entity.getLocation()))) {
+      e.setCancelled(true);
+      return;
+    }
+    switch (entity.getType()) {
+      case MINECART_TNT, MINECART_COMMAND, ENDER_CRYSTAL -> e.setCancelled(true);
+    }
+  }
+
+  private void cleanupBuildArea() {
+    Editor.Fill(world, buildAreaFrom, buildAreaTo, Material.AIR);
+    world.getNearbyEntities(buildArea).forEach(it -> {
+      switch (it.getType()) {
+        case PLAYER, AREA_EFFECT_CLOUD -> {
+          // nop
+        }
+        default -> it.remove();
+      }
+    });
   }
 
   private static Title CreateCorrectAnswerTitle() {

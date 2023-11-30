@@ -16,6 +16,7 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -273,6 +274,28 @@ public class CookStage extends AbstractStage {
       e.setResult(Task.ToItem(taskItem));
       break;
     }
+  }
+
+  @Override
+  protected void onBlockBreak(BlockBreakEvent e, Participation participation) {
+    if (participation.role != Role.KNIGHT) {
+      e.setCancelled(true);
+      return;
+    }
+    var p = new Point3i(e.getBlock().getLocation());
+    if (Arrays.asList(carrotCrops).contains(p)) {
+      return;
+    }
+    if (Arrays.asList(potatoCrops).contains(p)) {
+      return;
+    }
+    if (Arrays.asList(wheatCrops).contains(p)) {
+      return;
+    }
+    if (Arrays.asList(beetrootCrops).contains(p)) {
+      return;
+    }
+    e.setCancelled(true);
   }
 
   @Override

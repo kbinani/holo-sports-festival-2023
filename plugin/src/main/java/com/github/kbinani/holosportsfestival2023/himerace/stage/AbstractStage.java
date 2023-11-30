@@ -8,7 +8,9 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -144,6 +146,18 @@ public abstract class AbstractStage {
     }
   }
 
+  public final void blockBreak(BlockBreakEvent e, Participation participation) {
+    onBlockBreak(e, participation);
+  }
+
+  public final void blockPlace(BlockPlaceEvent e, Participation participation) {
+    onBlockPlace(e, participation);
+  }
+
+  public final void entityPlace(EntityPlaceEvent e, Participation participation) {
+    onEntityPlace(e, participation);
+  }
+
   protected void onTick() {
   }
 
@@ -184,6 +198,18 @@ public abstract class AbstractStage {
   }
 
   protected void onEntityDismount(EntityDismountEvent e, Participation participation) {
+  }
+
+  protected void onBlockBreak(BlockBreakEvent e, Participation participation) {
+    e.setCancelled(true);
+  }
+
+  protected void onBlockPlace(BlockPlaceEvent e, Participation participation) {
+    e.setCancelled(true);
+  }
+
+  protected void onEntityPlace(EntityPlaceEvent e, Participation participation) {
+    e.setCancelled(true);
   }
 
   protected abstract void onStart();

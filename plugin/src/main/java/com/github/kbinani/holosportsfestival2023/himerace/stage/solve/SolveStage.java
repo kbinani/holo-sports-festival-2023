@@ -17,6 +17,7 @@ import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -122,6 +123,7 @@ public class SolveStage extends AbstractStage {
   private final int mapId;
   private @Nullable BukkitTask penaltyCooldown;
   private final Point3i pressurePlatePos = pos(-94, 80, 27);
+  private final Point3i answerBlockPos = pos(-91, 86, 36);
 
   public SolveStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, Material quizConcealer, int mapId, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
@@ -237,6 +239,25 @@ public class SolveStage extends AbstractStage {
           }
         }
       }
+    }
+  }
+
+  @Override
+  protected void onBlockPlace(BlockPlaceEvent e, Participation participation) {
+    if (participation.role != Role.PRINCESS) {
+      e.setCancelled(true);
+      return;
+    }
+    var block = e.getBlock();
+    if (!answerBlockPos.equals(new Point3i(block.getLocation()))) {
+      e.setCancelled(true);
+      return;
+    }
+    switch (block.getType()) {
+      case RED_WOOL, YELLOW_WOOL, PINK_WOOL, WHITE_WOOL -> {
+        // nop
+      }
+      default -> e.setCancelled(true);
     }
   }
 

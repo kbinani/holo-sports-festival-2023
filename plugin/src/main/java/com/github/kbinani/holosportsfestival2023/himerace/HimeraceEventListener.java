@@ -10,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
@@ -413,36 +414,79 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   @EventHandler
   @SuppressWarnings("unused")
   public void onBlockPlace(BlockPlaceEvent e) {
+    var player = e.getPlayer();
+    if (player.isOp()) {
+      return;
+    }
     var block = e.getBlock();
     var location = block.getLocation();
     if (!announceBounds.contains(location.toVector())) {
       return;
     }
-    var player = e.getPlayer();
-    switch (block.getType()) {
-      case TNT, RESPAWN_ANCHOR, SPAWNER, COMMAND_BLOCK, DISPENSER, PISTON, PISTON_HEAD,
-        INFESTED_STONE, INFESTED_COBBLESTONE, INFESTED_STONE_BRICKS, INFESTED_MOSSY_STONE_BRICKS,
-        INFESTED_CRACKED_STONE_BRICKS, INFESTED_CHISELED_STONE_BRICKS, INFESTED_DEEPSLATE,
-        TURTLE_EGG, SNIFFER_EGG -> e.setCancelled(true);
-      case BARRIER -> {
-        if (!player.isOp()) {
-          e.setCancelled(true);
-        }
-      }
+
+    if (status != Status.ACTIVE) {
+      e.setCancelled(true);
+      return;
     }
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      e.setCancelled(true);
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onBlockPlace(e, participation);
   }
 
   @EventHandler
   @SuppressWarnings("unused")
   public void onEntityPlace(EntityPlaceEvent e) {
-    var entity = e.getEntity();
-    var location = entity.getLocation();
+    var player = e.getPlayer();
+    if (player.isOp()) {
+      return;
+    }
+    var block = e.getBlock();
+    var location = block.getLocation();
     if (!announceBounds.contains(location.toVector())) {
       return;
     }
-    switch (entity.getType()) {
-      case MINECART_TNT, MINECART_COMMAND, ENDER_CRYSTAL -> e.setCancelled(true);
+
+    if (status != Status.ACTIVE) {
+      e.setCancelled(true);
+      return;
     }
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      e.setCancelled(true);
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onEntityPlace(e, participation);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onBlockBreak(BlockBreakEvent e) {
+    var player = e.getPlayer();
+    if (player.isOp()) {
+      return;
+    }
+    var block = e.getBlock();
+    var location = block.getLocation();
+    if (!announceBounds.contains(location.toVector())) {
+      return;
+    }
+
+    if (status != Status.ACTIVE) {
+      e.setCancelled(true);
+      return;
+    }
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      e.setCancelled(true);
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onBlockBreak(e, participation);
   }
 
   private void onClickJoin(Player player, TeamColor color, Role role) {
