@@ -57,7 +57,7 @@ public class FightStage extends AbstractStage {
 
     void fightStageRequestsHealthRecovery();
 
-    void fightStageRequestsEncouragingKnights();
+    void fightStageRequestsEncouragingKnights(Set<UUID> exclutHealthRecovery);
 
     void fightStageRequestsClearGoatHornCooltime();
 
@@ -228,19 +228,35 @@ public class FightStage extends AbstractStage {
     var princess = e.getPlayer();
     var inventory = princess.getInventory();
     var usedItem = inventory.getItem(hand);
-    if (usedItem.getType() == Material.RED_BED && ItemTag.HasByte(usedItem, Stage.FIGHT.tag) && ItemTag.HasByte(usedItem, itemTag)) {
-      if (e.getRightClicked() instanceof Player knight) {
-        var seat = deadPlayerSeats.get(knight.getUniqueId());
-        if (seat != null) {
-          seat.removePassenger(knight);
-          seat.remove();
-          deadPlayerSeats.remove(knight.getUniqueId());
-          Recover(knight);
-          var location = knight.getLocation();
-          location.setY(y(80));
-          Bukkit.getScheduler().runTaskLater(owner, () -> {
-            knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
-          }, 0);
+    if (e.getRightClicked() instanceof Player knight && ItemTag.HasByte(usedItem, Stage.FIGHT.tag) && ItemTag.HasByte(usedItem, itemTag)) {
+      switch (usedItem.getType()) {
+        case RED_BED -> {
+          var seat = deadPlayerSeats.get(knight.getUniqueId());
+          if (seat != null) {
+            seat.removePassenger(knight);
+            seat.remove();
+            deadPlayerSeats.remove(knight.getUniqueId());
+            Recover(knight);
+            var location = knight.getLocation();
+            location.setY(y(80));
+            Bukkit.getScheduler().runTaskLater(owner, () -> {
+              knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+            }, 0);
+          }
+        }
+        case GOLDEN_SHOVEL -> {
+          // 回復量は4: https://youtu.be/aca8Oy9v8tQ?t=9920
+          var seat = deadPlayerSeats.get(knight.getUniqueId());
+          if (seat == null) {
+            var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            if (maxHealth != null) {
+              var health = Math.min(knight.getHealth() + 4, maxHealth.getValue());
+              if (health > knight.getHealth()) {
+                knight.setHealth(health);
+                world.playSound(knight.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+              }
+            }
+          }
         }
       }
     }
@@ -600,8 +616,7 @@ public class FightStage extends AbstractStage {
           switch (item.getType()) {
             case RED_BED -> e.setCancelled(true);
             case GOAT_HORN -> {
-              delegate.fightStageRequestsHealthRecovery();
-              delegate.fightStageRequestsEncouragingKnights();
+              delegate.fightStageRequestsEncouragingKnights(deadPlayerSeats.keySet());
             }
           }
         }
@@ -623,7 +638,7 @@ public class FightStage extends AbstractStage {
       case RIGHT_CLICK_AIR -> {
         var item = e.getItem();
         if (item != null && item.getType() == Material.GOAT_HORN && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
-          delegate.fightStageRequestsEncouragingKnights();
+          delegate.fightStageRequestsEncouragingKnights(deadPlayerSeats.keySet());
         }
       }
     }

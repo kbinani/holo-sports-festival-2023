@@ -288,7 +288,7 @@ public class Team implements Level.Delegate {
   }
 
   @Override
-  public void levelRequestsEncouragingKnights() {
+  public void levelRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery) {
     if (princess != null) {
       princess.sendMessage(prefix.append(text("みんなを鼓舞しました！", WHITE)));
     }
@@ -296,6 +296,12 @@ public class Team implements Level.Delegate {
       knight.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 10 * 20, 0));
       knight.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10 * 20, 0));
       knight.sendMessage(prefix.append(text("姫がみんなを鼓舞しています！", WHITE)));
+      if (!excludeHealthRecovery.contains(knight.getUniqueId())) {
+        var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (maxHealth != null) {
+          knight.setHealth(maxHealth.getValue());
+        }
+      }
     }
   }
 

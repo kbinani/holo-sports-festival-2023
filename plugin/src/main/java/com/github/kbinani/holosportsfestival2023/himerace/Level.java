@@ -33,6 +33,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 import static net.kyori.adventure.text.Component.text;
@@ -63,7 +65,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelRequestsHealthRecovery();
 
-    void levelRequestsEncouragingKnights();
+    void levelRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery);
 
     void levelRequestsClearGoatHornCooltime();
 
@@ -317,8 +319,10 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   @Override
-  public void fightStageRequestsEncouragingKnights() {
-    this.delegate.use(Delegate::levelRequestsEncouragingKnights);
+  public void fightStageRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery) {
+    this.delegate.use(it -> {
+      it.levelRequestsEncouragingKnights(excludeHealthRecovery);
+    });
   }
 
   @Override
