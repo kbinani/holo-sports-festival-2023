@@ -296,7 +296,7 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  public void tick() {
+  protected void onTick() {
     var enemies = new ArrayList<Mob>(this.enemies);
     for (var enemy : enemies) {
       var target = enemy.getTarget();

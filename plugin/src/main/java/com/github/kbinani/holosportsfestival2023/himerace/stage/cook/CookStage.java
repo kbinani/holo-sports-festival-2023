@@ -187,7 +187,7 @@ public class CookStage extends AbstractStage {
   }
 
   @Override
-  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
     if (cuttingBoard != null) {
       cuttingBoard.onInventoryClick(e, owner);
     }
@@ -203,7 +203,7 @@ public class CookStage extends AbstractStage {
   }
 
   @Override
-  public void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
+  protected void onPlayerItemConsume(PlayerItemConsumeEvent e, Participation participation) {
     if (participation.role != Role.PRINCESS) {
       return;
     }
@@ -236,7 +236,7 @@ public class CookStage extends AbstractStage {
   }
 
   @Override
-  public void onBlockDropItem(BlockDropItemEvent e) {
+  protected void onBlockDropItem(BlockDropItemEvent e) {
     var items = e.getItems();
     for (var item : items) {
       var location = item.getLocation();
@@ -256,7 +256,7 @@ public class CookStage extends AbstractStage {
   }
 
   @Override
-  public void onFurnaceSmelt(FurnaceSmeltEvent e) {
+  protected void onFurnaceSmelt(FurnaceSmeltEvent e) {
     var block = e.getBlock();
     var location = new Point3i(block.getLocation());
     if (!location.equals(furnacePos)) {
@@ -307,7 +307,7 @@ public class CookStage extends AbstractStage {
   }
 
   @Override
-  public void tick() {
+  protected void onTick() {
     for (var pos : carrotCrops) {
       growOrPlant(pos, Material.CARROTS);
     }

@@ -157,7 +157,7 @@ public class BuildStage extends AbstractStage {
   }
 
   @Override
-  public void onInventoryClick(InventoryClickEvent e, Participation participation) {
+  protected void onInventoryClick(InventoryClickEvent e, Participation participation) {
     if (participation.role != Role.PRINCESS) {
       return;
     }

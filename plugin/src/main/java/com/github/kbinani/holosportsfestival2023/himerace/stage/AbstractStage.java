@@ -59,7 +59,10 @@ public abstract class AbstractStage {
     started = false;
   }
 
-  public void tick() {
+  public final void tick() {
+    if (started && !finished) {
+      onTick();
+    }
   }
 
   public final void playerMove(PlayerMoveEvent e, Participation participation) {
@@ -139,6 +142,9 @@ public abstract class AbstractStage {
     if (started && !finished) {
       onEntityDismount(e, participation);
     }
+  }
+
+  protected void onTick() {
   }
 
   protected void onPlayerMove(PlayerMoveEvent e, Participation participation) {
