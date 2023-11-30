@@ -133,6 +133,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         player.setHealth(maxHealth.getValue());
       }
     }
+    player.setFoodLevel(20);
   }
 
   @EventHandler
@@ -542,10 +543,6 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
 
   @Override
   public void raceDidFinish() {
-    var race = this.race;
-    if (race == null) {
-      return;
-    }
     setStatus(Status.IDLE);
   }
 }

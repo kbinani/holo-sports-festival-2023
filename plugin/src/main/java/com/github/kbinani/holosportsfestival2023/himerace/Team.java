@@ -313,11 +313,14 @@ public class Team implements Level.Delegate {
   }
 
   void dispose() {
+    var team = teams.ensure(color);
     if (princess != null) {
       ClearItems(princess, itemTag);
+      team.removeEntity(princess);
     }
     for (var knight : knights) {
       ClearItems(knight, itemTag);
+      team.removeEntity(knight);
     }
   }
 
