@@ -5,6 +5,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,6 +28,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.github.kbinani.holosportsfestival2023.himerace.Team.maxHealthModifierUUID;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -123,6 +125,13 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       }
       if (ItemTag.HasByte(item, tag)) {
         inventory.clear(i);
+      }
+    }
+    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (maxHealth != null) {
+      if (maxHealth.getModifier(maxHealthModifierUUID) != null) {
+        maxHealth.removeModifier(maxHealthModifierUUID);
+        player.setHealth(maxHealth.getValue());
       }
     }
   }

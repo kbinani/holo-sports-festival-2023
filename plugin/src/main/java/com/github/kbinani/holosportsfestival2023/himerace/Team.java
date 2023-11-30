@@ -34,7 +34,7 @@ public class Team implements Level.Delegate {
     void teamDidFinish(TeamColor color);
   }
 
-  private static final @Nonnull UUID maxHealthModifierUUID = UUID.fromString("CA4218FF-B7D7-4E16-8ECD-942513E88E22");
+  static final @Nonnull UUID maxHealthModifierUUID = UUID.fromString("CA4218FF-B7D7-4E16-8ECD-942513E88E22");
   private static final @Nonnull String maxHealthModifierName = "hololive_sports_festival_2023_himerace";
 
   private final JavaPlugin owner;
