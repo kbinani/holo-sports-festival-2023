@@ -120,6 +120,7 @@ public class Team implements Level.Delegate {
               .build();
             inventory.setItem(i, item);
           }
+          princess.setFoodLevel(20);
         }
       }
       case SOLVE -> {
