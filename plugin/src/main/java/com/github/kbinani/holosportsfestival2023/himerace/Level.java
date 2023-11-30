@@ -63,6 +63,10 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelRequestsHealthRecovery();
 
+    void levelRequestsEncouragingKnights();
+
+    void levelRequestsClearGoatHornCooltime();
+
     void levelDidClearStage(Stage stage);
   }
 
@@ -310,6 +314,16 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   @Override
   public void fightStageRequestsHealthRecovery() {
     this.delegate.use(Delegate::levelRequestsHealthRecovery);
+  }
+
+  @Override
+  public void fightStageRequestsEncouragingKnights() {
+    this.delegate.use(Delegate::levelRequestsEncouragingKnights);
+  }
+
+  @Override
+  public void fightStageRequestsClearGoatHornCooltime() {
+    this.delegate.use(Delegate::levelRequestsClearGoatHornCooltime);
   }
 
   @Override

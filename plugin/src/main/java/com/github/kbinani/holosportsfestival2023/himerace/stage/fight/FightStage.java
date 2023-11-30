@@ -15,7 +15,6 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.*;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -57,6 +56,10 @@ public class FightStage extends AbstractStage {
     void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
 
     void fightStageRequestsHealthRecovery();
+
+    void fightStageRequestsEncouragingKnights();
+
+    void fightStageRequestsClearGoatHornCooltime();
 
     void fightStageDidFinish();
   }
@@ -393,6 +396,8 @@ public class FightStage extends AbstractStage {
       clearDeadPlayerSeats();
       delegate.fightStageSendTitle(title);
       delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+      delegate.fightStageRequestsHealthRecovery();
+
       delegate.fightStageDidFinish();
       return;
     }
@@ -413,6 +418,8 @@ public class FightStage extends AbstractStage {
     );
     delegate.fightStageSendTitle(title);
     delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+    delegate.fightStageRequestsHealthRecovery();
+    delegate.fightStageRequestsClearGoatHornCooltime();
   }
 
   private void clearDeadPlayerSeats() {
@@ -582,32 +589,44 @@ public class FightStage extends AbstractStage {
     if (participation.role != Role.PRINCESS) {
       return;
     }
-    var action = e.getAction();
-    if (action != Action.RIGHT_CLICK_BLOCK) {
-      return;
+    switch (e.getAction()) {
+      case RIGHT_CLICK_BLOCK -> {
+        var block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        var item = e.getItem();
+        if (item != null && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+          switch (item.getType()) {
+            case RED_BED -> e.setCancelled(true);
+            case GOAT_HORN -> {
+              delegate.fightStageRequestsHealthRecovery();
+              delegate.fightStageRequestsEncouragingKnights();
+            }
+          }
+        }
+        var location = new Point3i(block.getLocation());
+        if (!location.equals(signPos)) {
+          return;
+        }
+        if (wave == Wave.Wave1 && waveRound == 0) {
+          delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
+            var z = p.getLocation().getZ();
+            return z < z(51);
+          });
+          closeGate();
+        }
+        summonEnemies(wave, waveRound);
+        setEnableFence(false);
+        Editor.Set(world, signPos, Material.AIR);
+      }
+      case RIGHT_CLICK_AIR -> {
+        var item = e.getItem();
+        if (item != null && item.getType() == Material.GOAT_HORN && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+          delegate.fightStageRequestsEncouragingKnights();
+        }
+      }
     }
-    var block = e.getClickedBlock();
-    if (block == null) {
-      return;
-    }
-    var item = e.getItem();
-    if (item != null && item.getType() == Material.RED_BED && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
-      e.setCancelled(true);
-    }
-    var location = new Point3i(block.getLocation());
-    if (!location.equals(signPos)) {
-      return;
-    }
-    if (wave == Wave.Wave1 && waveRound == 0) {
-      delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
-        var z = p.getLocation().getZ();
-        return z < z(51);
-      });
-      closeGate();
-    }
-    summonEnemies(wave, waveRound);
-    setEnableFence(false);
-    Editor.Set(world, signPos, Material.AIR);
   }
 
   private int x(int x) {

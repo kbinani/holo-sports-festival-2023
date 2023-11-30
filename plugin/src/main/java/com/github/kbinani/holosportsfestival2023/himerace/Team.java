@@ -17,14 +17,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.ClearItems;
-import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.*;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook0;
 import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.CookStage.CreateRecipeBook1;
 import static net.kyori.adventure.text.Component.text;
@@ -283,6 +284,25 @@ public class Team implements Level.Delegate {
       if (maxHealth != null) {
         knight.setHealth(maxHealth.getValue());
       }
+    }
+  }
+
+  @Override
+  public void levelRequestsEncouragingKnights() {
+    if (princess != null) {
+      princess.sendMessage(prefix.append(text("みんなを鼓舞しました！", WHITE)));
+    }
+    for (var knight : knights) {
+      knight.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 10 * 20, 0));
+      knight.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10 * 20, 0));
+      knight.sendMessage(prefix.append(text("姫がみんなを鼓舞しています！", WHITE)));
+    }
+  }
+
+  @Override
+  public void levelRequestsClearGoatHornCooltime() {
+    if (princess != null) {
+      princess.setCooldown(Material.GOAT_HORN, 0);
     }
   }
 
