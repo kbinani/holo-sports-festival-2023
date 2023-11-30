@@ -214,7 +214,9 @@ public class Team implements Level.Delegate {
       return;
     }
     player.setHealth(6);
-    attribute.removeModifier(maxHealthModifierUUID);
+    if (attribute.getModifier(maxHealthModifierUUID) != null) {
+      attribute.removeModifier(maxHealthModifierUUID);
+    }
     attribute.addModifier(createHealthModifier());
   }
 

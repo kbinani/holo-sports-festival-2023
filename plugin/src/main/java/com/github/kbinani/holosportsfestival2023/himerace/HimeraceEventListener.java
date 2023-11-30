@@ -107,12 +107,24 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       countdown = null;
     }
     Kill.EntitiesByScoreboardTag(world, itemTag);
-    Bukkit.getServer().getOnlinePlayers().forEach(it -> ClearItems(it, itemTag));
+    Bukkit.getServer().getOnlinePlayers().forEach(this::cleanupPlayer);
   }
 
   @Override
   public void miniGameClearItem(Player player) {
+    cleanupPlayer(player);
+  }
+
+  private void cleanupPlayer(Player player) {
     ClearItems(player, itemTag);
+
+    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+    if (maxHealth != null) {
+      if (maxHealth.getModifier(maxHealthModifierUUID) != null) {
+        maxHealth.removeModifier(maxHealthModifierUUID);
+        player.setHealth(maxHealth.getValue());
+      }
+    }
   }
 
   static void ClearItems(Player player, String tag) {
@@ -126,14 +138,6 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         inventory.clear(i);
       }
     }
-    var maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-    if (maxHealth != null) {
-      if (maxHealth.getModifier(maxHealthModifierUUID) != null) {
-        maxHealth.removeModifier(maxHealthModifierUUID);
-        player.setHealth(maxHealth.getValue());
-      }
-    }
-    player.setFoodLevel(20);
   }
 
   @EventHandler
