@@ -1,5 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
+import com.github.kbinani.holosportsfestival2023.Cloakroom;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import com.github.kbinani.holosportsfestival2023.Teams;
@@ -50,11 +51,13 @@ class Registrants {
         team.removePlayer(unit.attacker);
         unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
         ClearItems(unit.attacker);
+        Cloakroom.shared.restore(unit.attacker);
         if (unit.vehicle != null) {
           team.removePlayer(unit.vehicle);
           unit.vehicle.removePassenger(unit.attacker);
           unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
           ClearItems(unit.vehicle);
+          Cloakroom.shared.restore(unit.vehicle);
         }
       }
     }
@@ -139,6 +142,10 @@ class Registrants {
     if (getParticipation(player) != null) {
       return;
     }
+    if (!Cloakroom.shared.store(player)) {
+      player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+      return;
+    }
     var inventory = player.getInventory();
     var saddle = CreateSaddle();
     inventory.setItem(0, saddle);
@@ -171,13 +178,17 @@ class Registrants {
     if (p.unit.vehicle != null) {
       return;
     }
+    if (!Cloakroom.shared.store(vehicle)) {
+      attacker.sendMessage(prefix.append(text("そのプレイヤーは馬にできません。(インベントリのバックアップに失敗)", RED)));
+      return;
+    }
     if (getParticipation(vehicle) != null) {
       // https://youtu.be/D9vmP7Qj4TI?t=1058
-      attacker.sendMessage(text("そのプレイヤーは馬にできません。", RED));
+      attacker.sendMessage(text("そのプレイヤーは馬にできません。(既に他のプレイヤーとペアになっています)", RED));
       return;
     }
     if (!vehicle.addPassenger(attacker)) {
-      attacker.sendMessage(text("そのプレイヤーは馬にできません。", RED));
+      attacker.sendMessage(text("そのプレイヤーは馬にできません。(騎乗に失敗しました)", RED));
       return;
     }
     p.unit.vehicle = vehicle;
@@ -307,6 +318,7 @@ class Registrants {
       player.sendMessage(prefix
         .append(text("エントリー登録を解除しました。", WHITE))
       );
+      Cloakroom.shared.restore(player);
 
       if (current.unit.vehicle != null) {
         team.removePlayer(current.unit.vehicle);
@@ -314,6 +326,7 @@ class Registrants {
         current.unit.vehicle.sendMessage(prefix
           .append(text("騎士があなたから降りたため、エントリーが解除されました。", WHITE))
         );
+        Cloakroom.shared.restore(current.unit.vehicle);
       }
     } else {
       current.unit.vehicle = null;
@@ -322,6 +335,7 @@ class Registrants {
         player.sendMessage(prefix
           .append(text("エントリー登録を解除しました。", WHITE))
         );
+        Cloakroom.shared.restore(player);
         retireLeader(current.unit.attacker);
         var inventory = current.unit.attacker.getInventory();
         inventory.setItem(0, CreateSaddle());
@@ -330,6 +344,7 @@ class Registrants {
         player.sendMessage(prefix
           .append(text("騎士があなたから降りたため、エントリーが解除されました。", WHITE))
         );
+        Cloakroom.shared.restore(player);
       }
     }
   }

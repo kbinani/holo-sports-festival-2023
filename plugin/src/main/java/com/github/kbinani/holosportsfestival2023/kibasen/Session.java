@@ -243,6 +243,8 @@ class Session {
         unit.clean();
         Players.Distribute(world, safeRespawnBounds, unit.vehicle);
         Players.Distribute(world, safeRespawnBounds, unit.attacker);
+        Cloakroom.shared.restore(unit.vehicle);
+        Cloakroom.shared.restore(unit.attacker);
       }
     }
   }

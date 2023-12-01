@@ -500,20 +500,8 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     var current = getCurrentParticipation(player);
     if (current != null) {
-      var inventory = player.getInventory();
-      for (var i = 0; i < inventory.getSize(); i++) {
-        var item = inventory.getItem(i);
-        if (item == null) {
-          continue;
-        }
-        if (ItemTag.HasByte(item, itemTag)) {
-          inventory.clear(i);
-        }
-      }
       team.remove(player);
-      player.sendMessage(prefix
-        .append(text("エントリー登録を解除しました。", WHITE))
-      );
+      player.sendMessage(prefix.append(text("エントリー登録を解除しました。", WHITE)));
       return;
     }
     if (team.add(player, role)) {

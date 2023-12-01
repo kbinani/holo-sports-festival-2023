@@ -100,6 +100,9 @@ class Race {
       task.cancel();
     }
     tridentCooldownTask.clear();
+    for (var player : participants.values()) {
+      Cloakroom.shared.restore(player);
+    }
   }
 
   private @Nullable TeamColor playerColor(Player player) {

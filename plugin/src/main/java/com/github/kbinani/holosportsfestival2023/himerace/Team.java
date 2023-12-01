@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.HealthDisplay;
-import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
-import com.github.kbinani.holosportsfestival2023.Teams;
+import com.github.kbinani.holosportsfestival2023.*;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Task;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.cook.TaskItem;
 import io.papermc.paper.entity.TeleportFlag;
@@ -339,10 +336,12 @@ public class Team implements Level.Delegate {
     if (princess != null) {
       ClearItems(princess, itemTag);
       team.removeEntity(princess);
+      Cloakroom.shared.restore(princess);
     }
     for (var knight : knights) {
       ClearItems(knight, itemTag);
       team.removeEntity(knight);
+      Cloakroom.shared.restore(knight);
     }
   }
 
@@ -354,6 +353,10 @@ public class Team implements Level.Delegate {
     return switch (role) {
       case PRINCESS -> {
         if (princess == null) {
+          if (!Cloakroom.shared.store(player)) {
+            player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+            yield false;
+          }
           princess = player;
           yield true;
         } else {
@@ -363,6 +366,10 @@ public class Team implements Level.Delegate {
       }
       case KNIGHT -> {
         if (kMaxKnightPlayers > knights.size()) {
+          if (!Cloakroom.shared.store(player)) {
+            player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+            yield false;
+          }
           knights.add(player);
           yield true;
         } else {
@@ -378,6 +385,7 @@ public class Team implements Level.Delegate {
       princess = null;
     }
     knights.remove(player);
+    Cloakroom.shared.restore(player);
   }
 
   public List<Player> getKnights() {

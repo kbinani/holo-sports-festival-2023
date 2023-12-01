@@ -13,6 +13,7 @@ import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -151,5 +152,12 @@ public class Main extends JavaPlugin implements Listener {
     } else if (from == Material.HORN_CORAL_BLOCK && to == Material.DEAD_HORN_CORAL_BLOCK) {
       e.setCancelled(true);
     }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerQuit(PlayerQuitEvent e) {
+    var player = e.getPlayer();
+    Cloakroom.shared.restore(player);
   }
 }

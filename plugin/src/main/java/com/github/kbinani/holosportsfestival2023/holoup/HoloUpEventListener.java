@@ -84,78 +84,32 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void reset() {
-    Editor.StandingSign(
-      world,
-      joinSignRed,
-      Material.OAK_SIGN,
-      0,
-      title,
-      TeamColor.RED.component(),
-      Component.empty(),
-      text("右クリでエントリー！", AQUA)
+    Editor.StandingSign(world, joinSignRed, Material.OAK_SIGN, 0,
+      title, TeamColor.RED.component(), Component.empty(), text("右クリでエントリー！", AQUA)
     );
-    Editor.StandingSign(
-      world,
-      joinSignWhite,
-      Material.OAK_SIGN,
-      0,
-      title,
-      TeamColor.WHITE.component(),
-      Component.empty(),
-      text("右クリでエントリー！", AQUA)
+    Editor.StandingSign(world, joinSignWhite, Material.OAK_SIGN, 0,
+      title, TeamColor.WHITE.component(), Component.empty(), text("右クリでエントリー！", AQUA)
     );
-    Editor.StandingSign(
-      world,
-      joinSignYellow,
-      Material.OAK_SIGN,
-      0,
-      title,
-      TeamColor.YELLOW.component(),
-      Component.empty(),
-      text("右クリでエントリー！", AQUA)
+    Editor.StandingSign(world, joinSignYellow, Material.OAK_SIGN, 0,
+      title, TeamColor.YELLOW.component(), Component.empty(), text("右クリでエントリー！", AQUA)
     );
-    Editor.StandingSign(
-      world,
-      pos(-39, 100, -29),
-      Material.OAK_SIGN,
-      0,
-      title,
-      text("観戦者", DARK_PURPLE),
-      text("Spectator", DARK_PURPLE),
-      text("右クリでエントリー！", AQUA)
+    Editor.StandingSign(world, pos(-39, 100, -29), Material.OAK_SIGN, 0,
+      title, text("観戦者", DARK_PURPLE), text("Spectator", DARK_PURPLE), text("右クリでエントリー！", AQUA)
     );
 
-    Editor.StandingSign(
-      world,
-      startSign,
-      Material.OAK_SIGN,
-      0,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームスタート", AQUA)
+    Editor.StandingSign(world, startSign, Material.OAK_SIGN, 0,
+      title, Component.empty(), Component.empty(), text("ゲームスタート", AQUA)
     );
-    Editor.StandingSign(
-      world,
-      abortSign,
-      Material.OAK_SIGN,
-      0,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームを中断する", RED)
+    Editor.StandingSign(world, abortSign, Material.OAK_SIGN, 0,
+      title, Component.empty(), Component.empty(), text("ゲームを中断する", RED)
     );
-    Editor.StandingSign(
-      world,
-      entryListSign,
-      Material.OAK_SIGN,
-      0,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("エントリー リスト", GREEN)
+    Editor.StandingSign(world, entryListSign, Material.OAK_SIGN, 0,
+      title, Component.empty(), Component.empty(), text("エントリー リスト", GREEN)
     );
 
+    for (var player : registrants.values()) {
+      Cloakroom.shared.restore(player);
+    }
     registrants.clear();
     status = Status.IDLE;
     Kill.EntitiesByScoreboardTag(world, itemTag);
@@ -398,6 +352,10 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           .append(text("既に他のチームにエントリーしています。", RED))
         );
       } else {
+        if (!Cloakroom.shared.store(player)) {
+          player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+          return;
+        }
         registrants.put(color, player);
         broadcast(prefix
           .append(text(player.getName(), color.textColor))
@@ -426,6 +384,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       }
     }
     if (color != null) {
+      Cloakroom.shared.restore(player);
       registrants.remove(color);
       broadcast(prefix
         .append(text(player.getName() + "が", WHITE))
