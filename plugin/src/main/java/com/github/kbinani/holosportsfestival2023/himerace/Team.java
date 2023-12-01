@@ -62,11 +62,11 @@ public class Team implements Level.Delegate {
     var team = this.teams.ensure(color);
     if (princess != null) {
       activateHealthModifier(princess);
-      princess.setGameMode(GameMode.SURVIVAL);
+      princess.setGameMode(GameMode.ADVENTURE);
       team.addEntity(princess);
     }
     for (var knight : knights) {
-      knight.setGameMode(GameMode.SURVIVAL);
+      knight.setGameMode(GameMode.ADVENTURE);
       team.addEntity(knight);
     }
   }
@@ -89,6 +89,7 @@ public class Team implements Level.Delegate {
             .build();
           var inventory = princess.getInventory();
           inventory.setItem(0, book);
+          princess.setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
           knight.setGameMode(GameMode.CREATIVE);
@@ -101,10 +102,12 @@ public class Team implements Level.Delegate {
           var inventory = princess.getInventory();
           inventory.setItem(0, CreateRecipeBook0());
           inventory.setItem(1, CreateRecipeBook1());
+          princess.setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
+          var inventory = knight.getInventory();
           var emerald = Task.ToItem(TaskItem.EMERALD, 20);
-          knight.getInventory().setItem(0, emerald);
+          inventory.setItem(0, emerald);
           knight.setGameMode(GameMode.SURVIVAL);
         }
       }
@@ -121,6 +124,10 @@ public class Team implements Level.Delegate {
             inventory.setItem(i, item);
           }
           princess.setFoodLevel(20);
+          princess.setGameMode(GameMode.ADVENTURE);
+        }
+        for (var knight : knights) {
+          knight.setGameMode(GameMode.ADVENTURE);
         }
       }
       case SOLVE -> {
@@ -145,6 +152,7 @@ public class Team implements Level.Delegate {
             .customByteTag(Stage.FIGHT.tag)
             .displayName(text("ベッド (右クリックで使用) / Bed (Right click to use)", GOLD))
             .build());
+          princess.setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
           var inventory = knight.getInventory();
@@ -171,15 +179,26 @@ public class Team implements Level.Delegate {
             .customByteTag(Stage.FIGHT.tag)
             .build();
           inventory.setItem(2, arrow);
+          knight.setGameMode(GameMode.ADVENTURE);
         }
       }
       case FIGHT -> {
         deactivateHealthDisplays();
         if (princess != null) {
           deactivateHealthModifier(princess);
+          princess.setGameMode(GameMode.ADVENTURE);
+        }
+        for (var knight : knights) {
+          knight.setGameMode(GameMode.ADVENTURE);
         }
       }
       case GOAL -> {
+        if (princess != null) {
+          princess.setGameMode(GameMode.ADVENTURE);
+        }
+        for (var knight : knights) {
+          knight.setGameMode(GameMode.ADVENTURE);
+        }
         if (delegate != null) {
           delegate.teamDidFinish(color);
         }
