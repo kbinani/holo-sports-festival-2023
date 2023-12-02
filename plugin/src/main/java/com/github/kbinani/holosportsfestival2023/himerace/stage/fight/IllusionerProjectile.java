@@ -47,13 +47,14 @@ class IllusionerProjectile {
     if (particles < numParticles) {
       var direction = to.toVector().subtract(from.toVector()).normalize();
       var elapsed = (now - startTimeMillis) / 1000.0;
-      var location = from.toVector().add(direction.multiply(sVelocity * elapsed));
+      var vector = direction.multiply(sVelocity * elapsed);
       var builder = new ParticleBuilder(Particle.REDSTONE);
       builder
         .allPlayers()
         .color(ColorFromNamedTextColor(NamedTextColor.BLUE))
-        .location(new Location(from.getWorld(), location.getX(), location.getY(), location.getZ()))
+        .location(from.clone().add(vector))
         .count(8)
+        .force(true)
         .spawn();
       particles++;
     } else {
