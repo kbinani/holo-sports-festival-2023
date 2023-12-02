@@ -36,6 +36,9 @@ public class Players {
   }
 
   public static void Distribute(World world, BoundingBox box, Player player) {
+    if (player.getWorld() != world) {
+      return;
+    }
     var random = ThreadLocalRandom.current();
     var x = box.getMinX();
     if (box.getMinX() < box.getMaxX()) {

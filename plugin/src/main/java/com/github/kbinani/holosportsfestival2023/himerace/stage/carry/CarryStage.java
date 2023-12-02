@@ -47,7 +47,6 @@ public class CarryStage extends AbstractStage {
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
   private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
-  private final BoundingBox boundingBox;
   private boolean firstGateOpen = false;
   private boolean secondGateOpen = false;
   private final @Nonnull Delegate delegate;
@@ -79,7 +78,6 @@ public class CarryStage extends AbstractStage {
       new Region2D(pos(-91, -30), pos(-89, -25)),
       new Region2D(pos(-96, -27), pos(-92, -25)),
     };
-    this.boundingBox = new BoundingBox(x(-100), y(80), z(-61), x(-87), y(80), z(-18));
   }
 
   @Override

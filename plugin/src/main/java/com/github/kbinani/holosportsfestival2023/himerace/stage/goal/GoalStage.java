@@ -1,6 +1,5 @@
 package  com.github.kbinani.holosportsfestival2023.himerace.stage.goal;
 
-import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
@@ -22,8 +21,6 @@ public class GoalStage extends AbstractStage {
   }
 
   private final @Nonnull Delegate delegate;
-  private final double startZ = z(86);
-  private final double goalZ = z(96);
 
   public GoalStage(World world, JavaPlugin owner, Point3i origin, Point3i southEast, @Nonnull Delegate delegate) {
     super(world, owner, origin, southEast.x - origin.x, southEast.z - origin.z);
@@ -89,9 +86,5 @@ public class GoalStage extends AbstractStage {
 
   private Point3i pos(int x, int y, int z) {
     return new Point3i(x(x), y(y), z(z));
-  }
-
-  private Point2i pos(int x, int z) {
-    return new Point2i(x(x), z(z));
   }
 }

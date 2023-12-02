@@ -441,6 +441,10 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   @SuppressWarnings("unused")
   public void onEntityPlace(EntityPlaceEvent e) {
     var player = e.getPlayer();
+    if (player == null) {
+      e.setCancelled(true);
+      return;
+    }
     if (player.isOp()) {
       return;
     }

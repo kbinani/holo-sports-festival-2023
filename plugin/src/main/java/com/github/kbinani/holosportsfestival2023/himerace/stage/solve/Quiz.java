@@ -29,10 +29,10 @@ class Quiz {
       this.color = new Color(color.red(), color.green(), color.blue());
     }
 
-    static final Cell all[] = new Cell[]{RED, YELLOW, ORANGE, PINK};
+    static final Cell[] all = new Cell[]{RED, YELLOW, ORANGE, PINK};
   }
 
-  private final Cell cells[];
+  private final Cell[] cells;
   final Point2i answer;
   private static final int width = 15;
   private static final int actualWidth = 13;
@@ -51,7 +51,7 @@ class Quiz {
     new Point2i(3, 1)
   );
 
-  private Quiz(Cell cells[], Point2i answer) {
+  private Quiz(Cell[] cells, Point2i answer) {
     this.cells = cells;
     this.answer = answer;
   }
@@ -148,21 +148,20 @@ class Quiz {
           continue;
         }
         Point3i localOrigin;
-        Point3i direction;
-        switch (i) {
-          case 1:
+        Point3i direction = switch (i) {
+          case 1 -> {
             localOrigin = origin.added(0, 0, -4);
-            direction = new Point3i(-1, 0, 0);
-            break;
-          case 2:
+            yield new Point3i(-1, 0, 0);
+          }
+          case 2 -> {
             localOrigin = origin.added(-4, 0, -4);
-            direction = new Point3i(0, 0, 1);
-            break;
-          default:
+            yield new Point3i(0, 0, 1);
+          }
+          default -> {
             localOrigin = origin;
-            direction = new Point3i(0, 0, -1);
-            break;
-        }
+            yield new Point3i(0, 0, -1);
+          }
+        };
         var top = localOrigin.added(j * direction.x, j * direction.y, j * direction.z);
         var x = i * 5 + j;
         for (int y = 0; y < height; y++) {

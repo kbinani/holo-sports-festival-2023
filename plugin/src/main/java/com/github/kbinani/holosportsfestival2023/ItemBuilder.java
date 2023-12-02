@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import java.util.UUID;
@@ -48,23 +47,16 @@ public class ItemBuilder {
   }
 
   public ItemBuilder potion(PotionType type) {
-    ItemMeta meta = item.getItemMeta();
-    if (meta instanceof PotionMeta) {
-      PotionMeta potion = (PotionMeta) meta;
-      PotionData data = new PotionData(type);
-      potion.setBasePotionData(data);
-      item.setItemMeta(potion);
-    }
+    item.editMeta(PotionMeta.class, it -> {
+      it.setBasePotionType(type);
+    });
     return this;
   }
 
   public ItemBuilder firework(FireworkEffect effect) {
-    ItemMeta meta = item.getItemMeta();
-    if (meta instanceof FireworkMeta) {
-      FireworkMeta firework = (FireworkMeta) meta;
-      firework.addEffect(effect);
-      item.setItemMeta(firework);
-    }
+    item.editMeta(FireworkMeta.class, it -> {
+      it.addEffect(effect);
+    });
     return this;
   }
 

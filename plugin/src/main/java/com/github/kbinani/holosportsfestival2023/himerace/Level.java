@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
-import com.github.kbinani.holosportsfestival2023.Editor;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
-import com.github.kbinani.holosportsfestival2023.WeakReference;
+import com.github.kbinani.holosportsfestival2023.*;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.build.BuildStage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.carry.CarryStage;
@@ -13,10 +10,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.goal.GoalStage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.solve.SolveStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
@@ -44,7 +38,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 
 class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Delegate, SolveStage.Delegate, FightStage.Delegate, GoalStage.Delegate {
   private final World world;
-  private final JavaPlugin owner;
   private final Point3i origin;
   private final TeamColor color;
   private final Map<Stage, AbstractStage> stages = new HashMap<>();
@@ -81,7 +74,6 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
    */
   Level(World world, JavaPlugin owner, TeamColor color, Point3i origin, int mapId) {
     this.world = world;
-    this.owner = owner;
     this.color = color;
     this.origin = origin;
     this.carryStage = new CarryStage(world, owner, origin, pos(-87, 80, -18), this);

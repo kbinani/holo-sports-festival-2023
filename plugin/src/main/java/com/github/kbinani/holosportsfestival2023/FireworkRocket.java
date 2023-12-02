@@ -19,19 +19,11 @@ public class FireworkRocket {
   }
 
   public static void Launch(@Nonnull World world, double x, double y, double z, Color[] colors, Color[] fadeColors, int lifeTime, int type, boolean flicker, boolean trail) {
-    FireworkEffect.Type t = FireworkEffect.Type.BALL;
-    switch (type) {
-      case 0:
-        t = FireworkEffect.Type.BALL;
-        break;
-      case 1:
-        t = FireworkEffect.Type.BALL_LARGE;
-        break;
-      case 4:
-        t = FireworkEffect.Type.BURST;
-        break;
-    }
-    final FireworkEffect.Type effectType = t;
+    final var effectType = switch (type) {
+      case 1 -> FireworkEffect.Type.BALL_LARGE;
+      case 4 -> FireworkEffect.Type.BURST;
+      default -> FireworkEffect.Type.BALL;
+    };
     var colorList = Arrays.stream(colors).toList();
     var fadeColorList = Arrays.stream(fadeColors).toList();
     world.spawn(new Location(world, x, y, z), Firework.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
