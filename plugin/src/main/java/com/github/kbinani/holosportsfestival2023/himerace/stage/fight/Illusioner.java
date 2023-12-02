@@ -12,14 +12,17 @@ import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-class Illusioner {
+class Illusioner implements IllusionerProjectile.Delegate {
   final @Nonnull org.bukkit.entity.Illusioner entity;
   private final @Nonnull JavaPlugin owner;
   private final @Nonnull BukkitTask attackTimer;
   private final @Nonnull BoundingBox attackBounds;
   private final @Nonnull World world;
   private @Nullable BukkitTask attackMotionTimeoutTimer;
+  private final @Nonnull List<IllusionerProjectile> projectiles = new ArrayList<>();
 
   Illusioner(JavaPlugin owner, org.bukkit.entity.Illusioner entity, BoundingBox attackBounds) {
     this.owner = owner;
@@ -37,6 +40,10 @@ class Illusioner {
       attackMotionTimeoutTimer.cancel();
       attackMotionTimeoutTimer = null;
     }
+    for (var projectile : projectiles) {
+      projectile.dispose();
+    }
+    projectiles.clear();
   }
 
   private void attack() {
@@ -74,6 +81,12 @@ class Illusioner {
   }
 
   private void launchProjectile(Location location) {
-    //TODO:
+    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, this);
+    this.projectiles.add(projectile);
+  }
+
+  @Override
+  public void illusionerProjectileDead(IllusionerProjectile sender) {
+    this.projectiles.remove(sender);
   }
 }
