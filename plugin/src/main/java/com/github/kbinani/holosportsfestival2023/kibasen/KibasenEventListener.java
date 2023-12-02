@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealthModifierUUID;
@@ -32,15 +33,16 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class KibasenEventListener implements MiniGame, Registrants.Delegate, Session.Delegate {
+  public interface Delegate {
+    @Nullable
+    TrackAndField kibasenTakeTrackAndFieldOwnership();
+
+    void kibasenReleaseTrackAndFieldOwnership();
+  }
+
   private static final Point3i offset = new Point3i(0, 0, 0);
-  private static final Component title = text("[Kibasen]", AQUA);
+  public static final Component title = text("[Kibasen]", AQUA);
   static final Component prefix = title.append(text(" ", WHITE));
-  private static final Point3i joinRedSign = pos(-30, 80, 50);
-  private static final Point3i joinWhiteSign = pos(-30, 80, 51);
-  private static final Point3i joinYellowSign = pos(-30, 80, 52);
-  private static final Point3i startSign = pos(-30, 80, 54);
-  private static final Point3i abortSign = pos(-30, 80, 55);
-  private static final Point3i entryListSign = pos(-30, 80, 56);
   static final String itemTag = "hololive_sports_festival_2023_kibasen";
   private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
@@ -48,17 +50,20 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   static final String healthDisplayScoreboardTag = "hololive_sports_festival_2023_kibasen_health_display";
   private static final BoundingBox safeRespawnBounds = new BoundingBox(x(-41), y(80), z(44), x(-24), y(80), z(64));
 
-  private final World world;
-  private final JavaPlugin owner;
+  private final @Nonnull World world;
+  private final @Nonnull JavaPlugin owner;
   private Status status = Status.IDLE;
   private final Teams teams = new Teams(teamNamePrefix);
   private final Registrants registrants = new Registrants(teams, this);
   private @Nullable Cancellable countdown;
   private @Nullable Session session;
+  private final @Nonnull Delegate delegate;
+  private @Nullable TrackAndField taf;
 
-  public KibasenEventListener(World world, JavaPlugin owner) {
+  public KibasenEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.world = world;
+    this.delegate = delegate;
   }
 
   @Override
@@ -74,6 +79,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerInteract(PlayerInteractEvent e) {
+    var taf = takeTrackAndFieldOwnership();
+    if (taf == null) {
+      return;
+    }
     Player player = e.getPlayer();
     switch (status) {
       case IDLE -> {
@@ -82,23 +91,23 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
           Block block = e.getClickedBlock();
           if (block != null) {
             Point3i location = new Point3i(block.getLocation());
-            if (location.equals(joinRedSign)) {
+            if (location.equals(taf.kibasenJoinRedSign)) {
               onClickJoin(player, TeamColor.RED);
               e.setCancelled(true);
               return;
-            } else if (location.equals(joinWhiteSign)) {
+            } else if (location.equals(taf.kibasenJoinWhiteSign)) {
               onClickJoin(player, TeamColor.WHITE);
               e.setCancelled(true);
               return;
-            } else if (location.equals(joinYellowSign)) {
+            } else if (location.equals(taf.kibasenJoinYellowSign)) {
               onClickJoin(player, TeamColor.YELLOW);
               e.setCancelled(true);
               return;
-            } else if (location.equals(entryListSign)) {
+            } else if (location.equals(taf.kibasenEntryListSign)) {
               announceEntryList();
               e.setCancelled(true);
               return;
-            } else if (location.equals(startSign)) {
+            } else if (location.equals(taf.kibasenStartSign)) {
               startCountdown();
               e.setCancelled(true);
               return;
@@ -127,7 +136,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
           Block block = e.getClickedBlock();
           if (block != null) {
             Point3i location = new Point3i(block.getLocation());
-            if (location.equals(abortSign)) {
+            if (location.equals(taf.kibasenAbortSign)) {
               abort();
               e.setCancelled(true);
               return;
@@ -174,6 +183,9 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
         return;
       }
       registrants.dismount(attacker);
+      if (registrants.isEmpty()) {
+        releaseTrackAndFieldOwnership();
+      }
     }
   }
 
@@ -182,6 +194,9 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public void onPlayerQuit(PlayerQuitEvent e) {
     var player = e.getPlayer();
     registrants.remove(player);
+    if (registrants.isEmpty()) {
+      releaseTrackAndFieldOwnership();
+    }
     //TODO: session.onPlayerQuit
   }
 
@@ -268,6 +283,28 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     reset();
   }
 
+  private @Nullable TrackAndField takeTrackAndFieldOwnership() {
+    if (this.taf != null) {
+      return this.taf;
+    }
+    var taf = delegate.kibasenTakeTrackAndFieldOwnership();
+    if (taf == null) {
+      return null;
+    }
+    taf.setMode(TrackAndField.Mode.FIELD);
+    this.taf = taf;
+    return taf;
+  }
+
+  private void releaseTrackAndFieldOwnership() {
+    if (this.taf == null) {
+      return;
+    }
+    this.taf.setMode(TrackAndField.Mode.IDLE);
+    this.taf = null;
+    delegate.kibasenReleaseTrackAndFieldOwnership();
+  }
+
   static void ClearItems(Player player) {
     var inventory = player.getInventory();
     for (int i = 0; i < inventory.getSize(); i++) {
@@ -295,6 +332,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     if (!registrants.validate()) {
       return;
     }
+    takeTrackAndFieldOwnership();
     announceEntryList();
     var titlePrefix = text("スタートまで", AQUA);
     var subtitle = text("騎馬戦", GREEN);
@@ -303,8 +341,6 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       titlePrefix, AQUA, subtitle,
       10, this::start);
     this.status = Status.COUNTDOWN;
-    setEnableWall(true);
-    setEnablePhotoSpot(false);
   }
 
   private void start() {
@@ -324,8 +360,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
   private void abort() {
     broadcast(prefix.append(text("ゲームを中断しました。", RED)));
-    setEnableWall(false);
-    setEnablePhotoSpot(true);
+    releaseTrackAndFieldOwnership();
     if (this.session != null) {
       this.session.abort();
       this.session = null;
@@ -347,6 +382,9 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       registrants.addAttacker(player, color);
     } else {
       registrants.remove(player);
+      if (registrants.isEmpty()) {
+        releaseTrackAndFieldOwnership();
+      }
     }
   }
 
@@ -374,74 +412,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
 
-  private void setEnablePhotoSpot(boolean enable) {
-    if (enable) {
-      Editor.Fill(world, pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(-6, 82, 48), pos(0, 82, 49), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(1, 80, 48), pos(7, 80, 53), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(1, 81, 48), pos(7, 81, 51), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(1, 82, 48), pos(7, 82, 49), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(8, 80, 48), pos(14, 80, 53), Material.YELLOW_CONCRETE);
-      Editor.Fill(world, pos(8, 81, 48), pos(14, 81, 51), Material.YELLOW_CONCRETE);
-      Editor.Fill(world, pos(8, 82, 48), pos(14, 82, 49), Material.YELLOW_CONCRETE);
-    } else {
-      Editor.Fill(world, pos(-6, 80, 48), pos(14, 80, 53), Material.AIR);
-      Editor.Fill(world, pos(-6, 81, 48), pos(14, 81, 51), Material.AIR);
-      Editor.Fill(world, pos(-6, 82, 48), pos(14, 82, 49), Material.AIR);
-    }
-  }
-
-  private void setEnableWall(boolean enable) {
-    var material = enable ? Material.BARRIER : Material.AIR;
-    Editor.Fill(world, pos(-24, 81, 31), pos(-24, 86, 73), material);
-    Editor.Fill(world, pos(32, 81, 31), pos(32, 86, 73), material);
-    Editor.Fill(world, pos(-23, 81, 31), pos(31, 86, 31), material);
-    Editor.Fill(world, pos(-23, 81, 73), pos(31, 86, 73), material);
-  }
-
   private void reset() {
-    Editor.StandingSign(world, joinRedSign, Material.OAK_SIGN, 4,
-      title,
-      TeamColor.RED.component(),
-      Component.empty(),
-      text("右クリでエントリー！", GREEN)
-    );
-    Editor.StandingSign(world, joinWhiteSign, Material.OAK_SIGN, 4,
-      title,
-      TeamColor.WHITE.component(),
-      Component.empty(),
-      text("右クリでエントリー！", GREEN)
-    );
-    Editor.StandingSign(world, joinYellowSign, Material.OAK_SIGN, 4,
-      title,
-      TeamColor.YELLOW.component(),
-      Component.empty(),
-      text("右クリでエントリー！", GREEN)
-    );
-
-    Editor.StandingSign(world, startSign, Material.OAK_SIGN, 4,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームスタート", GREEN)
-    );
-    Editor.StandingSign(world, abortSign, Material.OAK_SIGN, 4,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("ゲームを中断する", RED)
-    );
-    Editor.StandingSign(world, entryListSign, Material.OAK_SIGN, 4,
-      title,
-      Component.empty(),
-      Component.empty(),
-      text("エントリーリスト", AQUA)
-    );
-
-    setEnablePhotoSpot(true);
-    setEnableWall(false);
-
     Editor.Set(world, leaderRegistrationBarrel, Material.BARREL.createBlockData());
     registrants.clearLeaderRegistrationBarrel();
 
@@ -453,7 +424,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       session.clear(safeRespawnBounds);
       session = null;
     }
-
+    releaseTrackAndFieldOwnership();
     status = Status.IDLE;
   }
 

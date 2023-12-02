@@ -19,15 +19,25 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 
 @SuppressWarnings("unused")
-public class Main extends JavaPlugin implements Listener {
+public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate {
+  enum TrackAndFieldOwner {
+    KIBASEN,
+    RELAY,
+  }
+
   private World world;
   private List<MiniGame> miniGames;
   private boolean isLevelsReady = false;
+  private @Nullable TrackAndField taf;
+  private @Nullable TrackAndFieldOwner tafOwner;
 
   @Override
   public void onEnable() {
@@ -87,7 +97,7 @@ public class Main extends JavaPlugin implements Listener {
     miniGames = new ArrayList<>();
     miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
     miniGames.add(new HoloUpEventListener(world, this));
-    miniGames.add(new KibasenEventListener(world, this));
+    miniGames.add(new KibasenEventListener(world, this, this));
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
@@ -159,5 +169,35 @@ public class Main extends JavaPlugin implements Listener {
   public void onPlayerQuit(PlayerQuitEvent e) {
     var player = e.getPlayer();
     Cloakroom.shared.restore(player);
+  }
+
+  @Override
+  public @Nullable TrackAndField kibasenTakeTrackAndFieldOwnership() {
+    var taf = this.ensureTrackAndField();
+    if (this.tafOwner == null || this.tafOwner == TrackAndFieldOwner.KIBASEN) {
+      getLogger().log(Level.INFO, "ownership of track and field is taken by kibasen");
+      this.tafOwner = TrackAndFieldOwner.KIBASEN;
+      return taf;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public void kibasenReleaseTrackAndFieldOwnership() {
+    if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.KIBASEN) {
+      this.tafOwner = null;
+      getLogger().log(Level.INFO, "ownership of track and field was released from");
+    }
+  }
+
+  private @Nonnull TrackAndField ensureTrackAndField() {
+    if (this.taf != null) {
+      return this.taf;
+    }
+    var taf = new TrackAndField(world, new Point3i(0, 0, 0));
+    taf.setMode(TrackAndField.Mode.IDLE);
+    this.taf = taf;
+    return taf;
   }
 }

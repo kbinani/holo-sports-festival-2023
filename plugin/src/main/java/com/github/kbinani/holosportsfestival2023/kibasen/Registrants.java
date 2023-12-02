@@ -64,6 +64,15 @@ class Registrants {
     registrants.clear();
   }
 
+  boolean isEmpty() {
+    for (var units : registrants.values()) {
+      if (!units.isEmpty()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   boolean validate() {
     for (var entry : registrants.entrySet()) {
       for (var unit : entry.getValue()) {
