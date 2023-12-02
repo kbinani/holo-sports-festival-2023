@@ -19,7 +19,11 @@ class IllusionerProjectile {
   }
 
   private static final double sVelocity = 10;
-  private static final int ringEffectDurationTicks = 40;
+  private static final int sRingEffectDurationTicks = 40;
+  private static final float sWeakDamage = 0.5f;
+  private static final float sStrongDamage = 2.0f;
+  private static final double sWeakRadius = 0.5;
+  private static final double sStrongRadius = 2;
 
   private final @Nonnull Location from;
   private final @Nonnull Location to;
@@ -89,7 +93,7 @@ class IllusionerProjectile {
       ringEffectTimeoutTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickRing, 0, 1);
       delegate.illusionerProjectileDead(this);
     } else {
-      world.getNearbyPlayers(this.to, 0.5, 0.5, 0.5).forEach(player -> {
+      world.getNearbyPlayers(this.to, sWeakRadius, 2, sWeakRadius).forEach(player -> {
         var mode = player.getGameMode();
         if (mode != GameMode.ADVENTURE && mode != GameMode.SURVIVAL) {
           return;
@@ -97,7 +101,7 @@ class IllusionerProjectile {
         if (player.getVehicle() != null) {
           return;
         }
-        player.damage(0.5);
+        player.damage(sWeakDamage);
       });
       trajectoryTimer.cancel();
       delegate.illusionerProjectileDead(this);
@@ -113,7 +117,7 @@ class IllusionerProjectile {
     var outer = new Vector(outerRadius, 0, 0);
     var particle = Particle.FALLING_DUST;
     double radian = -30.0 / 180.0 * PI;
-    double delta = ringEffectTicks / (double) ringEffectDurationTicks;
+    double delta = ringEffectTicks / (double) sRingEffectDurationTicks;
     var blockData = Material.SNOW_BLOCK.createBlockData();
     for (var i = 0; i < points; i++) {
       var angle = 2 * PI / (double) points * i + radian * delta;
@@ -129,7 +133,7 @@ class IllusionerProjectile {
     }
     double innerRadius = outerRadius;
     if (delta >= 0.5) {
-      innerRadius = (1 - (ringEffectTicks - (double) ringEffectDurationTicks / 2) / (double) (ringEffectDurationTicks / 2)) * outerRadius;
+      innerRadius = (1 - (ringEffectTicks - (double) sRingEffectDurationTicks / 2) / (double) (sRingEffectDurationTicks / 2)) * outerRadius;
     }
     var inner = new Vector(innerRadius, 0, 0);
     for (var i = 0; i < points; i++) {
@@ -145,7 +149,7 @@ class IllusionerProjectile {
         .spawn();
     }
 
-    if (ringEffectTicks >= ringEffectDurationTicks) {
+    if (ringEffectTicks >= sRingEffectDurationTicks) {
       if (ringEffectTimeoutTimer != null) {
         ringEffectTimeoutTimer.cancel();
       }
@@ -155,6 +159,17 @@ class IllusionerProjectile {
         it.setDuration(30);
         it.setParticle(Particle.SPELL_WITCH);
         it.setRadius(1);
+      });
+
+      world.getNearbyPlayers(this.to, sStrongRadius, 2, sStrongRadius).forEach(player -> {
+        var mode = player.getGameMode();
+        if (mode != GameMode.ADVENTURE && mode != GameMode.SURVIVAL) {
+          return;
+        }
+        if (player.getVehicle() != null) {
+          return;
+        }
+        player.damage(sStrongDamage);
       });
 
       delegate.illusionerProjectileDead(this);
