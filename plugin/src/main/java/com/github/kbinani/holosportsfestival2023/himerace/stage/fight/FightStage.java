@@ -627,6 +627,7 @@ public class FightStage extends AbstractStage {
     if (participation.role != Role.PRINCESS) {
       return;
     }
+    var player = e.getPlayer();
     switch (e.getAction()) {
       case RIGHT_CLICK_BLOCK -> {
         var block = e.getClickedBlock();
@@ -634,7 +635,7 @@ public class FightStage extends AbstractStage {
           return;
         }
         var item = e.getItem();
-        if (item != null && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+        if (item != null && !player.hasCooldown(item.getType()) && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
           switch (item.getType()) {
             case RED_BED -> e.setCancelled(true);
             case GOAT_HORN -> {
@@ -659,7 +660,7 @@ public class FightStage extends AbstractStage {
       }
       case RIGHT_CLICK_AIR -> {
         var item = e.getItem();
-        if (item != null && item.getType() == Material.GOAT_HORN && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+        if (item != null && !player.hasCooldown(item.getType()) && item.getType() == Material.GOAT_HORN && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
           delegate.fightStageRequestsEncouragingKnights(deadPlayerSeats.keySet());
         }
       }
