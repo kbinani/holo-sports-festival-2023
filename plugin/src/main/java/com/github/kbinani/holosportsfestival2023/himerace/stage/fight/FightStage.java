@@ -80,7 +80,7 @@ public class FightStage extends AbstractStage {
   private final Point3i enemyPosCenterLow = pos(-94, 81, 81);
   private final Point3i enemyPosCenterHigh = pos(-94, 89, 81);
   private final Point3i safeArea = pos(-94, 80, 53);
-  private final BoundingBox attackBounds = new BoundingBox(x(-99), y(80), z(56) + 0.5, x(-88), y(93), z(84));
+  private final BoundingBox attackBounds = new BoundingBox(x(-99), y(80), z(50) + 0.5, x(-88), y(93), z(85) + 0.5);
   private final String stageEnemyTag;
   private final Map<UUID, Entity> deadPlayerSeats = new HashMap<>();
   private final List<Mob> enemies = new ArrayList<>();

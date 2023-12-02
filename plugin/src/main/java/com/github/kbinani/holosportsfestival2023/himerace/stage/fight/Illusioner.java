@@ -17,11 +17,14 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.PI;
 
 class Illusioner implements IllusionerProjectile.Delegate {
+  private static final long sStrongAttackCooltimeDurationMillis = 5 * 1000;
+
   final @Nonnull org.bukkit.entity.Illusioner entity;
   private final @Nonnull JavaPlugin owner;
   private final @Nonnull BukkitTask attackTimer;
@@ -30,6 +33,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
   private @Nullable BukkitTask attackMotionTimeoutTimer;
   private final @Nonnull List<IllusionerProjectile> projectiles = new ArrayList<>();
   private final @Nonnull List<ParticleRing> rings;
+  private @Nullable Long strongAttackCooltimeMillis;
 
   Illusioner(@Nonnull JavaPlugin owner, @Nonnull org.bukkit.entity.Illusioner entity, @Nonnull BoundingBox attackBounds) {
     this.owner = owner;
@@ -77,9 +81,10 @@ class Illusioner implements IllusionerProjectile.Delegate {
 
   private void attack() {
     if (entity.isDead()) {
-      attackTimer.cancel();
+      dispose();
       return;
     }
+    var now = System.currentTimeMillis();
     var locations = world.getNearbyEntities(attackBounds).stream().filter(it -> {
       if (!(it instanceof Player player)) {
         return false;
@@ -93,24 +98,34 @@ class Illusioner implements IllusionerProjectile.Delegate {
       var location = it.getLocation();
       location.setY(attackBounds.getMinY());
       return location;
-    }).toList();
+    }).collect(Collectors.toList());
     if (locations.isEmpty()) {
       return;
     }
-
-    entity.setSpell(Spellcaster.Spell.WOLOLO);
-    if (attackMotionTimeoutTimer != null) {
-      attackMotionTimeoutTimer.cancel();
+    if (strongAttackCooltimeMillis == null || strongAttackCooltimeMillis < now) {
+      this.strongAttackCooltimeMillis = now + sStrongAttackCooltimeDurationMillis;
+      entity.setSpell(Spellcaster.Spell.WOLOLO);
+      if (attackMotionTimeoutTimer != null) {
+        attackMotionTimeoutTimer.cancel();
+      }
+      attackMotionTimeoutTimer = Bukkit.getScheduler().runTaskLater(owner, () -> {
+        this.attackMotionTimeoutTimer = null;
+        this.entity.setSpell(Spellcaster.Spell.NONE);
+      }, 2 * 20);
+      locations.forEach(it -> launchProjectile(it, true));
+    } else {
+      var extra = locations.size() * 3;
+      for (var i = 0; i < extra; i++) {
+        var x = ThreadLocalRandom.current().nextDouble(attackBounds.getMinX(), attackBounds.getMaxX());
+        var z = ThreadLocalRandom.current().nextDouble(attackBounds.getMinZ(), attackBounds.getMaxZ());
+        locations.add(new Location(world, x, attackBounds.getMinY(), z));
+      }
+      locations.forEach(it -> launchProjectile(it, false));
     }
-    attackMotionTimeoutTimer = Bukkit.getScheduler().runTaskLater(owner, () -> {
-      this.attackMotionTimeoutTimer = null;
-      this.entity.setSpell(Spellcaster.Spell.NONE);
-    }, 2 * 20);
-    locations.forEach(this::launchProjectile);
   }
 
-  private void launchProjectile(Location location) {
-    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, this);
+  private void launchProjectile(Location location, boolean strong) {
+    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, strong, this);
     this.projectiles.add(projectile);
   }
 
