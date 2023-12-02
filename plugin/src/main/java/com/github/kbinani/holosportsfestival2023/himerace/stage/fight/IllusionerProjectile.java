@@ -3,10 +3,12 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 class IllusionerProjectile {
   interface Delegate {
@@ -18,16 +20,20 @@ class IllusionerProjectile {
   private final @Nonnull Location from;
   private final @Nonnull Location to;
   private final long startTimeMillis;
-  private final @Nonnull BukkitTask timer;
+  private final @Nonnull BukkitTask trajectoryTimer;
+  private @Nullable BukkitTask ringEffectTimeoutTimer;
   private int particles = 0;
   private final @Nonnull Delegate delegate;
   private final int numParticles;
   private final boolean strong;
+  private final @Nonnull JavaPlugin owner;
+  private int ringEffectTicks = 0;
 
   IllusionerProjectile(@Nonnull JavaPlugin owner, @Nonnull Location from, @Nonnull Location to, boolean strong, @Nonnull Delegate delegate) {
+    this.owner = owner;
     this.from = from;
     this.startTimeMillis = System.currentTimeMillis();
-    this.timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 1);
+    this.trajectoryTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickTrajectory, 0, 1);
     this.delegate = delegate;
     var world = from.getWorld();
     if (strong) {
@@ -52,10 +58,13 @@ class IllusionerProjectile {
   }
 
   void dispose() {
-    timer.cancel();
+    trajectoryTimer.cancel();
+    if (ringEffectTimeoutTimer != null) {
+      ringEffectTimeoutTimer.cancel();
+    }
   }
 
-  private void tick() {
+  private void tickTrajectory() {
     var now = System.currentTimeMillis();
     var world = from.getWorld();
     if (particles < numParticles) {
@@ -72,8 +81,8 @@ class IllusionerProjectile {
         .spawn();
       particles++;
     } else if (strong) {
-      //TODO:
-      timer.cancel();
+      trajectoryTimer.cancel();
+      ringEffectTimeoutTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickRing, 0, 1);
       delegate.illusionerProjectileDead(this);
     } else {
       world.getNearbyPlayers(this.to, 0.5, 0.5, 0.5).forEach(player -> {
@@ -81,9 +90,34 @@ class IllusionerProjectile {
         if (mode != GameMode.ADVENTURE && mode != GameMode.SURVIVAL) {
           return;
         }
+        if (player.getVehicle() != null) {
+          return;
+        }
         player.damage(0.5);
       });
-      timer.cancel();
+      trajectoryTimer.cancel();
+      delegate.illusionerProjectileDead(this);
+    }
+  }
+
+  private void tickRing() {
+    ringEffectTicks++;
+
+    //TODO: 地面に発生するリング状のエフェクトを更新する
+
+    if (ringEffectTicks >= 2 * 20) {
+      if (ringEffectTimeoutTimer != null) {
+        ringEffectTimeoutTimer.cancel();
+      }
+      ringEffectTimeoutTimer = null;
+
+      var world = from.getWorld();
+      world.spawn(to.clone().add(0, 0.5, 0), AreaEffectCloud.class, it -> {
+        it.setDuration(30);
+        it.setParticle(Particle.SPELL_WITCH);
+        it.setRadius(1);
+      });
+
       delegate.illusionerProjectileDead(this);
     }
   }
