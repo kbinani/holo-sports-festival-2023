@@ -327,6 +327,19 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
+  protected void onEntityRegainHealth(EntityRegainHealthEvent e, Participation participation) {
+    e.setCancelled(true);
+  }
+
+  @Override
+  protected void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
+    e.setCancelled(true);
+    if (e.getEntity() instanceof Player player) {
+      player.setFoodLevel(20);
+    }
+  }
+
+  @Override
   protected void onTick() {
     var enemies = new ArrayList<Mob>(this.enemies);
     for (var enemy : enemies) {

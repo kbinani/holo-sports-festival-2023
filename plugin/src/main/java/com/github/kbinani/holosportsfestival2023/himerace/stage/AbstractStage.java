@@ -158,6 +158,18 @@ public abstract class AbstractStage {
     onEntityPlace(e, participation);
   }
 
+  public final void entityRegainHealth(EntityRegainHealthEvent e, Participation participation) {
+    if (started && !finished) {
+      onEntityRegainHealth(e, participation);
+    }
+  }
+
+  public final void entityExhaustion(EntityExhaustionEvent e, Participation participation) {
+    if (started && !finished) {
+      onEntityExhaustion(e, participation);
+    }
+  }
+
   protected void onTick() {
   }
 
@@ -210,6 +222,12 @@ public abstract class AbstractStage {
 
   protected void onEntityPlace(EntityPlaceEvent e, Participation participation) {
     e.setCancelled(true);
+  }
+
+  protected void onEntityRegainHealth(EntityRegainHealthEvent e, Participation participation) {
+  }
+
+  protected void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
   }
 
   protected abstract void onStart();

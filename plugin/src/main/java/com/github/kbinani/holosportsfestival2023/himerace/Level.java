@@ -218,6 +218,18 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     }
   }
 
+  void onEntityRegainHealth(EntityRegainHealthEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.entityRegainHealth(e, participation);
+    }
+  }
+
+  void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.entityExhaustion(e, participation);
+    }
+  }
+
   void tick() {
     for (var stage : stages.values()) {
       stage.tick();
