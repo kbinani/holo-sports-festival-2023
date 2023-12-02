@@ -382,6 +382,11 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
   @Override
   public void goalStageDidFinish() {
+    var right = pos(-99, 81, 95);
+    var left = pos(-89, 81, 95);
+    var c = color.fireworkColor;
+    FireworkRocket.Launch(world, left, new Color[]{c}, new Color[]{c}, 20, 1, false, true);
+    FireworkRocket.Launch(world, right, new Color[]{c}, new Color[]{c}, 20, 1, false, true);
     this.delegate.use((delegate) -> {
       delegate.levelDidClearStage(Stage.GOAL);
     });
