@@ -6,9 +6,12 @@ import org.bukkit.*;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import static java.lang.Math.PI;
 
 class IllusionerProjectile {
   interface Delegate {
@@ -16,6 +19,7 @@ class IllusionerProjectile {
   }
 
   private static final double sVelocity = 10;
+  private static final int ringEffectDurationTicks = 40;
 
   private final @Nonnull Location from;
   private final @Nonnull Location to;
@@ -103,15 +107,50 @@ class IllusionerProjectile {
   private void tickRing() {
     ringEffectTicks++;
 
-    //TODO: 地面に発生するリング状のエフェクトを更新する
+    var world = from.getWorld();
+    double outerRadius = 2;
+    int points = 45;
+    var outer = new Vector(outerRadius, 0, 0);
+    var particle = Particle.FALLING_DUST;
+    double radian = -30.0 / 180.0 * PI;
+    double delta = ringEffectTicks / (double) ringEffectDurationTicks;
+    var blockData = Material.SNOW_BLOCK.createBlockData();
+    for (var i = 0; i < points; i++) {
+      var angle = 2 * PI / (double) points * i + radian * delta;
+      var location = to.toVector().add(outer.clone().rotateAroundAxis(new Vector(0, 1, 0), angle));
+      var builder = new ParticleBuilder(particle);
+      builder
+        .allPlayers()
+        .location(location.toLocation(world))
+        .data(blockData)
+        .count(1)
+        .force(true)
+        .spawn();
+    }
+    double innerRadius = outerRadius;
+    if (delta >= 0.5) {
+      innerRadius = (1 - (ringEffectTicks - (double) ringEffectDurationTicks / 2) / (double) (ringEffectDurationTicks / 2)) * outerRadius;
+    }
+    var inner = new Vector(innerRadius, 0, 0);
+    for (var i = 0; i < points; i++) {
+      var angle = 2 * PI / (double) points * i + radian * delta;
+      var location = to.toVector().add(inner.clone().rotateAroundAxis(new Vector(0, 1, 0), angle));
+      var builder = new ParticleBuilder(particle);
+      builder
+        .allPlayers()
+        .location(location.toLocation(world))
+        .data(blockData)
+        .count(1)
+        .force(true)
+        .spawn();
+    }
 
-    if (ringEffectTicks >= 2 * 20) {
+    if (ringEffectTicks >= ringEffectDurationTicks) {
       if (ringEffectTimeoutTimer != null) {
         ringEffectTimeoutTimer.cancel();
       }
       ringEffectTimeoutTimer = null;
 
-      var world = from.getWorld();
       world.spawn(to.clone().add(0, 0.5, 0), AreaEffectCloud.class, it -> {
         it.setDuration(30);
         it.setParticle(Particle.SPELL_WITCH);
