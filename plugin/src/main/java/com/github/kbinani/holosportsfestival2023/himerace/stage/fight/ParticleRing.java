@@ -13,27 +13,26 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 
 class ParticleRing {
-  private static final double sAxisOmega = 1.57;
   private static final double sNormalOmega = 0.785;
   private static final int sParticlesPerRing = 90;
   private static final double sRadius = 2;
 
-  private final @Nonnull JavaPlugin owner;
   private final @Nonnull Location center;
   private final @Nonnull Vector normal;
   private final @Nonnull Vector axis;
   private final @Nonnull BukkitTask timer;
   private final long startTimeMillis;
   private final @Nonnull NamedTextColor color;
+  private final double axisOmega;
 
-  ParticleRing(@Nonnull JavaPlugin owner, @Nonnull Location center, @Nonnull Vector normal, @Nonnull Vector axis, @Nonnull NamedTextColor color) {
-    this.owner = owner;
+  ParticleRing(@Nonnull JavaPlugin owner, @Nonnull Location center, @Nonnull Vector normal, @Nonnull Vector axis, @Nonnull NamedTextColor color, double omega) {
     this.center = center;
     this.normal = normal.normalize();
     this.axis = axis.normalize();
     this.startTimeMillis = System.currentTimeMillis();
     this.timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 1);
     this.color = color;
+    this.axisOmega = omega;
   }
 
   void dispose() {
@@ -42,7 +41,7 @@ class ParticleRing {
 
   private void tick() {
     var elapsed = (System.currentTimeMillis() - startTimeMillis) / 1000.0;
-    var angle = elapsed * sAxisOmega;
+    var angle = elapsed * axisOmega;
     var normal = this.normal.clone().rotateAroundAxis(axis, angle);
     for (var i = 0; i < sParticlesPerRing; i++) {
       var theta = elapsed * sNormalOmega + i * 2 * Math.PI / (double) sParticlesPerRing;

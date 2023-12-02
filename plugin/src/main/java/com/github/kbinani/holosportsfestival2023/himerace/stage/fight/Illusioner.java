@@ -15,7 +15,9 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.PI;
 
@@ -27,33 +29,33 @@ class Illusioner implements IllusionerProjectile.Delegate {
   private final @Nonnull World world;
   private @Nullable BukkitTask attackMotionTimeoutTimer;
   private final @Nonnull List<IllusionerProjectile> projectiles = new ArrayList<>();
-  private final @Nonnull ParticleRing[] rings;
+  private final @Nonnull List<ParticleRing> rings;
 
-  Illusioner(JavaPlugin owner, org.bukkit.entity.Illusioner entity, BoundingBox attackBounds) {
+  Illusioner(@Nonnull JavaPlugin owner, @Nonnull org.bukkit.entity.Illusioner entity, @Nonnull BoundingBox attackBounds) {
     this.owner = owner;
     this.entity = entity;
     this.attackBounds = attackBounds;
-    int period = 6 * 20;
+    int period = 20;
     this.attackTimer = Bukkit.getScheduler().runTaskTimer(owner, this::attack, period, period);
     this.world = entity.getWorld();
     var center = entity.getLocation().add(0, 1, 0);
-    this.rings = new ParticleRing[]{
+    this.rings = Arrays.stream(new ParticleRing[]{
       new ParticleRing(
         owner, center,
         new Vector(0.34, 0.642, -0.687), new Vector(0.34, 0.642, -0.687).rotateAroundAxis(new Vector(1, 0, 0), PI * 0.5),
-        NamedTextColor.BLUE
+        NamedTextColor.BLUE, 1.47
       ),
       new ParticleRing(
         owner, center,
         new Vector(0.407, -0.330, -0.852), new Vector(0.407, -0.330, -0.852).rotateAroundAxis(new Vector(0, 1, 0), PI * 0.5),
-        NamedTextColor.BLUE
+        NamedTextColor.BLUE, -1.57
       ),
       new ParticleRing(
         owner, center,
         new Vector(0.309, -0.907, 0.287), new Vector(0.309, -0.907, 0.287).rotateAroundAxis(new Vector(0, 0, 1), PI * 0.5),
-        NamedTextColor.BLUE
+        NamedTextColor.BLUE, 1.67
       ),
-    };
+    }).collect(Collectors.toList());
   }
 
   void dispose() {
@@ -70,6 +72,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
     for (var ring : rings) {
       ring.dispose();
     }
+    rings.clear();
   }
 
   private void attack() {

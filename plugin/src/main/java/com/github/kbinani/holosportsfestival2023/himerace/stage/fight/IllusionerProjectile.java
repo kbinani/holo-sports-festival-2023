@@ -18,7 +18,6 @@ class IllusionerProjectile {
 
   private static final double sVelocity = 10;
 
-  private final @Nonnull JavaPlugin owner;
   private final @Nonnull Location from;
   private final @Nonnull Location to;
   private final long startTimeMillis;
@@ -28,7 +27,6 @@ class IllusionerProjectile {
   private final int numParticles;
 
   IllusionerProjectile(@Nonnull JavaPlugin owner, @Nonnull Location from, @Nonnull Location to, @Nonnull Delegate delegate) {
-    this.owner = owner;
     this.from = from;
     this.to = to;
     this.startTimeMillis = System.currentTimeMillis();
