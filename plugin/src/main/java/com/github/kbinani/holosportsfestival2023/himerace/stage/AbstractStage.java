@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.entity.Arrow;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -59,6 +60,11 @@ public abstract class AbstractStage {
     onReset();
     finished = false;
     started = false;
+    world.getNearbyEntities(bounds).forEach(it -> {
+      if (it instanceof Arrow arrow) {
+        arrow.remove();
+      }
+    });
   }
 
   public final void tick() {
