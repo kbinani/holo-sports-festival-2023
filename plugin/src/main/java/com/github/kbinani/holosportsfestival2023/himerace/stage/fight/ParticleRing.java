@@ -2,12 +2,11 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 
 import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
@@ -20,7 +19,6 @@ class ParticleRing {
   private final @Nonnull Location center;
   private final @Nonnull Vector normal;
   private final @Nonnull Vector axis;
-  private final @Nonnull BukkitTask timer;
   private final long startTimeMillis;
   private final @Nonnull NamedTextColor color;
   private final double axisOmega;
@@ -30,16 +28,11 @@ class ParticleRing {
     this.normal = normal.normalize();
     this.axis = axis.normalize();
     this.startTimeMillis = System.currentTimeMillis();
-    this.timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 1);
     this.color = color;
     this.axisOmega = omega;
   }
 
-  void dispose() {
-    timer.cancel();
-  }
-
-  private void tick() {
+  void tick() {
     var elapsed = (System.currentTimeMillis() - startTimeMillis) / 1000.0;
     var angle = elapsed * axisOmega;
     var normal = this.normal.clone().rotateAroundAxis(axis, angle);
