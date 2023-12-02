@@ -34,14 +34,16 @@ class Illusioner implements IllusionerProjectile.Delegate {
   private final @Nonnull List<IllusionerProjectile> projectiles = new ArrayList<>();
   private final @Nonnull List<ParticleRing> rings;
   private @Nullable Long strongAttackCooltimeMillis;
+  private final int round;
 
-  Illusioner(@Nonnull JavaPlugin owner, @Nonnull org.bukkit.entity.Illusioner entity, @Nonnull BoundingBox attackBounds) {
+  Illusioner(@Nonnull JavaPlugin owner, @Nonnull org.bukkit.entity.Illusioner entity, @Nonnull BoundingBox attackBounds, int round) {
     this.owner = owner;
     this.entity = entity;
     this.attackBounds = attackBounds;
     int period = 20;
     this.attackTimer = Bukkit.getScheduler().runTaskTimer(owner, this::attack, period, period);
     this.world = entity.getWorld();
+    this.round = round;
     var center = entity.getLocation().add(0, 1, 0);
     this.rings = Arrays.stream(new ParticleRing[]{
       new ParticleRing(
@@ -125,7 +127,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
   }
 
   private void launchProjectile(Location location, boolean strong) {
-    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, strong, this);
+    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, strong, round, this);
     this.projectiles.add(projectile);
   }
 

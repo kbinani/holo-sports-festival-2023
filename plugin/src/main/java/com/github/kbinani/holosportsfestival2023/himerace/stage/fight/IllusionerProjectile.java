@@ -36,12 +36,14 @@ class IllusionerProjectile {
   private final boolean strong;
   private final @Nonnull JavaPlugin owner;
   private int ringEffectTicks = 0;
+  private final int round;
 
-  IllusionerProjectile(@Nonnull JavaPlugin owner, @Nonnull Location from, @Nonnull Location to, boolean strong, @Nonnull Delegate delegate) {
+  IllusionerProjectile(@Nonnull JavaPlugin owner, @Nonnull Location from, @Nonnull Location to, boolean strong, int round, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.from = from;
     this.startTimeMillis = System.currentTimeMillis();
     this.trajectoryTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickTrajectory, 0, 1);
+    this.round = round;
     this.delegate = delegate;
     var world = from.getWorld();
     if (strong) {
@@ -101,11 +103,15 @@ class IllusionerProjectile {
         if (player.getVehicle() != null) {
           return;
         }
-        player.damage(sWeakDamage);
+        player.damage(this.damage(sWeakDamage));
       });
       trajectoryTimer.cancel();
       delegate.illusionerProjectileDead(this);
     }
+  }
+
+  private float damage(float base) {
+    return base * (float) Math.pow(0.8, round);
   }
 
   private void tickRing() {
@@ -169,7 +175,7 @@ class IllusionerProjectile {
         if (player.getVehicle() != null) {
           return;
         }
-        player.damage(sStrongDamage);
+        player.damage(this.damage(sStrongDamage));
       });
 
       delegate.illusionerProjectileDead(this);
