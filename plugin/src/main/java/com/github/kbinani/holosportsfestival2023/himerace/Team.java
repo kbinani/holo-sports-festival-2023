@@ -168,7 +168,6 @@ public class Team implements Level.Delegate {
             .customByteTag(itemTag)
             .customByteTag(Stage.FIGHT.tag)
             .enchant(Enchantment.ARROW_INFINITE, 1)
-            .enchant(Enchantment.ARROW_DAMAGE, 5)
             .build();
           inventory.setItem(1, bow);
           var arrow = ItemBuilder.For(Material.ARROW)
