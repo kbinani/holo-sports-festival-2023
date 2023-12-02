@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
 import javax.annotation.Nonnull;
@@ -79,9 +80,11 @@ public class FightStage extends AbstractStage {
   private final Point3i enemyPosCenterLow = pos(-94, 81, 81);
   private final Point3i enemyPosCenterHigh = pos(-94, 89, 81);
   private final Point3i safeArea = pos(-94, 80, 53);
+  private final BoundingBox attackBounds = new BoundingBox(x(-99), y(80), z(56) + 0.5, x(-88), y(93), z(84));
   private final String stageEnemyTag;
   private final Map<UUID, Entity> deadPlayerSeats = new HashMap<>();
   private final List<Mob> enemies = new ArrayList<>();
+  private @Nullable Illusioner illusioner;
 
   public FightStage(
     @Nonnull World world,
@@ -119,6 +122,10 @@ public class FightStage extends AbstractStage {
       seat.remove();
     }
     deadPlayerSeats.clear();
+    if (illusioner != null) {
+      illusioner.dispose();
+      illusioner = null;
+    }
     for (var enemy : enemies) {
       enemy.remove();
     }
@@ -128,6 +135,10 @@ public class FightStage extends AbstractStage {
   @Override
   protected void onEntityDeath(EntityDeathEvent e) {
     var entity = e.getEntity();
+    if (illusioner != null && illusioner.entity == entity) {
+      illusioner.dispose();
+      illusioner = null;
+    }
     if (!enemies.remove(entity)) {
       return;
     }
@@ -389,7 +400,12 @@ public class FightStage extends AbstractStage {
       case Wave3 -> {
         enemies.add(summonPillager(enemyPosLeft, wave, round));
         enemies.add(summonVindicator(enemyPosMiddleLeft, wave, round));
-        enemies.add(summonIllusioner(enemyPosCenterHigh, wave, round));
+        var illusioner = summonIllusioner(enemyPosCenterHigh, wave, round);
+        if (this.illusioner != null) {
+          this.illusioner.dispose();
+        }
+        this.illusioner = illusioner;
+        enemies.add(illusioner.entity);
         enemies.add(summonVindicator(enemyPosMiddleRight, wave, round));
         enemies.add(summonPillager(enemyPosRight, wave, round));
       }
@@ -565,8 +581,8 @@ public class FightStage extends AbstractStage {
     });
   }
 
-  private Mob summonIllusioner(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private Illusioner summonIllusioner(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), org.bukkit.entity.Illusioner.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setAI(false);
@@ -574,6 +590,7 @@ public class FightStage extends AbstractStage {
       DisableDrop(equipment);
       equipment.clear();
     });
+    return new Illusioner(owner, entity, attackBounds);
   }
 
   private void updateStandingSign(@Nullable  Wave wave) {
