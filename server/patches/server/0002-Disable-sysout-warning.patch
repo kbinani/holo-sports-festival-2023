@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: kbinani <kbinani.bt@gmail.com>
+Date: Sun, 3 Dec 2023 21:44:40 +0900
+Subject: [PATCH] Disable sysout warning
+
+
+diff --git a/src/main/java/io/papermc/paper/logging/SysoutCatcher.java b/src/main/java/io/papermc/paper/logging/SysoutCatcher.java
+index a8e813ca89b033f061e695288b3383bdcf128531..e4d55fef178aeec5b1c143a08d4bb3e92e40eddc 100644
+--- a/src/main/java/io/papermc/paper/logging/SysoutCatcher.java
++++ b/src/main/java/io/papermc/paper/logging/SysoutCatcher.java
+@@ -73,12 +73,12 @@ public final class SysoutCatcher {
+                     nagRecord.lastNagTimestamp = System.nanoTime();
+                     nagRecord.messagesSinceNag = 0;
+                 }
+-                Bukkit.getLogger().warning(
+-                    String.format("Nag author(s): '%s' of '%s' about their usage of System.out/err.print. "
+-                            + "Please use your plugin's logger instead (JavaPlugin#getLogger).",
+-                        plugin.getPluginMeta().getAuthors(),
+-                        plugin.getPluginMeta().getDisplayName())
+-                );
++                // Bukkit.getLogger().warning(
++                //     String.format("Nag author(s): '%s' of '%s' about their usage of System.out/err.print. "
++                //             + "Please use your plugin's logger instead (JavaPlugin#getLogger).",
++                //         plugin.getPluginMeta().getAuthors(),
++                //         plugin.getPluginMeta().getDisplayName())
++                // );
+             } catch (final IllegalArgumentException | IllegalStateException e) {
+                 // If anything happens, the calling class doesn't exist, there is no JavaPlugin that "owns" the calling class, etc
+                 // Just print out normally, with some added information
