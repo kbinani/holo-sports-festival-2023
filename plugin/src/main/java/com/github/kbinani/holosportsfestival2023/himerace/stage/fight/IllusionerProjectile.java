@@ -3,13 +3,14 @@ package com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 import com.destroystokyo.paper.ParticleBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
-import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Math.PI;
 
@@ -161,11 +162,24 @@ class IllusionerProjectile {
       }
       ringEffectTimeoutTimer = null;
 
-      world.spawn(to.clone().add(0, 0.5, 0), AreaEffectCloud.class, it -> {
-        it.setDuration(30);
-        it.setParticle(Particle.SPELL_WITCH);
-        it.setRadius(1);
-      });
+      double radius = 2;
+      double height = 4;
+      var bounds = new BoundingBox(
+        to.x() - radius, to.y(), to.z() - radius,
+        to.x() + radius, to.y() + height, to.z() + radius
+      );
+      for (var i = 0; i < 64; i++) {
+        var x = ThreadLocalRandom.current().nextDouble(bounds.getMinX(), bounds.getMaxX());
+        var y = ThreadLocalRandom.current().nextDouble(bounds.getMinY(), bounds.getMaxY());
+        var z = ThreadLocalRandom.current().nextDouble(bounds.getMinZ(), bounds.getMaxZ());
+        var builder = new ParticleBuilder(Particle.SPELL_WITCH);
+        builder
+          .allPlayers()
+          .location(world, x, y, z)
+          .count(4)
+          .force(true)
+          .spawn();
+      }
 
       world.getNearbyPlayers(this.to, sStrongRadius, 2, sStrongRadius).forEach(player -> {
         var mode = player.getGameMode();
