@@ -75,8 +75,7 @@ class DefenceSphere {
       }
       for (var ring : rings) {
         if (ring.hitTest(projectile, round)) {
-          var velocity = projectile.getVelocity();
-          projectile.setVelocity(velocity.multiply(-1));
+          projectile.setVelocity(new Vector(0, 0, 0));
           reflected.add(id);
           break;
         }
