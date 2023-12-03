@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023;
 import com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener;
 import com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener;
 import com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener;
+import com.github.kbinani.holosportsfestival2023.relay.RelayEventListener;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -98,6 +99,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
     miniGames.add(new HoloUpEventListener(world, this));
     miniGames.add(new KibasenEventListener(world, this, this));
+    miniGames.add(new RelayEventListener(world, this));
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
