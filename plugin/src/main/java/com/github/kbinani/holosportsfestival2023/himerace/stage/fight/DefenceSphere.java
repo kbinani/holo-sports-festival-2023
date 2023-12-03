@@ -24,10 +24,12 @@ class DefenceSphere {
   private final @Nonnull BukkitTask timer;
   private final Set<UUID> reflected = new HashSet<>();
   private final @Nonnull String scoreboardTag;
+  private final int round;
 
-  DefenceSphere(@Nonnull JavaPlugin owner, @Nonnull World world, @Nonnull Location center, @Nonnull String scoreboardTag) {
+  DefenceSphere(@Nonnull JavaPlugin owner, @Nonnull World world, @Nonnull Location center, int round, @Nonnull String scoreboardTag) {
     this.world = world;
     this.center = center;
+    this.round = round;
     this.scoreboardTag = scoreboardTag;
     this.rings = Arrays.stream(new ParticleRing[]{
       new ParticleRing(
@@ -72,7 +74,7 @@ class DefenceSphere {
         continue;
       }
       for (var ring : rings) {
-        if (ring.hitTest(projectile)) {
+        if (ring.hitTest(projectile, round)) {
           var velocity = projectile.getVelocity();
           projectile.setVelocity(velocity.multiply(-1));
           reflected.add(id);

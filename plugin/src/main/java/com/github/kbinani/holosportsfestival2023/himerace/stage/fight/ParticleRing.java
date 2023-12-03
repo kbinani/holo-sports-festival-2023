@@ -10,6 +10,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
@@ -53,9 +54,19 @@ class ParticleRing {
     hitTestArrows.clear();
   }
 
-  boolean hitTest(Projectile projectile) {
+  boolean hitTest(Projectile projectile, int round) {
+    var magnify = Math.pow(0.8, round);
     for (var arrow : hitTestArrows) {
-      if (arrow.getBoundingBox().overlaps(projectile.getBoundingBox())) {
+      var bounds = arrow.getBoundingBox();
+      var center = bounds.getCenter();
+      var widthX = bounds.getWidthX() * magnify;
+      var widthZ = bounds.getWidthZ() * magnify;
+      var height = bounds.getHeight() * magnify;
+      var modified = new BoundingBox(
+        center.getX() - widthX * 0.5, center.getY() - height * 0.5, center.getZ() - widthZ * 0.5,
+        center.getX() + widthX * 0.5, center.getY() + height * 0.5, center.getZ() + widthZ * 0.5
+      );
+      if (modified.overlaps(projectile.getBoundingBox())) {
         return true;
       }
     }

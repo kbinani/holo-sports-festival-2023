@@ -39,7 +39,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
     this.attackTimer = Bukkit.getScheduler().runTaskTimer(owner, this::attack, period, period);
     this.world = entity.getWorld();
     this.round = round;
-    this.defenceSphere = new DefenceSphere(owner, entity.getWorld(), entity.getLocation().add(0, 1, 0), scoreboardTag);
+    this.defenceSphere = new DefenceSphere(owner, entity.getWorld(), entity.getLocation().add(0, 1, 0), round, scoreboardTag);
   }
 
   void dispose() {
