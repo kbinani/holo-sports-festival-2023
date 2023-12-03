@@ -69,44 +69,65 @@ public class TrackAndField {
     switch (mode) {
       case IDLE -> {
         setEnablePhotoSpot(true);
+
         setEnableKibasenSigns(true);
-        setEnableRelaySigns(true);
         setEnableKibasenWall(false);
+
+        setEnableRelaySigns(true);
         setEnableRelayWall(false);
+        setRelayStartGateEnabled(false);
       }
       case TRACK -> {
         setEnablePhotoSpot(true);
+
         setEnableKibasenSigns(false);
-        setEnableRelaySigns(true);
         setEnableKibasenWall(false);
+
+        setEnableRelaySigns(true);
         setEnableRelayWall(true);
+        setRelayStartGateEnabled(false);
       }
       case FIELD -> {
         setEnablePhotoSpot(false);
+
         setEnableKibasenSigns(true);
-        setEnableRelaySigns(false);
         setEnableKibasenWall(true);
+
+        setEnableRelaySigns(false);
         setEnableRelayWall(false);
+        setRelayStartGateEnabled(false);
       }
     }
     this.mode = mode;
   }
 
+  public void setRelayStartGateEnabled(boolean enable) {
+    if (enable) {
+      Editor.Set(world, pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
+      Editor.Set(world, pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
+      Editor.Fill(world, pos(5, 80, 81), pos(5, 80, 77), "dark_oak_fence[east=false,north=true,south=true,waterlogged=false,west=false]");
+      Editor.Set(world, pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
+      Editor.Set(world, pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
+    } else {
+      fill(pos(5, 80, 82), pos(5, 80, 76), Material.AIR);
+    }
+  }
+
   private void setEnablePhotoSpot(boolean enable) {
     if (enable) {
-      Editor.Fill(world, pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(-6, 82, 48), pos(0, 82, 49), Material.WHITE_CONCRETE);
-      Editor.Fill(world, pos(1, 80, 48), pos(7, 80, 53), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(1, 81, 48), pos(7, 81, 51), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(1, 82, 48), pos(7, 82, 49), Material.PINK_CONCRETE);
-      Editor.Fill(world, pos(8, 80, 48), pos(14, 80, 53), Material.YELLOW_CONCRETE);
-      Editor.Fill(world, pos(8, 81, 48), pos(14, 81, 51), Material.YELLOW_CONCRETE);
-      Editor.Fill(world, pos(8, 82, 48), pos(14, 82, 49), Material.YELLOW_CONCRETE);
+      fill(pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
+      fill(pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);
+      fill(pos(-6, 82, 48), pos(0, 82, 49), Material.WHITE_CONCRETE);
+      fill(pos(1, 80, 48), pos(7, 80, 53), Material.PINK_CONCRETE);
+      fill(pos(1, 81, 48), pos(7, 81, 51), Material.PINK_CONCRETE);
+      fill(pos(1, 82, 48), pos(7, 82, 49), Material.PINK_CONCRETE);
+      fill(pos(8, 80, 48), pos(14, 80, 53), Material.YELLOW_CONCRETE);
+      fill(pos(8, 81, 48), pos(14, 81, 51), Material.YELLOW_CONCRETE);
+      fill(pos(8, 82, 48), pos(14, 82, 49), Material.YELLOW_CONCRETE);
     } else {
-      Editor.Fill(world, pos(-6, 80, 48), pos(14, 80, 53), Material.AIR);
-      Editor.Fill(world, pos(-6, 81, 48), pos(14, 81, 51), Material.AIR);
-      Editor.Fill(world, pos(-6, 82, 48), pos(14, 82, 49), Material.AIR);
+      fill(pos(-6, 80, 48), pos(14, 80, 53), Material.AIR);
+      fill(pos(-6, 81, 48), pos(14, 81, 51), Material.AIR);
+      fill(pos(-6, 82, 48), pos(14, 82, 49), Material.AIR);
     }
   }
 
@@ -149,10 +170,10 @@ public class TrackAndField {
 
   private void setEnableKibasenWall(boolean enable) {
     var material = enable ? Material.BARRIER : Material.AIR;
-    Editor.Fill(world, pos(-24, 81, 31), pos(-24, 86, 73), material);
-    Editor.Fill(world, pos(32, 81, 31), pos(32, 86, 73), material);
-    Editor.Fill(world, pos(-23, 81, 31), pos(31, 86, 31), material);
-    Editor.Fill(world, pos(-23, 81, 73), pos(31, 86, 73), material);
+    fill(pos(-24, 81, 31), pos(-24, 86, 73), material);
+    fill(pos(32, 81, 31), pos(32, 86, 73), material);
+    fill(pos(-23, 81, 31), pos(31, 86, 31), material);
+    fill(pos(-23, 81, 73), pos(31, 86, 73), material);
   }
 
   private void setEnableRelaySigns(boolean enable) {
