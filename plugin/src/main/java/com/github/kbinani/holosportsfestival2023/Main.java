@@ -187,8 +187,30 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public void kibasenReleaseTrackAndFieldOwnership() {
     if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.KIBASEN) {
       this.tafOwner = null;
-      getLogger().log(Level.INFO, "ownership of track and field was released from");
+      getLogger().log(Level.INFO, "ownership of track and field was released from kibasen");
     }
+  }
+
+  @Override
+  public Point3i kibasenGetJoinSignLocation(TeamColor color) {
+    var taf = ensureTrackAndField();
+    return switch (color) {
+      case RED -> taf.kibasenJoinRedSign;
+      case WHITE -> taf.kibasenJoinWhiteSign;
+      case YELLOW -> taf.kibasenJoinYellowSign;
+    };
+  }
+
+  @Override
+  public Point3i kibasenGetAnnounceEntryListSignLocation() {
+    var taf = ensureTrackAndField();
+    return taf.kibasenEntryListSign;
+  }
+
+  @Override
+  public   Point3i kibasenGetStartSignLocation() {
+    var taf = ensureTrackAndField();
+    return taf.kibasenStartSign;
   }
 
   private @Nonnull TrackAndField ensureTrackAndField() {

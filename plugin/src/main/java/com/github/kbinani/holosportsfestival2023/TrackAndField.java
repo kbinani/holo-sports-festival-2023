@@ -33,7 +33,6 @@ public class TrackAndField {
   public TrackAndField(@Nonnull World world, @Nonnull Point3i offset) {
     this.world = world;
     this.offset = offset;
-    System.out.println("TAF.ctor; offset=" + offset);
     this.kibasenTitle = com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.title;
     kibasenJoinRedSign = pos(-30, 80, 50);
     kibasenJoinWhiteSign = pos(-30, 80, 51);

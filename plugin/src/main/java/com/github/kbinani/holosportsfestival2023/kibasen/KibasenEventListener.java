@@ -36,8 +36,11 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public interface Delegate {
     @Nullable
     TrackAndField kibasenTakeTrackAndFieldOwnership();
-
     void kibasenReleaseTrackAndFieldOwnership();
+
+    Point3i kibasenGetJoinSignLocation(TeamColor color);
+    Point3i kibasenGetAnnounceEntryListSignLocation();
+    Point3i kibasenGetStartSignLocation();
   }
 
   private static final Point3i offset = new Point3i(0, 0, 0);
@@ -79,10 +82,6 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerInteract(PlayerInteractEvent e) {
-    var taf = takeTrackAndFieldOwnership();
-    if (taf == null) {
-      return;
-    }
     Player player = e.getPlayer();
     switch (status) {
       case IDLE -> {
@@ -91,23 +90,18 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
           Block block = e.getClickedBlock();
           if (block != null) {
             Point3i location = new Point3i(block.getLocation());
-            if (location.equals(taf.kibasenJoinRedSign)) {
-              onClickJoin(player, TeamColor.RED);
-              e.setCancelled(true);
-              return;
-            } else if (location.equals(taf.kibasenJoinWhiteSign)) {
-              onClickJoin(player, TeamColor.WHITE);
-              e.setCancelled(true);
-              return;
-            } else if (location.equals(taf.kibasenJoinYellowSign)) {
-              onClickJoin(player, TeamColor.YELLOW);
-              e.setCancelled(true);
-              return;
-            } else if (location.equals(taf.kibasenEntryListSign)) {
+            for (var color : TeamColor.all) {
+              if (location.equals(delegate.kibasenGetJoinSignLocation(color))) {
+                onClickJoin(player, color);
+                e.setCancelled(true);
+                return;
+              }
+            }
+            if (location.equals(delegate.kibasenGetAnnounceEntryListSignLocation())) {
               announceEntryList();
               e.setCancelled(true);
               return;
-            } else if (location.equals(taf.kibasenStartSign)) {
+            } else if (location.equals(delegate.kibasenGetStartSignLocation())) {
               startCountdown();
               e.setCancelled(true);
               return;
@@ -134,7 +128,8 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
         var action = e.getAction();
         if (action == Action.RIGHT_CLICK_BLOCK) {
           Block block = e.getClickedBlock();
-          if (block != null) {
+          var taf = this.taf;
+          if (block != null && taf != null) {
             Point3i location = new Point3i(block.getLocation());
             if (location.equals(taf.kibasenAbortSign)) {
               abort();
