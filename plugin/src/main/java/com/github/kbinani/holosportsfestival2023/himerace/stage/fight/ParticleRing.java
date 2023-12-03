@@ -5,11 +5,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.World;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Projectile;
-import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
@@ -17,14 +13,12 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
-
 class ParticleRing {
   private static final double sNormalOmega = 0.785;
   private static final int sParticlesPerRing = 90;
   private static final int sHitTestArrowsPerRing = 30;
+  private static final double sHitTestBaseRadius = 0.25;
 
-  private final @Nonnull World world;
   private final @Nonnull Location center;
   private final double radius;
   private final @Nonnull Vector normal;
@@ -32,11 +26,16 @@ class ParticleRing {
   private final long startTimeMillis;
   private final @Nonnull NamedTextColor color;
   private final double axisOmega;
-  private final List<Arrow> hitTestArrows = new ArrayList<>();
-  private final String scoreboardTag;
+  private final List<Vector> hitTestPoints = new ArrayList<>();
 
-  ParticleRing(@Nonnull JavaPlugin owner, @Nonnull World world, @Nonnull Location center, double radius, @Nonnull String scoreboardTag, @Nonnull Vector normal, @Nonnull Vector axis, @Nonnull NamedTextColor color, double omega) {
-    this.world = world;
+  ParticleRing(
+    @Nonnull Location center,
+    double radius,
+    @Nonnull Vector normal,
+    @Nonnull Vector axis,
+    @Nonnull NamedTextColor color,
+    double omega //
+  ) {
     this.center = center;
     this.radius = radius;
     this.normal = normal.normalize();
@@ -44,29 +43,16 @@ class ParticleRing {
     this.startTimeMillis = System.currentTimeMillis();
     this.color = color;
     this.axisOmega = omega;
-    this.scoreboardTag = scoreboardTag;
-  }
-
-  void dispose() {
-    for (var arrow : hitTestArrows) {
-      arrow.remove();
-    }
-    hitTestArrows.clear();
   }
 
   boolean hitTest(Projectile projectile, int round) {
-    var magnify = Math.pow(0.8, round);
-    for (var arrow : hitTestArrows) {
-      var bounds = arrow.getBoundingBox();
-      var center = bounds.getCenter();
-      var widthX = bounds.getWidthX() * magnify;
-      var widthZ = bounds.getWidthZ() * magnify;
-      var height = bounds.getHeight() * magnify;
-      var modified = new BoundingBox(
-        center.getX() - widthX * 0.5, center.getY() - height * 0.5, center.getZ() - widthZ * 0.5,
-        center.getX() + widthX * 0.5, center.getY() + height * 0.5, center.getZ() + widthZ * 0.5
+    var radius = sHitTestBaseRadius * Math.pow(0.8, round);
+    for (var center : hitTestPoints) {
+      var bounds = new BoundingBox(
+        center.getX() - radius, center.getY() - radius, center.getZ() - radius,
+        center.getX() + radius, center.getY() + radius, center.getZ() + radius
       );
-      if (modified.overlaps(projectile.getBoundingBox())) {
+      if (bounds.overlaps(projectile.getBoundingBox())) {
         return true;
       }
     }
@@ -90,29 +76,17 @@ class ParticleRing {
         .force(true)
         .spawn();
     }
-    var diff = sHitTestArrowsPerRing - hitTestArrows.size();
+    var diff = sHitTestArrowsPerRing - hitTestPoints.size();
     if (diff > 0) {
       for (var i = 0; i < diff; i++) {
-        var arrow = world.spawn(center, Arrow.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
-          it.setGravity(false);
-          it.setLifetimeTicks(Integer.MAX_VALUE);
-          it.addScoreboardTag(scoreboardTag);
-          it.addScoreboardTag(itemTag);
-          it.setVisibleByDefault(false);
-        });
-        hitTestArrows.add(arrow);
+        hitTestPoints.add(center.toVector());
       }
     }
     for (var i = 0; i < sHitTestArrowsPerRing; i++) {
       var theta = elapsed * sNormalOmega + i * 2 * Math.PI / (double) sHitTestArrowsPerRing;
       var vector = axis.clone().multiply(radius).rotateAroundAxis(normal, theta);
-      var location = center.clone().add(vector);
-      var arrow = hitTestArrows.get(i);
-      var direction = vector.clone().multiply(-1);
-      var horizontal = direction.clone().setY(0);
-      var pitch = direction.angle(horizontal);
-      var yaw = horizontal.angle(new Vector(0, 0, 1));
-      arrow.teleport(new Location(world, location.x(), location.y(), location.z(), yaw, pitch));
+      var location = center.toVector().add(vector);
+      hitTestPoints.set(i, location);
     }
   }
 

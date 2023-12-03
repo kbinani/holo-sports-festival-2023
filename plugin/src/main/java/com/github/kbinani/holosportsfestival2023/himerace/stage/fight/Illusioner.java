@@ -31,7 +31,12 @@ class Illusioner implements IllusionerProjectile.Delegate {
   private final int round;
   private final @Nonnull DefenceSphere defenceSphere;
 
-  Illusioner(@Nonnull JavaPlugin owner, @Nonnull org.bukkit.entity.Illusioner entity, @Nonnull BoundingBox attackBounds, int round, @Nonnull String scoreboardTag) {
+  Illusioner(
+    @Nonnull JavaPlugin owner,
+    @Nonnull org.bukkit.entity.Illusioner entity,
+    @Nonnull BoundingBox attackBounds,
+    int round //
+  ) {
     this.owner = owner;
     this.entity = entity;
     this.attackBounds = attackBounds;
@@ -39,7 +44,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
     this.attackTimer = Bukkit.getScheduler().runTaskTimer(owner, this::attack, period, period);
     this.world = entity.getWorld();
     this.round = round;
-    this.defenceSphere = new DefenceSphere(owner, entity.getWorld(), entity.getLocation().add(0, 1, 0), round, scoreboardTag);
+    this.defenceSphere = new DefenceSphere(owner, entity.getWorld(), entity.getLocation().add(0, 1, 0), round);
   }
 
   void dispose() {
