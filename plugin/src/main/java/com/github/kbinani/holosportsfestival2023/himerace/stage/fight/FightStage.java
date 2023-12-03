@@ -603,10 +603,10 @@ public class FightStage extends AbstractStage {
       DisableDrop(equipment);
       equipment.clear();
     });
-    return new Illusioner(owner, entity, attackBounds, round);
+    return new Illusioner(owner, entity, attackBounds, round, Stage.FIGHT.tag);
   }
 
-  private void updateStandingSign(@Nullable  Wave wave) {
+  private void updateStandingSign(@Nullable Wave wave) {
     if (wave == null) {
       Editor.Set(world, signPos, Material.AIR);
     } else {
