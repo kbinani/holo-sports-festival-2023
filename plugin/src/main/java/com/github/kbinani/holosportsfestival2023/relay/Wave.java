@@ -14,14 +14,14 @@ class Wave {
   private final double startX;
   private final double endX;
   private final double z;
-  private int[] yIndex;
+  private final int[] yIndex;
   private final long startTimeMillis;
   private final Bubble[] bubbles;
   private final double initX;
   private final int sign;
-  private double[] xLast;
+  private final double[] xLast;
 
-  Wave(@Nonnull World world, String scoreboardTag, double startX, double endX, double initX, double[] yCandidates, double z) {
+  Wave(@Nonnull World world, String scoreboardTag, double startX, double endX, double initX, @Nonnull double[] yCandidates, double z) {
     this.world = world;
     this.yCandidates = yCandidates;
     if (startX < endX) {
