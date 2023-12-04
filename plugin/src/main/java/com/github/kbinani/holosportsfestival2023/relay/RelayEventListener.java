@@ -9,21 +9,35 @@ import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class RelayEventListener implements MiniGame {
+  public interface Delegate {
+    Point3i relayGetJoinSignLocation(TeamColor color);
+
+    Point3i relayGetAnnounceEntryListSignLocation();
+
+    Point3i relayGetStartSignLocation();
+
+    BoundingBox relayGetAnnounceBounds();
+  }
+
   public static final Component title = text("[Relay]", AQUA);
   static final Component prefix = title.append(text(" ", WHITE));
   private static final Point3i offset = new Point3i(0, 0, 0);
@@ -33,7 +47,7 @@ public class RelayEventListener implements MiniGame {
 
   private final @Nonnull World world;
   private final @Nonnull JavaPlugin owner;
-  private final Map<TeamColor, Team> teams = new HashMap<>();
+  private final @Nonnull Map<TeamColor, Team> teams = new HashMap<>();
   private final Set<Point3i> pistonPositions;
   private final @Nonnull BukkitTask waveTimer;
   private final List<Wave> waves = new ArrayList<>();
@@ -41,10 +55,13 @@ public class RelayEventListener implements MiniGame {
   private boolean breadHangerPrepared = false;
   private final List<ArmorStand> breadHangers = new ArrayList<>();
   private Status status = Status.IDLE;
+  private final @Nonnull Delegate delegate;
+  private @Nullable Race race;
 
-  public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner) {
+  public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
     this.owner = owner;
+    this.delegate = delegate;
     pistonPositions = new HashSet<>();
     pistonPositions.add(pos(57, 79, 57));
     pistonPositions.add(pos(59, 79, 57));
@@ -123,7 +140,74 @@ public class RelayEventListener implements MiniGame {
     inventory.addItem(createBread());
   }
 
-  private void reset () {
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerInteract(PlayerInteractEvent e) {
+    var action = e.getAction();
+    var player = e.getPlayer();
+    if (status == Status.IDLE) {
+      if (action == Action.RIGHT_CLICK_BLOCK) {
+        var block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        var location = new Point3i(block.getLocation());
+        for (var color : TeamColor.all) {
+          if (delegate.relayGetJoinSignLocation(color).equals(location)) {
+            onClickJoin(player, color);
+            e.setCancelled(true);
+            return;
+          }
+        }
+        if (delegate.relayGetStartSignLocation().equals(location)) {
+          onClickStart();
+          e.setCancelled(true);
+          return;
+        } else if (delegate.relayGetAnnounceEntryListSignLocation().equals(location)) {
+          onClickAnnounceEntryList();
+          e.setCancelled(true);
+          return;
+        }
+      }
+    }
+  }
+
+  private void onClickAnnounceEntryList() {
+
+  }
+
+  private void onClickJoin(Player player, TeamColor color) {
+    for (var team : teams.values()) {
+      if (team.players().contains(player)) {
+        team.remove(player);
+        player.sendMessage(prefix.append(text("エントリー登録を解除しました。", WHITE)));
+        return;
+      }
+    }
+    var team = ensureTeam(color);
+    team.add(player);
+    broadcast(prefix
+      .append(text(String.format("%sが", player.getName()), WHITE))
+      .append(color.component())
+      .append(text("にエントリーしました。", WHITE)));
+  }
+
+  private @Nonnull Team ensureTeam(TeamColor color) {
+    var team = teams.get(color);
+    if (team == null) {
+      var t = new Team(color);
+      teams.put(color, t);
+      return t;
+    } else {
+      return team;
+    }
+  }
+
+  private void onClickStart() {
+
+  }
+
+  private void reset() {
   }
 
   private void tick() {
@@ -210,6 +294,10 @@ public class RelayEventListener implements MiniGame {
     for (var wave : waves) {
       wave.tick();
     }
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, delegate.relayGetAnnounceBounds(), player -> player.sendMessage(message));
   }
 
   private int x(int x) {

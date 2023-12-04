@@ -5,6 +5,7 @@ import com.github.kbinani.holosportsfestival2023.relay.RelayEventListener;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +36,8 @@ public class TrackAndField {
   public final Point3i relayAnnounceEntryListSign;
   public final Point3i relayResumeSign;
 
+  public final BoundingBox announceBounds;
+
   private final @Nonnull World world;
   private final @Nonnull Point3i offset;
   private @Nullable Mode mode;
@@ -60,6 +63,8 @@ public class TrackAndField {
     relayAbortSign = pos(2, 80, 71);
     relayAnnounceEntryListSign = pos(1, 80, 71);
     relayResumeSign = pos(0, 80, 71);
+
+    announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   }
 
   public void setMode(Mode mode) {
@@ -274,6 +279,18 @@ public class TrackAndField {
 
   private void fill(Point3i from, Point3i to, Material material) {
     Editor.Fill(world, from, to, material);
+  }
+
+  private int x(int x) {
+    return x + offset.x;
+  }
+
+  private int y(int y) {
+    return y + offset.y;
+  }
+
+  private int z(int z) {
+    return z + offset.z;
   }
 
   private Point3i pos(int x, int y, int z) {

@@ -41,13 +41,13 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     Point3i kibasenGetJoinSignLocation(TeamColor color);
     Point3i kibasenGetAnnounceEntryListSignLocation();
     Point3i kibasenGetStartSignLocation();
+    BoundingBox kibasenGetAnnounceBounds();
   }
 
   private static final Point3i offset = new Point3i(0, 0, 0);
   public static final Component title = text("[Kibasen]", AQUA);
   static final Component prefix = title.append(text(" ", WHITE));
   static final String itemTag = "hololive_sports_festival_2023_kibasen";
-  private static final BoundingBox announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
   private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
   static final String healthDisplayScoreboardTag = "hololive_sports_festival_2023_kibasen_health_display";
@@ -332,7 +332,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     var titlePrefix = text("スタートまで", AQUA);
     var subtitle = text("騎馬戦", GREEN);
     this.countdown = new Countdown(
-      owner, world, announceBounds,
+      owner, world, delegate.kibasenGetAnnounceBounds(),
       titlePrefix, AQUA, subtitle,
       10, this::start);
     this.status = Status.COUNTDOWN;
@@ -340,7 +340,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
   private void start() {
     this.countdown = null;
-    var session = this.registrants.promote(owner, world, announceBounds, this);
+    var session = this.registrants.promote(owner, world, delegate.kibasenGetAnnounceBounds(), this);
     if (session == null) {
       abort();
       return;
@@ -404,7 +404,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
+    Players.Within(world, delegate.kibasenGetAnnounceBounds(), player -> player.sendMessage(message));
   }
 
   private void reset() {

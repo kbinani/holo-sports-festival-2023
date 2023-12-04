@@ -19,6 +19,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
-public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate {
+public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate, RelayEventListener.Delegate {
   enum TrackAndFieldOwner {
     KIBASEN,
     RELAY,
@@ -99,7 +100,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
     miniGames.add(new HoloUpEventListener(world, this));
     miniGames.add(new KibasenEventListener(world, this, this));
-    miniGames.add(new RelayEventListener(world, this));
+    miniGames.add(new RelayEventListener(world, this, this));
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
@@ -210,9 +211,43 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   }
 
   @Override
-  public   Point3i kibasenGetStartSignLocation() {
+  public Point3i kibasenGetStartSignLocation() {
     var taf = ensureTrackAndField();
     return taf.kibasenStartSign;
+  }
+
+  @Override
+  public BoundingBox kibasenGetAnnounceBounds() {
+    var taf = ensureTrackAndField();
+    return taf.announceBounds;
+  }
+
+  @Override
+  public Point3i relayGetJoinSignLocation(TeamColor color) {
+    var taf = ensureTrackAndField();
+    return switch (color) {
+      case RED -> taf.relayJoinRedSign;
+      case WHITE -> taf.relayJoinWhiteSign;
+      case YELLOW -> taf.relayJoinYellowSign;
+    };
+  }
+
+  @Override
+  public Point3i relayGetStartSignLocation() {
+    var taf = ensureTrackAndField();
+    return taf.relayStartSign;
+  }
+
+  @Override
+  public Point3i relayGetAnnounceEntryListSignLocation() {
+    var taf = ensureTrackAndField();
+    return taf.relayAnnounceEntryListSign;
+  }
+
+  @Override
+  public BoundingBox relayGetAnnounceBounds() {
+    var taf = ensureTrackAndField();
+    return taf.announceBounds;
   }
 
   private @Nonnull TrackAndField ensureTrackAndField() {
