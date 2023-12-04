@@ -33,7 +33,8 @@ class Race {
       if (count < 0) {
         count = size;
       } else if (count != size) {
-        return new Result<>(null, text("チーム間で参加者数が違っています", RED));
+        // https://youtu.be/uEpmE5WJPW8?t=5333
+        return new Result<>(null, text("走順が正しく選択出来ていないチームがあるため、ゲームを開始できません。", RED));
       }
       total += size;
     }

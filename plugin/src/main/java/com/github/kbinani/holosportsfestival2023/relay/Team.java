@@ -4,6 +4,7 @@ import com.github.kbinani.holosportsfestival2023.TeamColor;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 class Team {
@@ -48,6 +49,15 @@ class Team {
     }
   }
 
+  void unassign(Player player) {
+    for (var i = 0; i < order.length; i++) {
+      if (order[i] == player) {
+        order[i] = null;
+        break;
+      }
+    }
+  }
+
   void add(@Nonnull Player player) {
     players.add(player);
   }
@@ -63,5 +73,25 @@ class Team {
 
   List<Player> players() {
     return new ArrayList<>(players);
+  }
+
+  boolean contains(Player player) {
+    return getCurrentOrder(player) != null;
+  }
+
+  @Nullable Integer getCurrentOrder(Player player) {
+    for (var i = 0; i < order.length; i++) {
+      if (order[i] == player) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  @Nullable Player getAssignedPlayer(int order) {
+    if (order < 0 || this.order.length <= order) {
+      return null;
+    }
+    return this.order[order];
   }
 }

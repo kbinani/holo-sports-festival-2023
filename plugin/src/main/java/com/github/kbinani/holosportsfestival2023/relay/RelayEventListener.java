@@ -13,10 +13,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -187,17 +190,80 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onInventoryClick(InventoryClickEvent e) {
+    var view = e.getView();
+    var inventory = ensureEntryBookInventory();
+    if (view.getTopInventory() != inventory) {
+      return;
+    }
+    var slot = e.getRawSlot();
+    if (slot < 0 || 27 <= slot) {
+      return;
+    }
+    e.setCancelled(true);
+    if (!(e.getWhoClicked() instanceof Player player)) {
+      return;
+    }
+    if (e.getAction() != InventoryAction.PICKUP_ALL) {
+      return;
+    }
+    var color = getRegistration(player);
+    if (color == null) {
+      return;
+    }
+    int order = slot - color.ordinal() * 9;
+    if (order < 0 || 9 <= order) {
+      return;
+    }
+    var item = e.getCurrentItem();
+    var team = ensureTeam(color);
+    var current = team.getCurrentOrder(player);
+    if (current == null) {
+      if (team.assign(player, order)) {
+        broadcast(prefix
+          .append(color.component())
+          .append(text(String.format("の第%d走者に", order + 1), WHITE))
+          .append(text(player.getName(), GOLD))
+          .append(text("がエントリーしました！", WHITE))
+        );
+        var head = ItemBuilder.For(Material.PLAYER_HEAD)
+          .displayName(color.component().append(text(String.format(" 第%d走者 ", order + 1), WHITE).append(text(player.getName(), GOLD))))
+          .meta(SkullMeta.class, it -> it.setOwningPlayer(player))
+          .build();
+        inventory.setItem(slot, head);
+      } else {
+        // https://youtu.be/las27v3TLW8?t=5334
+        player.sendMessage(prefix.append(text("他のプレイヤーが選択しています。", RED)));
+      }
+    } else if (current == order) {
+      // メッセージは出ない. https://youtu.be/uEpmE5WJPW8?t=5234
+      team.unassign(player);
+      inventory.setItem(slot, createPlaceholder(color, order));
+    }
+  }
+
+  private @Nullable TeamColor getRegistration(Player player) {
+    if (status == Status.IDLE) {
+      for (var entry : teams.entrySet()) {
+        var team = entry.getValue();
+        if (team.players().contains(player)) {
+          return entry.getKey();
+        }
+      }
+    }
+    return null;
+  }
+
   private @Nonnull Inventory ensureEntryBookInventory() {
     if (entryBookInventory == null) {
       var inventory = Bukkit.createInventory(null, 27, prefix.append(text("エントリーリスト", GREEN)));
       for (var i = 0; i < TeamColor.all.length; i++) {
         var color = TeamColor.all[i];
-        var material = color.quizConcealer;
         for (var j = 0; j < 9; j++) {
           var index = i * 9 + j;
-          var item = ItemBuilder.For(material)
-            .displayName(color.component().append(text(String.format(" 第%d走者", j + 1), WHITE)))
-            .build();
+          var item = createPlaceholder(color, j);
           inventory.setItem(index, item);
         }
       }
@@ -208,14 +274,27 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
+  private ItemStack createPlaceholder(TeamColor color, int order) {
+    return ItemBuilder.For(color.quizConcealer)
+      .displayName(color.component().append(text(String.format(" 第%d走者", order + 1), WHITE)))
+      .build();
+  }
+
   private void onClickAnnounceEntryList() {
 
   }
 
   private void onClickJoin(Player player, TeamColor color) {
-    for (var team : teams.values()) {
+    for (var entry : teams.entrySet()) {
+      var team = entry.getValue();
+      var c = entry.getKey();
       if (team.players().contains(player)) {
+        var order = team.getCurrentOrder(player);
         team.remove(player);
+        if (order != null) {
+          var inventory = ensureEntryBookInventory();
+          inventory.setItem(c.ordinal() * 9 + order, createPlaceholder(c, order));
+        }
         player.sendMessage(prefix.append(text("エントリー登録を解除しました。", WHITE)));
         Cloakroom.shared.restore(player);
         return;
