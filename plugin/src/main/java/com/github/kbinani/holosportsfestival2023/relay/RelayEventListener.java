@@ -3,12 +3,17 @@ package com.github.kbinani.holosportsfestival2023.relay;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -16,14 +21,15 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
-import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public class RelayEventListener implements MiniGame {
   public static final Component title = text("[Relay]", AQUA);
   static final Component prefix = title.append(text(" ", WHITE));
   private static final Point3i offset = new Point3i(0, 0, 0);
   private static final String sBubbleScoreboardTag = "hololive_sports_festival2023_relay_bubble";
+  private static final String sBreadHangerScoreboardTag = "hololive_sports_festival_2023_relay_bread";
+  private static final String sItemTag = "hololive_sports_festival_2023_relay_item";
 
   private final @Nonnull World world;
   private final @Nonnull JavaPlugin owner;
@@ -32,6 +38,8 @@ public class RelayEventListener implements MiniGame {
   private final @Nonnull BukkitTask waveTimer;
   private final List<Wave> waves = new ArrayList<>();
   private boolean wavePrepared = false;
+  private boolean breadHangerPrepared = false;
+  private final List<ArmorStand> breadHangers = new ArrayList<>();
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner) {
     this.world = world;
@@ -40,7 +48,7 @@ public class RelayEventListener implements MiniGame {
     pistonPositions.add(pos(57, 79, 57));
     pistonPositions.add(pos(59, 79, 57));
     pistonPositions.add(pos(61, 79, 57));
-    this.waveTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickWaves, 1, 1);
+    this.waveTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 1, 1);
   }
 
   @Override
@@ -85,7 +93,91 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerArmorStandManipulateEvent(PlayerArmorStandManipulateEvent e) {
+    var player = e.getPlayer();
+    var armorStand = e.getRightClicked();
+    var playerItem = e.getPlayerItem();
+    var standItem = e.getArmorStandItem();
+    ArmorStand target = null;
+    for (var stand : breadHangers) {
+      if (stand == armorStand) {
+        target = stand;
+        break;
+      }
+    }
+    if (target == null) {
+      return;
+    }
+    if (playerItem.getType() != Material.AIR) {
+      e.setCancelled(true);
+      return;
+    }
+    if (standItem.getType() != Material.BREAD) {
+      e.setCancelled(true);
+      return;
+    }
+    var slot = e.getSlot();
+    if (slot != EquipmentSlot.HEAD && slot != EquipmentSlot.CHEST) {
+      e.setCancelled(true);
+      return;
+    }
+    if (slot == EquipmentSlot.CHEST) {
+      var equipment = target.getEquipment();
+      equipment.setHelmet(new ItemStack(Material.AIR));
+    }
+    final ArmorStand t = target;
+    Bukkit.getScheduler().runTaskLater(owner, () -> {
+      var equipment = t.getEquipment();
+      equipment.setHelmet(createBread());
+      equipment.setChestplate(createBread());
+    }, 20);
+  }
+
   private void reset () {
+  }
+
+  private void tick() {
+    tickWaves();
+    tickBreadHanger();
+  }
+
+  private void tickBreadHanger() {
+    if (breadHangerPrepared) {
+      return;
+    }
+    var minX = x(55) / 16;
+    var maxX = x(63) / 16;
+    var cz = z(55) / 16;
+    for (int cx = minX; cx <= maxX; cx++) {
+      if (!world.isChunkLoaded(cx, cz)) {
+        return;
+      }
+    }
+    breadHangerPrepared = true;
+    Kill.EntitiesByScoreboardTag(world, sBreadHangerScoreboardTag);
+    for (var i = 0; i < 3; i++) {
+      var stand = world.spawn(new Location(world, x(57) + 0.5 + i * 2, y(86) + 0.6, z(55) + 0.8), ArmorStand.class, it -> {
+        it.addScoreboardTag(sBreadHangerScoreboardTag);
+        it.setGravity(false);
+        it.setInvulnerable(true);
+        it.setBasePlate(false);
+        it.setVisible(false);
+        var e = it.getEquipment();
+        e.setHelmet(createBread());
+        e.setChestplate(createBread());
+      });
+      breadHangers.add(stand);
+    }
+  }
+
+  private @Nonnull ItemStack createBread() {
+    // https://youtu.be/ls3kb0qhT4E?t=11046
+    return ItemBuilder.For(Material.BREAD)
+      .displayName(text("元気が出るパン", GOLD))
+      .customByteTag(sItemTag)
+      .build();
   }
 
   private void tickWaves() {
