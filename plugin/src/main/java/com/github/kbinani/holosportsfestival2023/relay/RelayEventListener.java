@@ -58,7 +58,7 @@ public class RelayEventListener implements MiniGame {
   private Status status = Status.IDLE;
   private final @Nonnull Delegate delegate;
   private @Nullable Race race;
-  private @Nullable Inventory registrationInventory;
+  private @Nullable Inventory entryBookInventory;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -78,7 +78,7 @@ public class RelayEventListener implements MiniGame {
 
   @Override
   public void miniGameClearItem(Player player) {
-
+    ClearItem(player);
   }
 
   @EventHandler
@@ -147,6 +147,7 @@ public class RelayEventListener implements MiniGame {
   public void onPlayerInteract(PlayerInteractEvent e) {
     var action = e.getAction();
     var player = e.getPlayer();
+    var item = e.getItem();
     if (status == Status.IDLE) {
       if (action == Action.RIGHT_CLICK_BLOCK) {
         var block = e.getClickedBlock();
@@ -171,27 +172,39 @@ public class RelayEventListener implements MiniGame {
           return;
         }
       }
+      if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
+        if (item != null && item.getType() == Material.BOOK && ItemTag.HasByte(item, sItemTag)) {
+          for (var team : teams.values()) {
+            if (team.players().contains(player)) {
+              var inventory = ensureEntryBookInventory();
+              player.openInventory(inventory);
+              e.setCancelled(true);
+              return;
+            }
+          }
+        }
+      }
     }
   }
 
-  private @Nonnull Inventory ensureRegistrationInventory() {
-    if (registrationInventory == null) {
+  private @Nonnull Inventory ensureEntryBookInventory() {
+    if (entryBookInventory == null) {
       var inventory = Bukkit.createInventory(null, 27, prefix.append(text("エントリーリスト", GREEN)));
       for (var i = 0; i < TeamColor.all.length; i++) {
         var color = TeamColor.all[i];
         var material = color.quizConcealer;
         for (var j = 0; j < 9; j++) {
-          var index = i * 9 * j;
+          var index = i * 9 + j;
           var item = ItemBuilder.For(material)
-            .displayName(color.component().append(text(String.format(" 第%d走者", j), WHITE)))
+            .displayName(color.component().append(text(String.format(" 第%d走者", j + 1), WHITE)))
             .build();
           inventory.setItem(index, item);
         }
       }
-      registrationInventory = inventory;
+      entryBookInventory = inventory;
       return inventory;
     } else {
-      return registrationInventory;
+      return entryBookInventory;
     }
   }
 
@@ -204,8 +217,13 @@ public class RelayEventListener implements MiniGame {
       if (team.players().contains(player)) {
         team.remove(player);
         player.sendMessage(prefix.append(text("エントリー登録を解除しました。", WHITE)));
+        Cloakroom.shared.restore(player);
         return;
       }
+    }
+    if (!Cloakroom.shared.store(player)) {
+      player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+      return;
     }
     var team = ensureTeam(color);
     team.add(player);
@@ -213,6 +231,16 @@ public class RelayEventListener implements MiniGame {
       .append(text(String.format("%sが", player.getName()), WHITE))
       .append(color.component())
       .append(text("にエントリーしました。", WHITE)));
+    player.sendMessage(prefix
+      .append(text("エントリーブックを使用して走順を選択してください！", WHITE)));
+    player.sendMessage(prefix
+      .append(text("Right-click while having the Entry Book equipped to select your relay position!", WHITE)));
+    var book = ItemBuilder.For(Material.BOOK)
+      .displayName(text("エントリーブック (右クリックで使用) / Entry Book (Right click to open)", GOLD))
+      .customByteTag(sItemTag)
+      .build();
+    var inventory = player.getInventory();
+    inventory.setItem(0, book);
   }
 
   private @Nonnull Team ensureTeam(TeamColor color) {
@@ -236,11 +264,24 @@ public class RelayEventListener implements MiniGame {
       race.dispose();
       race = null;
     }
-    if (registrationInventory != null) {
-      registrationInventory.close();
-      registrationInventory = null;
+    if (entryBookInventory != null) {
+      entryBookInventory.close();
+      entryBookInventory = null;
     }
     status = Status.IDLE;
+  }
+
+  private static void ClearItem(Player player) {
+    var inventory = player.getInventory();
+    for (int i = 0; i < inventory.getSize(); i++) {
+      var item = inventory.getItem(i);
+      if (item == null) {
+        continue;
+      }
+      if (ItemTag.HasByte(item, sItemTag)) {
+        inventory.clear(i);
+      }
+    }
   }
 
   private void tick() {
