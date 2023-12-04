@@ -13,7 +13,6 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -97,40 +96,13 @@ public class RelayEventListener implements MiniGame {
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerArmorStandManipulateEvent(PlayerArmorStandManipulateEvent e) {
-    //NOTE: 本家では左クリックでパンを取る事になっているけど右クリックでも取れるようにしておく
     var armorStand = e.getRightClicked();
-    var playerItem = e.getPlayerItem();
-    var standItem = e.getArmorStandItem();
-    ArmorStand target = null;
     for (var stand : breadHangers) {
       if (stand == armorStand) {
-        target = stand;
-        break;
+        e.setCancelled(true);
+        return;
       }
     }
-    if (target == null) {
-      return;
-    }
-    if (playerItem.getType() != Material.AIR) {
-      e.setCancelled(true);
-      return;
-    }
-    if (standItem.getType() != Material.BREAD) {
-      e.setCancelled(true);
-      return;
-    }
-    var slot = e.getSlot();
-    if (slot != EquipmentSlot.HEAD && slot != EquipmentSlot.CHEST) {
-      e.setCancelled(true);
-      return;
-    }
-    var equipment = target.getEquipment();
-    if (slot == EquipmentSlot.CHEST) {
-      equipment.setHelmet(new ItemStack(Material.AIR));
-    } else {
-      equipment.setChestplate(new ItemStack(Material.AIR));
-    }
-    delayRecoverBreads(target);
   }
 
   @EventHandler
@@ -192,7 +164,6 @@ public class RelayEventListener implements MiniGame {
         it.setVisible(false);
         var e = it.getEquipment();
         e.setHelmet(createBread());
-        e.setChestplate(createBread());
       });
       breadHangers.add(stand);
     }
