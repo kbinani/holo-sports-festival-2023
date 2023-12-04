@@ -10,6 +10,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -96,7 +97,7 @@ public class RelayEventListener implements MiniGame {
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerArmorStandManipulateEvent(PlayerArmorStandManipulateEvent e) {
-    var player = e.getPlayer();
+    //NOTE: 本家では左クリックでパンを取る事になっているけど右クリックでも取れるようにしておく
     var armorStand = e.getRightClicked();
     var playerItem = e.getPlayerItem();
     var standItem = e.getArmorStandItem();
@@ -123,13 +124,39 @@ public class RelayEventListener implements MiniGame {
       e.setCancelled(true);
       return;
     }
+    var equipment = target.getEquipment();
     if (slot == EquipmentSlot.CHEST) {
-      var equipment = target.getEquipment();
       equipment.setHelmet(new ItemStack(Material.AIR));
+    } else {
+      equipment.setChestplate(new ItemStack(Material.AIR));
     }
-    final ArmorStand t = target;
+    delayRecoverBreads(target);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (!(e.getEntity() instanceof ArmorStand armorStand)) {
+      return;
+    }
+    if (!(e.getDamager() instanceof Player player)) {
+      return;
+    }
+    if (breadHangers.stream().noneMatch((it -> it == armorStand))) {
+      return;
+    }
+    e.setCancelled(true);
+    var inventory = player.getInventory();
+    inventory.addItem(createBread());
+    var equipment = armorStand.getEquipment();
+    equipment.setHelmet(new ItemStack(Material.AIR));
+    equipment.setChestplate(new ItemStack(Material.AIR));
+    delayRecoverBreads(armorStand);
+  }
+
+  private void delayRecoverBreads(ArmorStand target) {
     Bukkit.getScheduler().runTaskLater(owner, () -> {
-      var equipment = t.getEquipment();
+      var equipment = target.getEquipment();
       equipment.setHelmet(createBread());
       equipment.setChestplate(createBread());
     }, 20);
@@ -161,7 +188,6 @@ public class RelayEventListener implements MiniGame {
       var stand = world.spawn(new Location(world, x(57) + 0.5 + i * 2, y(86) + 0.6, z(55) + 0.8), ArmorStand.class, it -> {
         it.addScoreboardTag(sBreadHangerScoreboardTag);
         it.setGravity(false);
-        it.setInvulnerable(true);
         it.setBasePlate(false);
         it.setVisible(false);
         var e = it.getEquipment();
