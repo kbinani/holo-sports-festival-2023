@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -57,6 +58,7 @@ public class RelayEventListener implements MiniGame {
   private Status status = Status.IDLE;
   private final @Nonnull Delegate delegate;
   private @Nullable Race race;
+  private @Nullable Inventory registrationInventory;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -172,6 +174,27 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
+  private @Nonnull Inventory ensureRegistrationInventory() {
+    if (registrationInventory == null) {
+      var inventory = Bukkit.createInventory(null, 27, prefix.append(text("エントリーリスト", GREEN)));
+      for (var i = 0; i < TeamColor.all.length; i++) {
+        var color = TeamColor.all[i];
+        var material = color.quizConcealer;
+        for (var j = 0; j < 9; j++) {
+          var index = i * 9 * j;
+          var item = ItemBuilder.For(material)
+            .displayName(color.component().append(text(String.format(" 第%d走者", j), WHITE)))
+            .build();
+          inventory.setItem(index, item);
+        }
+      }
+      registrationInventory = inventory;
+      return inventory;
+    } else {
+      return registrationInventory;
+    }
+  }
+
   private void onClickAnnounceEntryList() {
 
   }
@@ -208,6 +231,16 @@ public class RelayEventListener implements MiniGame {
   }
 
   private void reset() {
+    teams.clear();
+    if (race != null) {
+      race.dispose();
+      race = null;
+    }
+    if (registrationInventory != null) {
+      registrationInventory.close();
+      registrationInventory = null;
+    }
+    status = Status.IDLE;
   }
 
   private void tick() {

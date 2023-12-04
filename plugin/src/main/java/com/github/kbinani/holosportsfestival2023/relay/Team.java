@@ -15,7 +15,7 @@ class Team {
     this.color = color;
   }
 
-  void clear() {
+  void dispose() {
     Arrays.fill(order, null);
     players.clear();
   }

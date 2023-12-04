@@ -52,4 +52,17 @@ class Race {
     }
     return new Result<>(new Race(teams), null);
   }
+
+  Map<TeamColor, Team> abort() {
+    var ret = new HashMap<>(this.teams);
+    this.teams.clear();
+    return ret;
+  }
+
+  void dispose() {
+    for (var team : teams.values()) {
+      team.dispose();
+    }
+    teams.clear();
+  }
 }
