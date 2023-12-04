@@ -40,6 +40,7 @@ public class RelayEventListener implements MiniGame {
   private boolean wavePrepared = false;
   private boolean breadHangerPrepared = false;
   private final List<ArmorStand> breadHangers = new ArrayList<>();
+  private Status status = Status.IDLE;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner) {
     this.world = world;
@@ -120,18 +121,6 @@ public class RelayEventListener implements MiniGame {
     e.setCancelled(true);
     var inventory = player.getInventory();
     inventory.addItem(createBread());
-    var equipment = armorStand.getEquipment();
-    equipment.setHelmet(new ItemStack(Material.AIR));
-    equipment.setChestplate(new ItemStack(Material.AIR));
-    delayRecoverBreads(armorStand);
-  }
-
-  private void delayRecoverBreads(ArmorStand target) {
-    Bukkit.getScheduler().runTaskLater(owner, () -> {
-      var equipment = target.getEquipment();
-      equipment.setHelmet(createBread());
-      equipment.setChestplate(createBread());
-    }, 20);
   }
 
   private void reset () {
@@ -163,18 +152,21 @@ public class RelayEventListener implements MiniGame {
         it.setBasePlate(false);
         it.setVisible(false);
         var e = it.getEquipment();
-        e.setHelmet(createBread());
+        e.setHelmet(new ItemStack(Material.BREAD));
       });
       breadHangers.add(stand);
     }
   }
 
   private @Nonnull ItemStack createBread() {
-    // https://youtu.be/ls3kb0qhT4E?t=11046
-    return ItemBuilder.For(Material.BREAD)
-      .displayName(text("元気が出るパン", GOLD))
-      .customByteTag(sItemTag)
-      .build();
+    if (status == Status.ACTIVE) {
+      return ItemBuilder.For(Material.BREAD)
+        .displayName(text("元気が出るパン", GOLD))
+        .customByteTag(sItemTag)
+        .build();
+    } else {
+      return new ItemStack(Material.BREAD);
+    }
   }
 
   private void tickWaves() {
