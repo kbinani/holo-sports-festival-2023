@@ -20,6 +20,7 @@ class IllusionerProjectile {
   }
 
   private static final double sVelocity = 10;
+  private static final double sVelocityStrong = 20;
   private static final int sRingEffectDurationTicks = 40;
   private static final float sWeakDamage = 0.5f;
   private static final float sStrongDamage = 2.0f;
@@ -38,6 +39,7 @@ class IllusionerProjectile {
   private final @Nonnull JavaPlugin owner;
   private int ringEffectTicks = 0;
   private final int round;
+  private final double velocity;
 
   IllusionerProjectile(@Nonnull JavaPlugin owner, @Nonnull Location from, @Nonnull Location to, boolean strong, int round, @Nonnull Delegate delegate) {
     this.owner = owner;
@@ -48,11 +50,13 @@ class IllusionerProjectile {
     this.delegate = delegate;
     var world = from.getWorld();
     if (strong) {
+      this.velocity = sVelocityStrong * Math.pow(0.8, round);
       // 強攻撃はブロックを貫通しているように見える
       var distance = to.distance(from);
-      this.numParticles = (int) Math.ceil(distance / sVelocity * 20);
+      this.numParticles = (int) Math.ceil(distance / velocity * 20);
       this.to = to;
     } else {
+      this.velocity = sVelocity;
       // 弱攻撃はブロックで遮蔽できているように見える.
       var traced = world.rayTraceBlocks(from, to.toVector().subtract(from.toVector()), 48);
       if (traced == null) {
@@ -61,7 +65,7 @@ class IllusionerProjectile {
       } else {
         var hit = traced.getHitPosition();
         var distance = hit.distance(from.toVector());
-        this.numParticles = (int) Math.ceil(distance / sVelocity * 20);
+        this.numParticles = (int) Math.ceil(distance / velocity * 20);
         this.to = new Location(world, hit.getX(), hit.getY(), hit.getZ());
       }
     }
@@ -81,7 +85,7 @@ class IllusionerProjectile {
     if (particles < numParticles) {
       var direction = to.toVector().subtract(from.toVector()).normalize();
       var elapsed = (now - startTimeMillis) / 1000.0;
-      var vector = direction.multiply(sVelocity * elapsed);
+      var vector = direction.multiply(velocity * elapsed);
       var builder = new ParticleBuilder(Particle.REDSTONE);
       builder
         .allPlayers()
