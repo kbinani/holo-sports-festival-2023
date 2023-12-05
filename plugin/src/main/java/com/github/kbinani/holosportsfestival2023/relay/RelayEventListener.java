@@ -39,6 +39,11 @@ public class RelayEventListener implements MiniGame {
     Point3i relayGetAbortSignLocation();
 
     BoundingBox relayGetAnnounceBounds();
+
+    @Nullable
+    TrackAndField relayTakeTrackAndFieldOwnership();
+
+    void relayReleaseTrackAndFieldOwnership();
   }
 
   public static final Component title = text("[Relay]", AQUA);
@@ -62,6 +67,8 @@ public class RelayEventListener implements MiniGame {
   private @Nullable Race race;
   private @Nullable Inventory entryBookInventory;
   private @Nullable Countdown countdown;
+  private @Nullable TrackAndField taf;
+  private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -195,7 +202,7 @@ public class RelayEventListener implements MiniGame {
         }
         var location = new Point3i(block.getLocation());
         if (delegate.relayGetAbortSignLocation().equals(location)) {
-          onClickAbort();
+          abort();
           e.setCancelled(true);
           return;
         }
@@ -293,7 +300,7 @@ public class RelayEventListener implements MiniGame {
       .build();
   }
 
-  private void onClickAbort() {
+  private void abort() {
     if (countdown != null) {
       countdown.cancel();
       countdown = null;
@@ -310,6 +317,10 @@ public class RelayEventListener implements MiniGame {
     if (status != Status.IDLE) {
       broadcast(prefix.append(text("ゲームを中断しました", RED)));
     }
+    if (taf != null) {
+      Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
+    }
+    releaseTrackAndFieldOwnership();
     status = Status.IDLE;
   }
 
@@ -390,6 +401,11 @@ public class RelayEventListener implements MiniGame {
     if (status != Status.IDLE) {
       return;
     }
+    var taf = takeTrackAndFieldOwnership();
+    if (taf == null) {
+      broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
+      return;
+    }
     var result = Race.From(this.teams);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
@@ -402,7 +418,11 @@ public class RelayEventListener implements MiniGame {
     if (race != null) {
       race.dispose();
     }
+    taf.setRelayStartGateEnabled(true);
+    taf.setEnablePhotoSpot(false);
     race = result.value;
+    race.teleport(safeSpot.toLocation(world));
+    Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
     status = Status.COUNTDOWN;
     var titlePrefix = text("スタートまで", AQUA);
     var subtitle = text("春夏秋冬リレー", GREEN);
@@ -413,10 +433,39 @@ public class RelayEventListener implements MiniGame {
     );
   }
 
+  private @Nullable TrackAndField takeTrackAndFieldOwnership() {
+    if (this.taf != null) {
+      return this.taf;
+    }
+    var taf = delegate.relayTakeTrackAndFieldOwnership();
+    if (taf == null) {
+      return null;
+    }
+    taf.setMode(TrackAndField.Mode.TRACK);
+    this.taf = taf;
+    return taf;
+  }
+
+  private void releaseTrackAndFieldOwnership() {
+    if (this.taf == null) {
+      return;
+    }
+    this.taf.setMode(TrackAndField.Mode.IDLE);
+    this.taf = null;
+    delegate.relayReleaseTrackAndFieldOwnership();
+  }
+
   private void start() {
     if (status != Status.COUNTDOWN) {
       return;
     }
+    var taf = takeTrackAndFieldOwnership();
+    if (taf == null) {
+      broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
+      abort();
+      return;
+    }
+    taf.setRelayStartGateEnabled(false);
     status = Status.ACTIVE;
     //NOTE: 本家では号砲は鳴っていないぽい
     world.playSound(new Location(world, x(3) + 0.5, y(82), z(71) + 0.5), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1, 0);
@@ -436,6 +485,7 @@ public class RelayEventListener implements MiniGame {
       countdown.cancel();
       countdown = null;
     }
+    releaseTrackAndFieldOwnership();
     status = Status.IDLE;
   }
 

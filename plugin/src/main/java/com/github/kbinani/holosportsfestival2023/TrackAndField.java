@@ -37,6 +37,7 @@ public class TrackAndField {
   public final Point3i relayResumeSign;
 
   public final BoundingBox announceBounds;
+  public final BoundingBox photoSpotBounds;
 
   private final @Nonnull World world;
   private final @Nonnull Point3i offset;
@@ -65,6 +66,7 @@ public class TrackAndField {
     relayResumeSign = pos(0, 80, 71);
 
     announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
+    photoSpotBounds = new BoundingBox(x(-6), y(80), z(48), x(15), y(83), z(54));
   }
 
   public void setMode(Mode mode) {
@@ -118,7 +120,7 @@ public class TrackAndField {
     }
   }
 
-  private void setEnablePhotoSpot(boolean enable) {
+  public void setEnablePhotoSpot(boolean enable) {
     if (enable) {
       fill(pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
       fill(pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);

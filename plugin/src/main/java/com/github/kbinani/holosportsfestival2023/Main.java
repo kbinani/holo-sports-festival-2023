@@ -269,6 +269,27 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     return taf.relayAbortSign;
   }
 
+  @org.jetbrains.annotations.Nullable
+  @Override
+  public TrackAndField relayTakeTrackAndFieldOwnership() {
+    var taf = this.ensureTrackAndField();
+    if (this.tafOwner == null || this.tafOwner == TrackAndFieldOwner.RELAY) {
+      getLogger().log(Level.INFO, "ownership of track and field is taken by relay");
+      this.tafOwner = TrackAndFieldOwner.RELAY;
+      return taf;
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public void relayReleaseTrackAndFieldOwnership() {
+    if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.RELAY) {
+      this.tafOwner = null;
+      getLogger().log(Level.INFO, "ownership of track and field was released from relay");
+    }
+  }
+
   private @Nonnull TrackAndField ensureTrackAndField() {
     if (this.taf != null) {
       return this.taf;

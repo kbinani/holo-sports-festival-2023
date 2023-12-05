@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.relay;
 import com.github.kbinani.holosportsfestival2023.Result;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -19,6 +20,14 @@ class Race {
   private Race(Map<TeamColor, Team> teams) {
     this.teams = new HashMap<>(teams);
     teams.clear();
+  }
+
+  void teleport(Location location) {
+    for (var team : teams.values()) {
+      team.players().forEach(player -> {
+        player.teleport(location);
+      });
+    }
   }
 
   @Nonnull

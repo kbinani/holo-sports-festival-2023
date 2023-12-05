@@ -327,7 +327,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     if (!registrants.validate()) {
       return;
     }
-    takeTrackAndFieldOwnership();
+    if (takeTrackAndFieldOwnership() == null) {
+      broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
+      return;
+    }
     announceEntryList();
     var titlePrefix = text("スタートまで", AQUA);
     var subtitle = text("騎馬戦", GREEN);
