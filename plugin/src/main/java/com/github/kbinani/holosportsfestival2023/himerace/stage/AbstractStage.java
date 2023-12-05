@@ -262,12 +262,12 @@ public abstract class AbstractStage {
     }
     started = v;
     if (started) {
-      openGate();
+      openGate(true);
       onStart();
     }
   }
 
-  public final void openGate() {
+  public final void openGate(boolean animate) {
     if (openGateTask != null) {
       openGateTask.cancel();
       openGateTask = null;
@@ -276,20 +276,24 @@ public abstract class AbstractStage {
       return;
     }
 
-    var scheduler = Bukkit.getScheduler();
-    var interval = 15;
+    if (animate) {
+      var scheduler = Bukkit.getScheduler();
+      var interval = 15;
 
-    setGateState(1);
+      setGateState(1);
 
-    final var count = new AtomicInteger(1);
-    openGateTask = scheduler.runTaskTimer(owner, () -> {
-      var c = count.incrementAndGet();
-      if (c == 3) {
-        openGateTask.cancel();
-        openGateTask = null;
-      }
-      setGateState(c);
-    }, interval, interval);
+      final var count = new AtomicInteger(1);
+      openGateTask = scheduler.runTaskTimer(owner, () -> {
+        var c = count.incrementAndGet();
+        if (c == 3) {
+          openGateTask.cancel();
+          openGateTask = null;
+        }
+        setGateState(c);
+      }, interval, interval);
+    } else {
+      setGateState(3);
+    }
   }
 
   public final void closeGate() {

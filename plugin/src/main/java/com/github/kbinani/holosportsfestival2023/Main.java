@@ -36,7 +36,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   }
 
   private World world;
-  private List<MiniGame> miniGames;
+  private final List<MiniGame> miniGames = new ArrayList<>();
   private boolean isLevelsReady = false;
   private @Nullable TrackAndField taf;
   private @Nullable TrackAndFieldOwner tafOwner;
@@ -46,7 +46,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     Optional<World> overworld = getServer().getWorlds().stream().filter(it -> it.getEnvironment() == World.Environment.NORMAL).findFirst();
     if (overworld.isEmpty()) {
       getLogger().log(java.util.logging.Level.SEVERE, "server should have at least one overworld dimension");
-      setEnabled(false);
+      getServer().getPluginManager().disablePlugin(this);
       return;
     }
     world = overworld.get();
@@ -84,7 +84,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
       for (String reason : reasons) {
         getLogger().log(java.util.logging.Level.SEVERE, "  " + reason);
       }
-      setEnabled(false);
+      getServer().getPluginManager().disablePlugin(this);
       return;
     }
     if (!warnings.isEmpty()) {
@@ -96,14 +96,27 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     PluginManager pluginManager = getServer().getPluginManager();
     pluginManager.registerEvents(this, this);
 
-    miniGames = new ArrayList<>();
-    miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
-    miniGames.add(new HoloUpEventListener(world, this));
-    miniGames.add(new KibasenEventListener(world, this, this));
-    miniGames.add(new RelayEventListener(world, this, this));
+    if (miniGames.isEmpty()) {
+      miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
+      miniGames.add(new HoloUpEventListener(world, this));
+      miniGames.add(new KibasenEventListener(world, this, this));
+      miniGames.add(new RelayEventListener(world, this, this));
+    }
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
+  }
+
+  @Override
+  public void onDisable() {
+    for (var game : miniGames) {
+      game.miniGameReset();
+    }
+    getServer().getOnlinePlayers().forEach(player -> {
+      for (var game : miniGames) {
+        game.miniGameClearItem(player);
+      }
+    });
   }
 
   @EventHandler
