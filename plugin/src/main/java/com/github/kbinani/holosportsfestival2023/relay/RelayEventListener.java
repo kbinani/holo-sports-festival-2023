@@ -2,10 +2,7 @@ package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,6 +36,8 @@ public class RelayEventListener implements MiniGame {
 
     Point3i relayGetStartSignLocation();
 
+    Point3i relayGetAbortSignLocation();
+
     BoundingBox relayGetAnnounceBounds();
   }
 
@@ -62,6 +61,7 @@ public class RelayEventListener implements MiniGame {
   private final @Nonnull Delegate delegate;
   private @Nullable Race race;
   private @Nullable Inventory entryBookInventory;
+  private @Nullable Countdown countdown;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -187,6 +187,19 @@ public class RelayEventListener implements MiniGame {
           }
         }
       }
+    } else {
+      if (action == Action.RIGHT_CLICK_BLOCK) {
+        var block = e.getClickedBlock();
+        if (block == null) {
+          return;
+        }
+        var location = new Point3i(block.getLocation());
+        if (delegate.relayGetAbortSignLocation().equals(location)) {
+          onClickAbort();
+          e.setCancelled(true);
+          return;
+        }
+      }
     }
   }
 
@@ -280,6 +293,46 @@ public class RelayEventListener implements MiniGame {
       .build();
   }
 
+  private void onClickAbort() {
+    if (countdown != null) {
+      countdown.cancel();
+      countdown = null;
+    }
+    for (var team : this.teams.values()) {
+      team.dispose();
+    }
+    this.teams.clear();
+    if (race != null) {
+      var teams = race.abort();
+      this.teams.putAll(teams);
+    }
+    updateEntryBookContents();
+    if (status != Status.IDLE) {
+      broadcast(prefix.append(text("ゲームを中断しました", RED)));
+    }
+    status = Status.IDLE;
+  }
+
+  private void updateEntryBookContents() {
+    var inventory = ensureEntryBookInventory();
+    for (var color : TeamColor.all) {
+      var team = teams.get(color);
+      for (var i = 0; i < 9; i++) {
+        var player = team == null ? null : team.getAssignedPlayer(i);
+        var index = color.ordinal() * 9 + i;
+        if (player == null) {
+          inventory.setItem(index, createPlaceholder(color, i));
+        } else {
+          var head = ItemBuilder.For(Material.PLAYER_HEAD)
+            .displayName(color.component().append(text(String.format(" 第%d走者 ", i + 1), WHITE).append(text(player.getName(), GOLD))))
+            .meta(SkullMeta.class, it -> it.setOwningPlayer(player))
+            .build();
+          inventory.setItem(index, head);
+        }
+      }
+    }
+  }
+
   private void onClickAnnounceEntryList() {
 
   }
@@ -334,7 +387,39 @@ public class RelayEventListener implements MiniGame {
   }
 
   private void onClickStart() {
+    if (status != Status.IDLE) {
+      return;
+    }
+    var result = Race.From(this.teams);
+    if (result.reason != null) {
+      broadcast(prefix.append(result.reason));
+      return;
+    }
+    if (result.value == null) {
+      broadcast(prefix.append(text("不明なエラー", RED)));
+      return;
+    }
+    if (race != null) {
+      race.dispose();
+    }
+    race = result.value;
+    status = Status.COUNTDOWN;
+    var titlePrefix = text("スタートまで", AQUA);
+    var subtitle = text("春夏秋冬リレー", GREEN);
+    countdown = new Countdown(
+      owner, world, delegate.relayGetAnnounceBounds(),
+      titlePrefix, AQUA, subtitle,
+      10, this::start
+    );
+  }
 
+  private void start() {
+    if (status != Status.COUNTDOWN) {
+      return;
+    }
+    status = Status.ACTIVE;
+    //NOTE: 本家では号砲は鳴っていないぽい
+    world.playSound(new Location(world, x(3) + 0.5, y(82), z(71) + 0.5), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1, 0);
   }
 
   private void reset() {
@@ -346,6 +431,10 @@ public class RelayEventListener implements MiniGame {
     if (entryBookInventory != null) {
       entryBookInventory.close();
       entryBookInventory = null;
+    }
+    if (countdown != null) {
+      countdown.cancel();
+      countdown = null;
     }
     status = Status.IDLE;
   }

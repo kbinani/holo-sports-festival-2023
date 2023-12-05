@@ -22,19 +22,23 @@ class Race {
   }
 
   @Nonnull
-  Result<Race, Component> From(Map<TeamColor, Team> teams) {
+  static Result<Race, Component> From(Map<TeamColor, Team> teams) {
     int count = -1;
     int total = 0;
-    for (var team : teams.values()) {
-      var size = team.size();
-      if (size == 0) {
+    for (var entry : teams.entrySet()) {
+      var team = entry.getValue();
+      var size = team.getOrderLength();
+      if (team.getParticipantsCount() == 0) {
         continue;
+      }
+      if (team.getParticipantsCount() != team.getOrderLength()) {
+        // https://youtu.be/uEpmE5WJPW8?t=5333
+        return new Result<>(null, text("走順が正しく選択出来ていないチームがあるため、ゲームを開始できません。", RED));
       }
       if (count < 0) {
         count = size;
       } else if (count != size) {
-        // https://youtu.be/uEpmE5WJPW8?t=5333
-        return new Result<>(null, text("走順が正しく選択出来ていないチームがあるため、ゲームを開始できません。", RED));
+        return new Result<>(null, text("参加者数が違うチームがあるため、ゲームを開始できません。", RED));
       }
       total += size;
     }

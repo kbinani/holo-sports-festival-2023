@@ -21,7 +21,7 @@ class Team {
     players.clear();
   }
 
-  int size() {
+  int getOrderLength() {
     int count = 0;
     for (Player player : order) {
       if (player == null) {
@@ -31,6 +31,10 @@ class Team {
       }
     }
     return count;
+  }
+
+  int getParticipantsCount() {
+    return players.size();
   }
 
   boolean assign(Player player, int order) {

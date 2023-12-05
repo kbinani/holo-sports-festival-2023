@@ -263,6 +263,12 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     return taf.announceBounds;
   }
 
+  @Override
+  public Point3i relayGetAbortSignLocation() {
+    var taf = ensureTrackAndField();
+    return taf.relayAbortSign;
+  }
+
   private @Nonnull TrackAndField ensureTrackAndField() {
     if (this.taf != null) {
       return this.taf;
