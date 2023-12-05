@@ -352,8 +352,7 @@ public class Team implements Level.Delegate {
     return switch (role) {
       case PRINCESS -> {
         if (princess == null) {
-          if (!Cloakroom.shared.store(player)) {
-            player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+          if (!Cloakroom.shared.store(player, prefix)) {
             yield false;
           }
           princess = player;
@@ -365,8 +364,7 @@ public class Team implements Level.Delegate {
       }
       case KNIGHT -> {
         if (kMaxKnightPlayers > knights.size()) {
-          if (!Cloakroom.shared.store(player)) {
-            player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+          if (!Cloakroom.shared.store(player, prefix)) {
             yield false;
           }
           knights.add(player);

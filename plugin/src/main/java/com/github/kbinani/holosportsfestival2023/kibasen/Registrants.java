@@ -151,8 +151,7 @@ class Registrants {
     if (getParticipation(player) != null) {
       return;
     }
-    if (!Cloakroom.shared.store(player)) {
-      player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+    if (!Cloakroom.shared.store(player, prefix)) {
       return;
     }
     var inventory = player.getInventory();
@@ -187,8 +186,8 @@ class Registrants {
     if (p.unit.vehicle != null) {
       return;
     }
-    if (!Cloakroom.shared.store(vehicle)) {
-      attacker.sendMessage(prefix.append(text("そのプレイヤーは馬にできません。(インベントリのバックアップに失敗)", RED)));
+    if (!Cloakroom.shared.store(vehicle, prefix)) {
+      attacker.sendMessage(prefix.append(text("そのプレイヤーは馬にできません。(他の競技に参加しています)", RED)));
       return;
     }
     if (getParticipation(vehicle) != null) {

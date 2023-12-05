@@ -364,8 +364,7 @@ public class RelayEventListener implements MiniGame {
         return;
       }
     }
-    if (!Cloakroom.shared.store(player)) {
-      player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+    if (!Cloakroom.shared.store(player, prefix)) {
       return;
     }
     var team = ensureTeam(color);

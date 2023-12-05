@@ -352,8 +352,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           .append(text("既に他のチームにエントリーしています。", RED))
         );
       } else {
-        if (!Cloakroom.shared.store(player)) {
-          player.sendMessage(prefix.append(text("インベントリのバックアップに失敗しました", RED)));
+        if (!Cloakroom.shared.store(player, prefix)) {
           return;
         }
         registrants.put(color, player);
