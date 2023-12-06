@@ -11,6 +11,7 @@ class Team {
   private final @Nonnull TeamColor color;
   private final @Nonnull Player[] order = new Player[9];
   private final @Nonnull Set<Player> players = new HashSet<>();
+  int currentRunningOrder = 0;
 
   Team(@Nonnull TeamColor color) {
     this.color = color;

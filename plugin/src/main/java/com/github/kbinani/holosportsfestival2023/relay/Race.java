@@ -1,15 +1,20 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.Players;
+import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.Result;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,16 +22,45 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.CreateBaton;
+import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.prefix;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class Race {
+  interface Delegate {
+    void raceDidDetectGoal(TeamColor color);
+  }
+
   private final @Nonnull World world;
   final @Nonnull Map<TeamColor, Team> teams;
+  private final @Nonnull Point3i offset;
+  private final BoundingBox batonPassAreaEven;
+  private final BoundingBox batonPassAreaOdd;
+  private final @Nonnull BoundingBox startingArea;
+  private final @Nonnull BoundingBox startingAreaEven;
+  private final @Nonnull BoundingBox startingAreaOdd;
+  private final @Nonnull BoundingBox goalDetectionArae;
+  private final @Nonnull Delegate delegate;
 
-  private Race(@Nonnull World world, Map<TeamColor, Team> teams) {
-    this.world       = world;
+  private Race(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull Delegate delegate) {
+    this.world = world;
+    this.offset = offset;
+    this.delegate = delegate;
     this.teams = new HashMap<>(teams);
+    batonPassAreaEven = new BoundingBox(x(-1), y(80), z(76), x(10), y(85), z(83));
+    batonPassAreaOdd = new BoundingBox(x(-1), y(80), z(22), x(10), y(85), z(29));
+    startingArea = new BoundingBox(x(4), y(80), z(76), x(5), y(80), z(83));
+    startingAreaEven = new BoundingBox(x(5), y(80), z(76), x(6), y(80), z(79));
+    startingAreaOdd = new BoundingBox(x(3), y(80), z(26), x(4), y(80), z(29));
+    var count = 0;
+    for (var team : this.teams.values()) {
+      count = Math.max(count, team.getOrderLength());
+    }
+    if (count % 2 == 0) {
+      goalDetectionArae = new BoundingBox(x(4) + 0.5, y(80), z(76), x(10), y(85), z(83));
+    } else {
+      goalDetectionArae = new BoundingBox(x(-1), y(80), z(22), x(4) + 0.5, y(85), z(29));
+    }
     teams.clear();
   }
 
@@ -38,13 +72,13 @@ class Race {
     }
   }
 
-  void prepare(BoundingBox startingArea) {
+  void prepare() {
     eachPlayers(RelayEventListener::ClearItem);
     for (var entry : teams.entrySet()) {
       var team = entry.getValue();
       var player = team.getAssignedPlayer(0);
       if (player != null) {
-        Players.Distribute(world, startingArea, player);
+        Players.Distribute(world, getStartingArea(0), player);
       }
     }
   }
@@ -53,15 +87,21 @@ class Race {
     for (var entry : teams.entrySet()) {
       var color = entry.getKey();
       var team = entry.getValue();
+      team.currentRunningOrder = 0;
       var player = team.getAssignedPlayer(0);
       if (player != null) {
         player.getInventory().setItemInOffHand(CreateBaton(color));
+        var next = team.getAssignedPlayer(1);
+        if (next != null) {
+          Players.Distribute(world, getStartingArea(1), next);
+          notifyNextRunner(next, player);
+        }
       }
     }
   }
 
   @Nonnull
-  static Result<Race, Component> From(@Nonnull World world, Map<TeamColor, Team> teams) {
+  static Result<Race, Component> From(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull Delegate delegate) {
     int count = -1;
     int total = 0;
     for (var entry : teams.entrySet()) {
@@ -94,7 +134,7 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(world, teams), null);
+    return new Result<>(new Race(world, teams, offset, delegate), null);
   }
 
   Map<TeamColor, Team> abort() {
@@ -116,5 +156,181 @@ class Race {
         cb.accept(player);
       }
     }
+  }
+
+  void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+    if (!(e.getEntity() instanceof Player defender)) {
+      System.out.println(1);
+      return;
+    }
+    if (!(e.getDamager() instanceof Player attacker)) {
+      System.out.println(2);
+      return;
+    }
+    var defenderColor = getTeamColor(defender);
+    if (defenderColor == null) {
+      System.out.println(3);
+      return;
+    }
+    var attackerColor = getTeamColor(attacker);
+    if (attackerColor == null) {
+      System.out.println(4);
+      return;
+    }
+    if (defenderColor != attackerColor) {
+      System.out.println(5);
+      return;
+    }
+    var team = teams.get(attackerColor);
+    if (team == null) {
+      System.out.println(6);
+      return;
+    }
+    var defenderOrder = team.getCurrentOrder(defender);
+    if (defenderOrder == null) {
+      System.out.println(7);
+      return;
+    }
+    var attackerOrder = team.getCurrentOrder(attacker);
+    if (attackerOrder == null) {
+      System.out.println(8);
+      return;
+    }
+    if (attackerOrder + 1 != defenderOrder) {
+      System.out.println(9);
+      return;
+    }
+    var batonPassArea = getBatonPassArea(attackerOrder);
+    if (batonPassArea.contains(attacker.getLocation().toVector()) && batonPassArea.contains(defender.getLocation().toVector())) {
+      attacker.sendMessage(prefix.append(text("バトンパス可能なエリアから外れています", RED)));
+      defender.sendMessage(prefix.append(text("バトンパス可能なエリアから外れています", RED)));
+      return;
+    }
+    var baton = removeBaton(attacker, attackerColor);
+    if (baton == null) {
+      return;
+    }
+    var inventory = defender.getInventory();
+    inventory.setItemInOffHand(baton);
+    team.currentRunningOrder = defenderOrder;
+    signalBossbarUpdate(attackerColor);
+    // https://youtu.be/0zFjBmflulU?t=11048
+    // defender の次の走者を所定の位置に移動
+    var next = team.getAssignedPlayer(defenderOrder + 1);
+    if (next != null) {
+      Players.Distribute(world, getStartingArea(defenderOrder + 1), next);
+      notifyNextRunner(next, defender);
+    }
+  }
+
+  private @Nullable ItemStack removeBaton(Player player, TeamColor color) {
+    var baton = CreateBaton(color);
+    var equipment = player.getEquipment();
+    var offHand = equipment.getItemInOffHand();
+    var mainHand = equipment.getItemInMainHand();
+    if (offHand.isSimilar(baton)) {
+      equipment.setItemInOffHand(null);
+      return baton;
+    }
+    if (mainHand.isSimilar(baton)) {
+      equipment.setItemInMainHand(null);
+      return baton;
+    }
+    return null;
+  }
+
+  private void notifyNextRunner(Player next, Player prev) {
+    next.sendMessage(prefix
+      .append(text(prev.getName(), GOLD))
+      .append(text("からバトンを受け取って下さい！", WHITE)));
+    next.sendMessage(prefix
+      .append(text("Have ", WHITE))
+      .append(text(prev.getName(), GOLD))
+      .append(text(" pass you the baton!", WHITE))
+    );
+  }
+
+  void onPlayerMove(PlayerMoveEvent e) {
+    var player = e.getPlayer();
+    if (!goalDetectionArae.contains(player.getLocation().toVector())) {
+      return;
+    }
+    var color = getTeamColor(player);
+    if (color == null) {
+      return;
+    }
+    var team = teams.get(color);
+    if (team == null) {
+      return;
+    }
+    var order = team.getCurrentOrder(player);
+    if (order == null) {
+      return;
+    }
+    if (order != team.currentRunningOrder) {
+      return;
+    }
+    var orderLength = team.getOrderLength();
+    if (order + 1 != orderLength) {
+      // 最終走者じゃない
+      return;
+    }
+    var baton = removeBaton(player, color);
+    if (baton == null) {
+      return;
+    }
+    team.currentRunningOrder = orderLength;
+    //TODO: 花火
+    delegate.raceDidDetectGoal(color);
+  }
+
+  private void signalBossbarUpdate(TeamColor color) {
+    //TODO:
+  }
+
+  private BoundingBox getBatonPassArea(int orderFrom) {
+    if (orderFrom % 2 == 0) {
+      return batonPassAreaEven;
+    } else {
+      return batonPassAreaOdd;
+    }
+  }
+
+  private BoundingBox getStartingArea(int order) {
+    if (order == 0) {
+      return startingArea;
+    } else if (order % 2 == 0) {
+      return startingAreaEven;
+    } else {
+      return startingAreaOdd;
+    }
+  }
+
+  @Nullable
+  TeamColor getTeamColor(Player player) {
+    for (var entry : teams.entrySet()) {
+      var team = entry.getValue();
+      var color = entry.getKey();
+      if (team.contains(player)) {
+        return color;
+      }
+    }
+    return null;
+  }
+
+  private int x(int x) {
+    return x + offset.x;
+  }
+
+  private int y(int y) {
+    return y + offset.y;
+  }
+
+  private int z(int z) {
+    return z + offset.z;
+  }
+
+  private Point3i pos(int x, int y, int z) {
+    return new Point3i(x + offset.x, y + offset.y, z + offset.z);
   }
 }

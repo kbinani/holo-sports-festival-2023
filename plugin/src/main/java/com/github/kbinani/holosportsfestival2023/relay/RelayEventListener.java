@@ -14,6 +14,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +30,7 @@ import java.util.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-public class RelayEventListener implements MiniGame {
+public class RelayEventListener implements MiniGame, Race.Delegate {
   public interface Delegate {
     Point3i relayGetJoinSignLocation(TeamColor color);
 
@@ -70,7 +71,6 @@ public class RelayEventListener implements MiniGame {
   private @Nullable Countdown countdown;
   private @Nullable TrackAndField taf;
   private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
-  private final @Nonnull BoundingBox startingArea;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -80,7 +80,6 @@ public class RelayEventListener implements MiniGame {
     pistonPositions.add(pos(57, 79, 57));
     pistonPositions.add(pos(59, 79, 57));
     pistonPositions.add(pos(61, 79, 57));
-    startingArea = new BoundingBox(x(4), y(80), z(76), x(5), y(80), z(83));
     this.waveTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 1, 1);
   }
 
@@ -141,10 +140,13 @@ public class RelayEventListener implements MiniGame {
   @EventHandler
   @SuppressWarnings("unused")
   public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
-    if (!(e.getEntity() instanceof ArmorStand armorStand)) {
-      return;
+    if (status == Status.ACTIVE && race != null) {
+      race.onEntityDamageByEntity(e);
     }
     if (!(e.getDamager() instanceof Player player)) {
+      return;
+    }
+    if (!(e.getEntity() instanceof ArmorStand armorStand)) {
       return;
     }
     if (breadHangers.stream().noneMatch((it -> it == armorStand))) {
@@ -267,6 +269,18 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerMove(PlayerMoveEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    if (race == null) {
+      return;
+    }
+    race.onPlayerMove(e);
+  }
+
   private @Nullable TeamColor getRegistration(Player player) {
     if (status == Status.IDLE) {
       for (var entry : teams.entrySet()) {
@@ -277,6 +291,11 @@ public class RelayEventListener implements MiniGame {
       }
     }
     return null;
+  }
+
+  @Override
+  public void raceDidDetectGoal(TeamColor color) {
+    broadcast(prefix.append(color.component()).append(text("がゴールしました！", WHITE)));
   }
 
   private @Nonnull Inventory ensureEntryBookInventory() {
@@ -419,7 +438,7 @@ public class RelayEventListener implements MiniGame {
   }
 
   private @Nonnull ItemStack createEntryBook() {
-   return  ItemBuilder.For(Material.BOOK)
+    return ItemBuilder.For(Material.BOOK)
       .displayName(text("エントリーブック (右クリックで使用) / Entry Book (Right click to open)", GOLD))
       .customByteTag(sItemTag)
       .build();
@@ -455,7 +474,7 @@ public class RelayEventListener implements MiniGame {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       return;
     }
-    var result = Race.From(world, this.teams);
+    var result = Race.From(world, this.teams, offset, this);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
       return;
@@ -473,7 +492,7 @@ public class RelayEventListener implements MiniGame {
     race = result.value;
     race.teleportAll(safeSpot.toLocation(world));
     Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
-    race.prepare(startingArea);
+    race.prepare();
     if (entryBookInventory != null) {
       entryBookInventory.close();
     }
@@ -513,13 +532,13 @@ public class RelayEventListener implements MiniGame {
     if (status != Status.COUNTDOWN) {
       return;
     }
-    if (race == null) {
-      return;
-    }
     var taf = takeTrackAndFieldOwnership();
     if (taf == null) {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       abort();
+      return;
+    }
+    if (race == null) {
       return;
     }
     taf.setRelayStartGateEnabled(false);
