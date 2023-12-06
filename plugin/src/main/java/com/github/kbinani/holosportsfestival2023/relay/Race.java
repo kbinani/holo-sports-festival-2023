@@ -1,28 +1,35 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
+import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.Result;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 class Race {
+  private final @Nonnull World world;
   private final @Nonnull Map<TeamColor, Team> teams;
 
-  private Race(Map<TeamColor, Team> teams) {
+  private Race(@Nonnull World world, Map<TeamColor, Team> teams) {
+    this.world       = world;
     this.teams = new HashMap<>(teams);
     teams.clear();
   }
 
-  void teleport(Location location) {
+  void teleportAll(Location location) {
     for (var team : teams.values()) {
       team.players().forEach(player -> {
         player.teleport(location);
@@ -30,8 +37,17 @@ class Race {
     }
   }
 
+  void teleportFirstRunners(BoundingBox box) {
+    for (var team : teams.values()) {
+      var player = team.getAssignedPlayer(0);
+      if (player != null) {
+        Players.Distribute(world, box, player);
+      }
+    }
+  }
+
   @Nonnull
-  static Result<Race, Component> From(Map<TeamColor, Team> teams) {
+  static Result<Race, Component> From(@Nonnull World world, Map<TeamColor, Team> teams) {
     int count = -1;
     int total = 0;
     for (var entry : teams.entrySet()) {
@@ -64,7 +80,7 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(teams), null);
+    return new Result<>(new Race(world, teams), null);
   }
 
   Map<TeamColor, Team> abort() {
@@ -78,5 +94,13 @@ class Race {
       team.dispose();
     }
     teams.clear();
+  }
+
+  void eachPlayers(Consumer<Player> cb) {
+    for (var team : teams.values()) {
+      for (var player : team.players()) {
+        cb.accept(player);
+      }
+    }
   }
 }

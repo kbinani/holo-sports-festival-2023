@@ -69,6 +69,7 @@ public class RelayEventListener implements MiniGame {
   private @Nullable Countdown countdown;
   private @Nullable TrackAndField taf;
   private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
+  private final @Nonnull BoundingBox startingArea;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -78,6 +79,7 @@ public class RelayEventListener implements MiniGame {
     pistonPositions.add(pos(57, 79, 57));
     pistonPositions.add(pos(59, 79, 57));
     pistonPositions.add(pos(61, 79, 57));
+    startingArea = new BoundingBox(x(4), y(80), z(76), x(5), y(80), z(83));
     this.waveTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 1, 1);
   }
 
@@ -310,6 +312,7 @@ public class RelayEventListener implements MiniGame {
     }
     this.teams.clear();
     if (race != null) {
+      race.teleportAll(safeSpot.toLocation(world));
       var teams = race.abort();
       this.teams.putAll(teams);
     }
@@ -405,7 +408,7 @@ public class RelayEventListener implements MiniGame {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       return;
     }
-    var result = Race.From(this.teams);
+    var result = Race.From(world, this.teams);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
       return;
@@ -420,8 +423,13 @@ public class RelayEventListener implements MiniGame {
     taf.setRelayStartGateEnabled(true);
     taf.setEnablePhotoSpot(false);
     race = result.value;
-    race.teleport(safeSpot.toLocation(world));
+    race.teleportAll(safeSpot.toLocation(world));
+    race.teleportFirstRunners(startingArea);
     Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
+    race.eachPlayers(RelayEventListener::ClearItem);
+    if (entryBookInventory != null) {
+      entryBookInventory.close();
+    }
     status = Status.COUNTDOWN;
     var titlePrefix = text("スタートまで", AQUA);
     var subtitle = text("春夏秋冬リレー", GREEN);
