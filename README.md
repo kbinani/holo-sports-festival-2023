@@ -6,6 +6,7 @@ Minecraft [#ホロライブ大運動会2023](https://twitter.com/hashtag/%E3%83%
 以下のミニゲームがプレイ可能です。
 - 上を目指せ! HoloUp
 - 騎馬戦
+- 姫護衛レース
 
 ## ビルド方法
 
