@@ -36,11 +36,15 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public interface Delegate {
     @Nullable
     TrackAndField kibasenTakeTrackAndFieldOwnership();
+
     void kibasenReleaseTrackAndFieldOwnership();
 
     Point3i kibasenGetJoinSignLocation(TeamColor color);
+
     Point3i kibasenGetAnnounceEntryListSignLocation();
+
     Point3i kibasenGetStartSignLocation();
+
     BoundingBox kibasenGetAnnounceBounds();
   }
 

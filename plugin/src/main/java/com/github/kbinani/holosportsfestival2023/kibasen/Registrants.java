@@ -89,7 +89,8 @@ class Registrants {
     return true;
   }
 
-  @Nullable Session promote(JavaPlugin owner, World world, BoundingBox announceBounds, Session.Delegate delegate) {
+  @Nullable
+  Session promote(JavaPlugin owner, World world, BoundingBox announceBounds, Session.Delegate delegate) {
     if (registrants.isEmpty()) {
       return null;
     }
@@ -383,29 +384,29 @@ class Registrants {
     if (!(inventory.getHolder(false) instanceof Barrel barrel)) {
       return;
     }
-      // https://youtu.be/gp6ABH58SGA?t=2068
-      barrel.customName(prefix.append(text("大将", DARK_GREEN)));
-      barrel.update();
+    // https://youtu.be/gp6ABH58SGA?t=2068
+    barrel.customName(prefix.append(text("大将", DARK_GREEN)));
+    barrel.update();
 
-      var materials = new Material[]{Material.RED_STAINED_GLASS_PANE, Material.WHITE_STAINED_GLASS_PANE, Material.YELLOW_STAINED_GLASS_PANE};
-      for (var x = 0; x < 3; x++) {
-        var material = materials[x];
-        for (var y = 0; y < 3; y++) {
-          for (var i = 0; i < 3; i++) {
-            var index = x * 3 + i + y * 9;
-            var item = ItemBuilder.For(material)
-              .displayName(Component.empty())
-              .build();
-            inventory.setItem(index, item);
-          }
+    var materials = new Material[]{Material.RED_STAINED_GLASS_PANE, Material.WHITE_STAINED_GLASS_PANE, Material.YELLOW_STAINED_GLASS_PANE};
+    for (var x = 0; x < 3; x++) {
+      var material = materials[x];
+      for (var y = 0; y < 3; y++) {
+        for (var i = 0; i < 3; i++) {
+          var index = x * 3 + i + y * 9;
+          var item = ItemBuilder.For(material)
+            .displayName(Component.empty())
+            .build();
+          inventory.setItem(index, item);
         }
       }
-      for (var x = 0; x < 3; x++) {
-        var color = TeamColor.all[x];
-        var wool = CreateWool(color);
-        var index = 10 + x * 3;
-        inventory.setItem(index, wool);
-      }
+    }
+    for (var x = 0; x < 3; x++) {
+      var color = TeamColor.all[x];
+      var wool = CreateWool(color);
+      var index = 10 + x * 3;
+      inventory.setItem(index, wool);
+    }
   }
 
   private void updateLeaderRegistrationBarrel() {

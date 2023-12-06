@@ -478,7 +478,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       return;
     }
-    var result = Race.From(world, this.teams, offset, delegate.relayGetAnnounceBounds(),this);
+    var result = Race.From(world, this.teams, offset, delegate.relayGetAnnounceBounds(), this);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
       return;

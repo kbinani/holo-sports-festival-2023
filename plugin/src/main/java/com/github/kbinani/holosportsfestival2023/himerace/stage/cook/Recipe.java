@@ -16,7 +16,8 @@ record Recipe(TaskItem[] materials, TaskItem product) {
     return getMatches(inventory, materialSlotFrom, materialSlotTo) != null;
   }
 
-  @Nullable ItemStack consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
+  @Nullable
+  ItemStack consumeMaterialsIfPossible(Inventory inventory, int materialSlotFrom, int materialSlotTo, int productSlot) {
     var result = getMatches(inventory, materialSlotFrom, materialSlotTo);
     if (result == null) {
       return null;

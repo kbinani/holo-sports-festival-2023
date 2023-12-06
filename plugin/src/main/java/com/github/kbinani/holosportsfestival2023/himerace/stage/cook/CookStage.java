@@ -62,6 +62,7 @@ public class CookStage extends AbstractStage {
   // (敬称略)
   public interface Delegate {
     void cookStageSignalActionBarUpdate();
+
     void cookStageDidFinish();
   }
 

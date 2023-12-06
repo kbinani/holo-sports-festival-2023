@@ -47,7 +47,8 @@ abstract class AbstractKitchenware {
   protected void onCountdown(int count) {
   }
 
-  protected void onAllProductPickedUp() {}
+  protected void onAllProductPickedUp() {
+  }
 
   final void onInventoryClick(InventoryClickEvent e, JavaPlugin owner) {
     if (e.isCancelled()) {

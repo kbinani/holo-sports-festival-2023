@@ -1,4 +1,4 @@
-package  com.github.kbinani.holosportsfestival2023;
+package com.github.kbinani.holosportsfestival2023;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;

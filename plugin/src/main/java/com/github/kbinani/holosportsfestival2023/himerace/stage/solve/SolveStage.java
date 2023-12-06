@@ -1,4 +1,4 @@
-package  com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Kill;

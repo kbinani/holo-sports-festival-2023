@@ -1,4 +1,4 @@
-package  com.github.kbinani.holosportsfestival2023.himerace.stage.goal;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.goal;
 
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;

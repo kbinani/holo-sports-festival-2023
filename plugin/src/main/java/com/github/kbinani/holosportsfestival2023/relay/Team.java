@@ -91,7 +91,8 @@ class Team {
     return getCurrentOrder(player) != null;
   }
 
-  @Nullable Integer getCurrentOrder(Player player) {
+  @Nullable
+  Integer getCurrentOrder(Player player) {
     for (var i = 0; i < order.length; i++) {
       if (order[i] == player) {
         return i;
@@ -100,7 +101,8 @@ class Team {
     return null;
   }
 
-  @Nullable Player getAssignedPlayer(int order) {
+  @Nullable
+  Player getAssignedPlayer(int order) {
     if (order < 0 || this.order.length <= order) {
       return null;
     }

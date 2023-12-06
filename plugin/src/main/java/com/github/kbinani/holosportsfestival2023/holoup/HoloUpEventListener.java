@@ -39,7 +39,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private static final Point3i entryListSign = pos(-35, 100, -29);
   private static final BoundingBox announceBounds = new BoundingBox(x(-59), y(99), z(-63), x(12), 500, z(-19));
   static final String itemTag = "holo_sports_festival_holoup";
-  static final String itemTagStrong ="holo_sports_festival_holoup_trident_strong";
+  static final String itemTagStrong = "holo_sports_festival_holoup_trident_strong";
 
   private final World world;
   private final JavaPlugin owner;

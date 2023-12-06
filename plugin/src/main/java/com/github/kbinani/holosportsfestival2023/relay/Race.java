@@ -40,7 +40,10 @@ class Race {
   private final @Nonnull Delegate delegate;
   private final @Nonnull BoundingBox announceBounds;
   private long startTimeMillis;
-  private record Record(TeamColor color, long goalTimeMillis){}
+
+  private record Record(TeamColor color, long goalTimeMillis) {
+  }
+
   private final List<Record> goals = new ArrayList<>();
 
   private Race(

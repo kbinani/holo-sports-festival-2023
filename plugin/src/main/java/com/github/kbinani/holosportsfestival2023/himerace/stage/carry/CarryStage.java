@@ -1,4 +1,4 @@
-package  com.github.kbinani.holosportsfestival2023.himerace.stage.carry;
+package com.github.kbinani.holosportsfestival2023.himerace.stage.carry;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;

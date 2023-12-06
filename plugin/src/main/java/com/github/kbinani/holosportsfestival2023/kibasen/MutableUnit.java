@@ -7,7 +7,8 @@ import javax.annotation.Nullable;
 
 class MutableUnit {
   final @Nonnull Player attacker;
-  @Nullable Player vehicle;
+  @Nullable
+  Player vehicle;
   boolean isLeader = false;
 
   MutableUnit(@Nonnull Player attacker) {
