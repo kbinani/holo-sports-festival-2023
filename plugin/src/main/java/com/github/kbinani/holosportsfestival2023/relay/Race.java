@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.CreateBaton;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
@@ -37,11 +38,24 @@ class Race {
     }
   }
 
-  void teleportFirstRunners(BoundingBox box) {
-    for (var team : teams.values()) {
+  void prepare(BoundingBox startingArea) {
+    eachPlayers(RelayEventListener::ClearItem);
+    for (var entry : teams.entrySet()) {
+      var team = entry.getValue();
       var player = team.getAssignedPlayer(0);
       if (player != null) {
-        Players.Distribute(world, box, player);
+        Players.Distribute(world, startingArea, player);
+      }
+    }
+  }
+
+  void start() {
+    for (var entry : teams.entrySet()) {
+      var color = entry.getKey();
+      var team = entry.getValue();
+      var player = team.getAssignedPlayer(0);
+      if (player != null) {
+        player.getInventory().setItemInOffHand(CreateBaton(color));
       }
     }
   }

@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -318,6 +319,7 @@ public class RelayEventListener implements MiniGame {
     }
     for (var team : this.teams.values()) {
       for (var player : team.players()) {
+        ClearItem(player);
         var inventory = player.getInventory();
         inventory.setItem(0, createEntryBook());
       }
@@ -423,6 +425,16 @@ public class RelayEventListener implements MiniGame {
       .build();
   }
 
+  static @Nonnull ItemStack CreateBaton(TeamColor color) {
+    var baton = ItemBuilder.For(Material.BLAZE_ROD)
+      .meta(ItemMeta.class, it -> {
+        it.setCustomModelData(color.ordinal() + 1);
+      })
+      .customByteTag(sItemTag)
+      .build();
+    return baton;
+  }
+
   private @Nonnull Team ensureTeam(TeamColor color) {
     var team = teams.get(color);
     if (team == null) {
@@ -460,9 +472,8 @@ public class RelayEventListener implements MiniGame {
     announceEntryList(result.value.teams);
     race = result.value;
     race.teleportAll(safeSpot.toLocation(world));
-    race.teleportFirstRunners(startingArea);
     Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
-    race.eachPlayers(RelayEventListener::ClearItem);
+    race.prepare(startingArea);
     if (entryBookInventory != null) {
       entryBookInventory.close();
     }
@@ -502,6 +513,9 @@ public class RelayEventListener implements MiniGame {
     if (status != Status.COUNTDOWN) {
       return;
     }
+    if (race == null) {
+      return;
+    }
     var taf = takeTrackAndFieldOwnership();
     if (taf == null) {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
@@ -512,6 +526,7 @@ public class RelayEventListener implements MiniGame {
     status = Status.ACTIVE;
     //NOTE: 本家では号砲は鳴っていないぽい
     world.playSound(new Location(world, x(3) + 0.5, y(82), z(71) + 0.5), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1, 0);
+    race.start();
   }
 
   private void reset() {
@@ -532,7 +547,7 @@ public class RelayEventListener implements MiniGame {
     status = Status.IDLE;
   }
 
-  private static void ClearItem(Player player) {
+  static void ClearItem(Player player) {
     var inventory = player.getInventory();
     for (int i = 0; i < inventory.getSize(); i++) {
       var item = inventory.getItem(i);
