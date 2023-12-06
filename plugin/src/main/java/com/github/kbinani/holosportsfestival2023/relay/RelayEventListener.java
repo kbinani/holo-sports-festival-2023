@@ -316,6 +316,12 @@ public class RelayEventListener implements MiniGame {
       var teams = race.abort();
       this.teams.putAll(teams);
     }
+    for (var team : this.teams.values()) {
+      for (var player : team.players()) {
+        var inventory = player.getInventory();
+        inventory.setItem(0, createEntryBook());
+      }
+    }
     updateEntryBookContents();
     if (status != Status.IDLE) {
       broadcast(prefix.append(text("ゲームを中断しました", RED)));
@@ -406,12 +412,15 @@ public class RelayEventListener implements MiniGame {
       .append(text("エントリーブックを使用して走順を選択してください！", WHITE)));
     player.sendMessage(prefix
       .append(text("Right-click while having the Entry Book equipped to select your relay position!", WHITE)));
-    var book = ItemBuilder.For(Material.BOOK)
+    var inventory = player.getInventory();
+    inventory.setItem(0, createEntryBook());
+  }
+
+  private @Nonnull ItemStack createEntryBook() {
+   return  ItemBuilder.For(Material.BOOK)
       .displayName(text("エントリーブック (右クリックで使用) / Entry Book (Right click to open)", GOLD))
       .customByteTag(sItemTag)
       .build();
-    var inventory = player.getInventory();
-    inventory.setItem(0, book);
   }
 
   private @Nonnull Team ensureTeam(TeamColor color) {
