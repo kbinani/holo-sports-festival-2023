@@ -294,8 +294,12 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   @Override
-  public void raceDidDetectGoal(TeamColor color) {
-    broadcast(prefix.append(color.component()).append(text("がゴールしました！", WHITE)));
+  public void raceDidFinish() {
+    var taf = this.taf;
+    if (taf != null) {
+      Players.Within(world, taf.photoSpotBounds, p -> p.teleport(safeSpot.toLocation(world)));
+    }
+    reset();
   }
 
   private @Nonnull Inventory ensureEntryBookInventory() {
@@ -474,7 +478,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       return;
     }
-    var result = Race.From(world, this.teams, offset, this);
+    var result = Race.From(world, this.teams, offset, delegate.relayGetAnnounceBounds(),this);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
       return;

@@ -1,11 +1,14 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
+import com.github.kbinani.holosportsfestival2023.Cloakroom;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.ClearItem;
 
 class Team {
   private final @Nonnull TeamColor color;
@@ -19,6 +22,10 @@ class Team {
 
   void dispose() {
     Arrays.fill(order, null);
+    players.forEach(player -> {
+      Cloakroom.shared.restore(player);
+      ClearItem(player);
+    });
     players.clear();
   }
 

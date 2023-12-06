@@ -15,10 +15,7 @@ import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.CreateBaton;
@@ -28,7 +25,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 class Race {
   interface Delegate {
-    void raceDidDetectGoal(TeamColor color);
+    void raceDidFinish();
   }
 
   private final @Nonnull World world;
@@ -41,11 +38,22 @@ class Race {
   private final @Nonnull BoundingBox startingAreaOdd;
   private final @Nonnull BoundingBox goalDetectionArae;
   private final @Nonnull Delegate delegate;
+  private final @Nonnull BoundingBox announceBounds;
+  private long startTimeMillis;
+  private record Record(TeamColor color, long goalTimeMillis){}
+  private final List<Record> goals = new ArrayList<>();
 
-  private Race(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull Delegate delegate) {
+  private Race(
+    @Nonnull World world,
+    @Nonnull Map<TeamColor, Team> teams,
+    @Nonnull Point3i offset,
+    @Nonnull BoundingBox announceBounds,
+    @Nonnull Delegate delegate) //
+  {
     this.world = world;
     this.offset = offset;
     this.delegate = delegate;
+    this.announceBounds = announceBounds;
     this.teams = new HashMap<>(teams);
     batonPassAreaEven = new BoundingBox(x(-1), y(80), z(76), x(10), y(85), z(83));
     batonPassAreaOdd = new BoundingBox(x(-1), y(80), z(22), x(10), y(85), z(29));
@@ -84,6 +92,7 @@ class Race {
   }
 
   void start() {
+    startTimeMillis = System.currentTimeMillis();
     for (var entry : teams.entrySet()) {
       var color = entry.getKey();
       var team = entry.getValue();
@@ -101,7 +110,7 @@ class Race {
   }
 
   @Nonnull
-  static Result<Race, Component> From(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull Delegate delegate) {
+  static Result<Race, Component> From(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull BoundingBox announceBounds, @Nonnull Delegate delegate) {
     int count = -1;
     int total = 0;
     for (var entry : teams.entrySet()) {
@@ -134,7 +143,7 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(world, teams, offset, delegate), null);
+    return new Result<>(new Race(world, teams, offset, announceBounds, delegate), null);
   }
 
   Map<TeamColor, Team> abort() {
@@ -281,7 +290,37 @@ class Race {
     }
     team.currentRunningOrder = orderLength;
     //TODO: 花火
-    delegate.raceDidDetectGoal(color);
+    goals.add(new Record(color, System.currentTimeMillis()));
+    broadcast(prefix.append(color.component()).append(text("がゴールしました！", WHITE)));
+    for (var t : teams.values()) {
+      if (t.currentRunningOrder < t.getOrderLength()) {
+        return;
+      }
+    }
+    broadcast(prefix.append(text("ゲームが終了しました！", WHITE)));
+    var separator = "▪"; //TODO: この文字本当は何なのかが分からない
+    broadcast(
+      Component.empty()
+        .appendSpace()
+        .append(text(separator.repeat(32), GREEN))
+        .appendSpace()
+        .append(prefix)
+        .append(text(separator.repeat(32), GREEN))
+    );
+    broadcast(Component.empty());
+    for (var i = 0; i < goals.size(); i++) {
+      var goal = goals.get(i);
+      var durationMillis = goal.goalTimeMillis - startTimeMillis;
+      long seconds = durationMillis / 1000;
+      long millis = durationMillis - seconds * 1000;
+      long minutes = seconds / 60;
+      seconds = seconds - minutes * 60;
+      broadcast(text(String.format(" - %d位 ", i + 1), AQUA)
+        .append(goal.color.component())
+        .append(text(String.format(" (%02d:%02d:%03d)", minutes, seconds, millis), goal.color.textColor)));
+    }
+    broadcast(Component.empty());
+    delegate.raceDidFinish();
   }
 
   private void signalBossbarUpdate(TeamColor color) {
@@ -316,6 +355,10 @@ class Race {
       }
     }
     return null;
+  }
+
+  private void broadcast(Component message) {
+    Players.Within(world, announceBounds, player -> player.sendMessage(message));
   }
 
   private int x(int x) {
