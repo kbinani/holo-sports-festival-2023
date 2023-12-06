@@ -21,7 +21,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 class Race {
   private final @Nonnull World world;
-  private final @Nonnull Map<TeamColor, Team> teams;
+  final @Nonnull Map<TeamColor, Team> teams;
 
   private Race(@Nonnull World world, Map<TeamColor, Team> teams) {
     this.world       = world;

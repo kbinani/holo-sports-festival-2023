@@ -179,7 +179,7 @@ public class RelayEventListener implements MiniGame {
           e.setCancelled(true);
           return;
         } else if (delegate.relayGetAnnounceEntryListSignLocation().equals(location)) {
-          onClickAnnounceEntryList();
+          announceEntryList(teams);
           e.setCancelled(true);
           return;
         }
@@ -347,8 +347,34 @@ public class RelayEventListener implements MiniGame {
     }
   }
 
-  private void onClickAnnounceEntryList() {
-
+  private void announceEntryList(Map<TeamColor, Team> teams) {
+    broadcast(
+      text("-".repeat(10), GREEN)
+        .appendSpace()
+        .append(prefix)
+        .appendSpace()
+        .append(text("エントリー者 ", AQUA))
+        .append(text("-".repeat(10), GREEN))
+    );
+    var first = true;
+    for (var color : TeamColor.all) {
+      if (!first) {
+        broadcast(Component.empty());
+      }
+      first = false;
+      var team = teams.get(color);
+      if (team == null) {
+        broadcast(text(String.format(" %s (0)", color.text), color.textColor));
+        continue;
+      }
+      broadcast(text(String.format(" %s (%d)", color.text, team.getOrderLength()), color.textColor));
+      for (var i = 0; i < team.getOrderLength(); i++) {
+        var player = team.getAssignedPlayer(i);
+        if (player != null) {
+          broadcast(text(String.format(" - [%d] %s", i + 1, player.getName()), color.textColor));
+        }
+      }
+    }
   }
 
   private void onClickJoin(Player player, TeamColor color) {
@@ -422,6 +448,7 @@ public class RelayEventListener implements MiniGame {
     }
     taf.setRelayStartGateEnabled(true);
     taf.setEnablePhotoSpot(false);
+    announceEntryList(result.value.teams);
     race = result.value;
     race.teleportAll(safeSpot.toLocation(world));
     race.teleportFirstRunners(startingArea);
