@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
-import com.github.kbinani.holosportsfestival2023.Players;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.Result;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -11,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
@@ -28,6 +26,9 @@ class Race {
     void raceDidFinish();
   }
 
+  private record Record(TeamColor color, long goalTimeMillis) {
+  }
+
   private final @Nonnull World world;
   final @Nonnull Map<TeamColor, Team> teams;
   private final @Nonnull Point3i offset;
@@ -40,13 +41,11 @@ class Race {
   private final @Nonnull Delegate delegate;
   private final @Nonnull BoundingBox announceBounds;
   private long startTimeMillis;
-
-  private record Record(TeamColor color, long goalTimeMillis) {
-  }
-
   private final List<Record> goals = new ArrayList<>();
+  private final Map<TeamColor, BossBar> bars = new HashMap<>();
 
   private Race(
+    @Nonnull JavaPlugin owner,
     @Nonnull World world,
     @Nonnull Map<TeamColor, Team> teams,
     @Nonnull Point3i offset,
@@ -64,8 +63,13 @@ class Race {
     startingAreaEven = new BoundingBox(x(5), y(80), z(76), x(6), y(80), z(79));
     startingAreaOdd = new BoundingBox(x(3), y(80), z(26), x(4), y(80), z(29));
     var count = 0;
-    for (var team : this.teams.values()) {
+    for (var entry : this.teams.entrySet()) {
+      var color = entry.getKey();
+      var team = entry.getValue();
       count = Math.max(count, team.getOrderLength());
+      var bar = new BossBar(owner, world, announceBounds, 0, color.barColor);
+      bars.put(color, bar);
+      bar.setName(team.getBossBarName());
     }
     if (count % 2 == 0) {
       goalDetectionArae = new BoundingBox(x(4) + 0.5, y(80), z(76), x(10), y(85), z(83));
@@ -113,7 +117,14 @@ class Race {
   }
 
   @Nonnull
-  static Result<Race, Component> From(@Nonnull World world, @Nonnull Map<TeamColor, Team> teams, @Nonnull Point3i offset, @Nonnull BoundingBox announceBounds, @Nonnull Delegate delegate) {
+  static Result<Race, Component> From(
+    @Nonnull JavaPlugin owner,
+    @Nonnull World world,
+    @Nonnull Map<TeamColor, Team> teams,
+    @Nonnull Point3i offset,
+    @Nonnull BoundingBox announceBounds,
+    @Nonnull Delegate delegate) //
+  {
     int count = -1;
     int total = 0;
     for (var entry : teams.entrySet()) {
@@ -146,12 +157,29 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(world, teams, offset, announceBounds, delegate), null);
+    return new Result<>(new Race(owner, world, teams, offset, announceBounds, delegate), null);
+  }
+
+  private void updateBossBar(TeamColor color) {
+    var bar = bars.get(color);
+    if (bar == null) {
+      return;
+    }
+    var team = teams.get(color);
+    if (team == null) {
+      return;
+    }
+    bar.setName(team.getBossBarName());
+    bar.setProgress(team.getBossBarProgress());
   }
 
   Map<TeamColor, Team> abort() {
     var ret = new HashMap<>(this.teams);
     this.teams.clear();
+    for (var bar : bars.values()) {
+      bar.dispose();
+    }
+    bars.clear();
     return ret;
   }
 
@@ -160,6 +188,10 @@ class Race {
       team.dispose();
     }
     teams.clear();
+    for (var bar : bars.values()) {
+      bar.dispose();
+    }
+    bars.clear();
   }
 
   void eachPlayers(Consumer<Player> cb) {
@@ -225,7 +257,7 @@ class Race {
     var inventory = defender.getInventory();
     inventory.setItemInOffHand(baton);
     team.currentRunningOrder = defenderOrder;
-    signalBossbarUpdate(attackerColor);
+    updateBossBar(attackerColor);
     // https://youtu.be/0zFjBmflulU?t=11048
     // defender の次の走者を所定の位置に移動
     var next = team.getAssignedPlayer(defenderOrder + 1);
@@ -295,6 +327,7 @@ class Race {
     //TODO: 花火
     goals.add(new Record(color, System.currentTimeMillis()));
     broadcast(prefix.append(color.component()).append(text("がゴールしました！", WHITE)));
+    updateBossBar(color);
     for (var t : teams.values()) {
       if (t.currentRunningOrder < t.getOrderLength()) {
         return;
@@ -324,10 +357,6 @@ class Race {
     }
     broadcast(Component.empty());
     delegate.raceDidFinish();
-  }
-
-  private void signalBossbarUpdate(TeamColor color) {
-    //TODO:
   }
 
   private BoundingBox getBatonPassArea(int orderFrom) {
