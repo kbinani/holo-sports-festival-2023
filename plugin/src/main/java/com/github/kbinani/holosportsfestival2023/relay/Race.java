@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -29,6 +30,7 @@ class Race {
   private record Record(TeamColor color, long goalTimeMillis) {
   }
 
+  private final @Nonnull JavaPlugin owner;
   private final @Nonnull World world;
   final @Nonnull Map<TeamColor, Team> teams;
   private final @Nonnull Point3i offset;
@@ -43,6 +45,7 @@ class Race {
   private long startTimeMillis;
   private final List<Record> goals = new ArrayList<>();
   private final Map<TeamColor, BossBar> bars = new HashMap<>();
+  private final @Nonnull Point3i safeSpot;
 
   private Race(
     @Nonnull JavaPlugin owner,
@@ -50,12 +53,15 @@ class Race {
     @Nonnull Map<TeamColor, Team> teams,
     @Nonnull Point3i offset,
     @Nonnull BoundingBox announceBounds,
+    @Nonnull Point3i safeSpot,
     @Nonnull Delegate delegate) //
   {
+    this.owner = owner;
     this.world = world;
     this.offset = offset;
     this.delegate = delegate;
     this.announceBounds = announceBounds;
+    this.safeSpot = safeSpot;
     this.teams = new HashMap<>(teams);
     batonPassAreaEven = new BoundingBox(x(-1), y(80), z(76), x(10), y(85), z(83));
     batonPassAreaOdd = new BoundingBox(x(-1), y(80), z(22), x(10), y(85), z(29));
@@ -123,6 +129,7 @@ class Race {
     @Nonnull Map<TeamColor, Team> teams,
     @Nonnull Point3i offset,
     @Nonnull BoundingBox announceBounds,
+    @Nonnull Point3i safeSpot,
     @Nonnull Delegate delegate) //
   {
     int count = -1;
@@ -157,7 +164,7 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(owner, world, teams, offset, announceBounds, delegate), null);
+    return new Result<>(new Race(owner, world, teams, offset, announceBounds, safeSpot, delegate), null);
   }
 
   private void updateBossBar(TeamColor color) {
@@ -204,44 +211,35 @@ class Race {
 
   void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
     if (!(e.getEntity() instanceof Player defender)) {
-      System.out.println(1);
       return;
     }
     if (!(e.getDamager() instanceof Player attacker)) {
-      System.out.println(2);
       return;
     }
     var defenderColor = getTeamColor(defender);
     if (defenderColor == null) {
-      System.out.println(3);
       return;
     }
     var attackerColor = getTeamColor(attacker);
     if (attackerColor == null) {
-      System.out.println(4);
       return;
     }
     if (defenderColor != attackerColor) {
-      System.out.println(5);
       return;
     }
     var team = teams.get(attackerColor);
     if (team == null) {
-      System.out.println(6);
       return;
     }
     var defenderOrder = team.getCurrentOrder(defender);
     if (defenderOrder == null) {
-      System.out.println(7);
       return;
     }
     var attackerOrder = team.getCurrentOrder(attacker);
     if (attackerOrder == null) {
-      System.out.println(8);
       return;
     }
     if (attackerOrder + 1 != defenderOrder) {
-      System.out.println(9);
       return;
     }
     var batonPassArea = getBatonPassArea(attackerOrder);
@@ -265,6 +263,10 @@ class Race {
       Players.Distribute(world, getStartingArea(defenderOrder + 1), next);
       notifyNextRunner(next, defender);
     }
+    attacker.sendMessage(prefix.append(text("3秒後にスポーン地点にレポートされます！", WHITE)));
+    Bukkit.getScheduler().runTaskLater(owner, () -> {
+      attacker.teleport(safeSpot.toLocation(world));
+    }, 3 * 20);
   }
 
   private @Nullable ItemStack removeBaton(Player player, TeamColor color) {
@@ -330,6 +332,10 @@ class Race {
     updateBossBar(color);
     for (var t : teams.values()) {
       if (t.currentRunningOrder < t.getOrderLength()) {
+        player.sendMessage(prefix.append(text("3秒後にスポーン地点にレポートされます！", WHITE)));
+        Bukkit.getScheduler().runTaskLater(owner, () -> {
+          player.teleport(safeSpot.toLocation(world));
+        }, 3 * 20);
         return;
       }
     }
