@@ -24,6 +24,7 @@ import org.bukkit.util.BoundingBox;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -34,6 +35,8 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     KIBASEN,
     RELAY,
   }
+
+  public static final @Nonnull String sScoreboardTeamPrefix = "hololive_sports_festival_2023_";
 
   private World world;
   private final List<MiniGame> miniGames = new ArrayList<>();
@@ -105,6 +108,16 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
+    cleanupScoreboardTeams();
+  }
+
+  private void cleanupScoreboardTeams() {
+    var scoreboard = getServer().getScoreboardManager().getMainScoreboard();
+    for (var team : new HashSet<>(scoreboard.getTeams())) {
+      if (team.getName().startsWith(sScoreboardTeamPrefix)) {
+        team.unregister();
+      }
+    }
   }
 
   @Override
@@ -117,6 +130,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
         game.miniGameClearItem(player);
       }
     });
+    cleanupScoreboardTeams();
   }
 
   @EventHandler

@@ -71,6 +71,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private @Nullable Countdown countdown;
   private @Nullable TrackAndField taf;
   private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
+  private final @Nonnull Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "relay");
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;

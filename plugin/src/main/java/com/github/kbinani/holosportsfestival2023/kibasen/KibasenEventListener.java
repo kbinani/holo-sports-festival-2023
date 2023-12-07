@@ -52,7 +52,6 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   public static final Component title = text("[Kibasen]", AQUA);
   static final Component prefix = title.append(text(" ", WHITE));
   static final String itemTag = "hololive_sports_festival_2023_kibasen";
-  private static final String teamNamePrefix = "hololive_sports_festival_2023_kibasen";
   static final Point3i leaderRegistrationBarrel = pos(-30, 63, 53);
   static final String healthDisplayScoreboardTag = "hololive_sports_festival_2023_kibasen_health_display";
   private static final BoundingBox safeRespawnBounds = new BoundingBox(x(-41), y(80), z(44), x(-24), y(80), z(64));
@@ -60,7 +59,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private final @Nonnull World world;
   private final @Nonnull JavaPlugin owner;
   private Status status = Status.IDLE;
-  private final Teams teams = new Teams(teamNamePrefix);
+  private final Teams teams = new Teams(Main.sScoreboardTeamPrefix + "kibasen");
   private final Registrants registrants = new Registrants(teams, this);
   private @Nullable Cancellable countdown;
   private @Nullable Session session;
