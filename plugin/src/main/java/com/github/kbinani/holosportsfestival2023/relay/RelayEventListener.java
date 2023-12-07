@@ -2,18 +2,22 @@ package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityPoseChangeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -25,6 +29,7 @@ import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.*;
 
 import static net.kyori.adventure.text.Component.text;
@@ -72,6 +77,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private @Nullable TrackAndField taf;
   private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
   private final @Nonnull Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "relay");
+  private final @Nonnull BoundingBox poseChangeDetectionArea;
 
   public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
     this.world = world;
@@ -81,6 +87,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     pistonPositions.add(pos(57, 79, 57));
     pistonPositions.add(pos(59, 79, 57));
     pistonPositions.add(pos(61, 79, 57));
+    poseChangeDetectionArea = new BoundingBox(x(55), y(80), z(64), x(64), y(83), z(68));
     this.waveTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 1, 1);
   }
 
@@ -280,6 +287,53 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       return;
     }
     race.onPlayerMove(e);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityPoseChange(EntityPoseChangeEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    if (!poseChangeDetectionArea.contains(player.getLocation().toVector())) {
+      return;
+    }
+    var before = player.getPose();
+    var after = e.getPose();
+
+    if (before == Pose.SWIMMING && after != Pose.SWIMMING) {
+      // https://youtu.be/ls3kb0qhT4E?t=11047
+      player.setFoodLevel(2);
+      player.sendMessage(prefix.append(text("パンを左クリックで取って食べよう！", WHITE)));
+      player.sendMessage(prefix.append(text("Left click to get bread and eat it!", WHITE)));
+      var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
+      var title = Title.title(
+        text("お腹が空いてしまった！", RED),
+        text("I'm hungry!", GOLD),
+        times
+      );
+      player.showTitle(title);
+    }
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerItemConsume(PlayerItemConsumeEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    if (race == null) {
+      return;
+    }
+    var item = e.getItem();
+    var player = e.getPlayer();
+    if (item.getType() == Material.BREAD && ItemTag.HasByte(item, race.getBreadId())) {
+      player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+      player.setFoodLevel(20);
+    }
   }
 
   private @Nullable TeamColor getRegistration(Player player) {
@@ -617,10 +671,11 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   private @Nonnull ItemStack createBread() {
-    if (status == Status.ACTIVE) {
+    if (status == Status.ACTIVE && race != null) {
       return ItemBuilder.For(Material.BREAD)
         .displayName(text("元気が出るパン", GOLD))
         .customByteTag(sItemTag)
+        .customByteTag(race.getBreadId())
         .build();
     } else {
       return new ItemStack(Material.BREAD);

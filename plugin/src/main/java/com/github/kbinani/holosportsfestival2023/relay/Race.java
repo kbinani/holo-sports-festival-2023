@@ -46,6 +46,7 @@ class Race {
   private final List<Record> goals = new ArrayList<>();
   private final Map<TeamColor, BossBar> bars = new HashMap<>();
   private final @Nonnull Point3i safeSpot;
+  private final @Nonnull UUID id = UUID.randomUUID();
 
   private Race(
     @Nonnull JavaPlugin owner,
@@ -83,6 +84,10 @@ class Race {
       goalDetectionArae = new BoundingBox(x(-1), y(80), z(22), x(4) + 0.5, y(85), z(29));
     }
     teams.clear();
+  }
+
+  String getBreadId() {
+    return id.toString();
   }
 
   void teleportAll(Location location) {
