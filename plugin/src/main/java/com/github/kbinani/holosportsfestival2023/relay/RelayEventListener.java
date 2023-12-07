@@ -462,7 +462,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private @Nonnull Team ensureTeam(TeamColor color) {
     var team = teams.get(color);
     if (team == null) {
-      var t = new Team(color);
+      var t = new Team(color, scoreboardTeams.ensure(color));
       teams.put(color, t);
       return t;
     } else {

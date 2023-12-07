@@ -19,9 +19,11 @@ class Team {
   private final @Nonnull Player[] order = new Player[9];
   private final @Nonnull Set<Player> players = new HashSet<>();
   int currentRunningOrder = 0;
+  private final @Nonnull org.bukkit.scoreboard.Team scoreboardTeam;
 
-  Team(@Nonnull TeamColor color) {
+  Team(@Nonnull TeamColor color, @Nonnull org.bukkit.scoreboard.Team team) {
     this.color = color;
+    this.scoreboardTeam = team;
   }
 
   Component getBossBarName() {
@@ -47,6 +49,7 @@ class Team {
       ClearItem(player);
     });
     players.clear();
+    scoreboardTeam.unregister();
   }
 
   int getOrderLength() {
@@ -92,6 +95,7 @@ class Team {
 
   void add(@Nonnull Player player) {
     players.add(player);
+    scoreboardTeam.addPlayer(player);
   }
 
   void remove(@Nonnull Player player) {
@@ -101,6 +105,7 @@ class Team {
       }
     }
     players.remove(player);
+    scoreboardTeam.removePlayer(player);
   }
 
   List<Player> players() {
