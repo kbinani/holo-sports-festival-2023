@@ -257,6 +257,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
       delegate.levelDidClearStage(Stage.CARRY);
     });
     this.buildStage.start();
+    this.carryStage.closeGate();
   }
 
   @Override
