@@ -98,7 +98,6 @@ class IllusionerProjectile {
     } else if (strong) {
       trajectoryTimer.cancel();
       ringEffectTimeoutTimer = Bukkit.getScheduler().runTaskTimer(owner, this::tickRing, 0, 1);
-      delegate.illusionerProjectileDead(this);
     } else {
       world.getNearbyPlayers(this.to, sWeakRadius, 2, sWeakRadius).forEach(player -> {
         var mode = player.getGameMode();
