@@ -193,6 +193,10 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
           announceEntryList(teams);
           e.setCancelled(true);
           return;
+        } else if (delegate.relayGetAbortSignLocation().equals(location)) {
+          reset();
+          e.setCancelled(true);
+          return;
         }
       }
       if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
@@ -608,6 +612,9 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   private void reset() {
+    for (var team : teams.values()) {
+      team.dispose();
+    }
     teams.clear();
     if (race != null) {
       race.dispose();
@@ -622,6 +629,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       countdown = null;
     }
     releaseTrackAndFieldOwnership();
+    Bukkit.getServer().getOnlinePlayers().forEach(RelayEventListener::ClearItem);
     status = Status.IDLE;
   }
 
