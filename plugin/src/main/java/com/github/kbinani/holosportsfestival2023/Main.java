@@ -23,10 +23,8 @@ import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.io.FileInputStream;
+import java.util.*;
 import java.util.logging.Level;
 
 @SuppressWarnings("unused")
@@ -46,10 +44,13 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
 
   @Override
   public void onEnable() {
-    Optional<World> overworld = getServer().getWorlds().stream().filter(it -> it.getEnvironment() == World.Environment.NORMAL).findFirst();
+    var server = getServer();
+    PluginManager pluginManager = server.getPluginManager();
+
+    Optional<World> overworld = server.getWorlds().stream().filter(it -> it.getEnvironment() == World.Environment.NORMAL).findFirst();
     if (overworld.isEmpty()) {
       getLogger().log(java.util.logging.Level.SEVERE, "server should have at least one overworld dimension");
-      getServer().getPluginManager().disablePlugin(this);
+      pluginManager.disablePlugin(this);
       return;
     }
     world = overworld.get();
@@ -82,12 +83,23 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     if (doWeatherCycle != null && doWeatherCycle) {
       reasons.add("the \"Holoup\" mini-game is not playable as the doWeatherCycle gamerule is set to true");
     }
+    try {
+      var props = new Properties();
+      props.load(new FileInputStream("server.properties"));
+      var spawnAnimals = props.getProperty("spawn-animals");
+      if (!Boolean.parseBoolean(spawnAnimals)) {
+        reasons.add("the \"Himerace\" mini-game is not playable as the spawn-animals is set to false");
+      }
+    } catch (Throwable e) {
+      reasons.add("cannot read server.properties");
+    }
+
     if (!reasons.isEmpty()) {
       getLogger().log(java.util.logging.Level.SEVERE, "Disabling the plugin because:");
       for (String reason : reasons) {
         getLogger().log(java.util.logging.Level.SEVERE, "  " + reason);
       }
-      getServer().getPluginManager().disablePlugin(this);
+      pluginManager.disablePlugin(this);
       return;
     }
     if (!warnings.isEmpty()) {
@@ -96,7 +108,6 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
       }
     }
 
-    PluginManager pluginManager = getServer().getPluginManager();
     pluginManager.registerEvents(this, this);
 
     if (miniGames.isEmpty()) {
