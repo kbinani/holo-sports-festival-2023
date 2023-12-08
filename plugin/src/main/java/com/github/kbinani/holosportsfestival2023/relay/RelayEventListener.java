@@ -508,13 +508,13 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   static @Nonnull ItemStack CreateBaton(TeamColor color) {
-    var baton = ItemBuilder.For(Material.BLAZE_ROD)
+    return ItemBuilder.For(Material.BLAZE_ROD)
       .meta(ItemMeta.class, it -> {
         it.setCustomModelData(color.ordinal() + 1);
       })
+      .displayName(color.component().append(text("チームバトン", WHITE)))
       .customByteTag(sItemTag)
       .build();
-    return baton;
   }
 
   private @Nonnull Team ensureTeam(TeamColor color) {
