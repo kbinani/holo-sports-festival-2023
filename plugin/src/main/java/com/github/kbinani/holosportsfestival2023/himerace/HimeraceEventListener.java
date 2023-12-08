@@ -43,7 +43,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private Status status = Status.IDLE;
   private @Nullable Race race;
   private @Nullable Cancellable countdown;
-  private final Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "himerace");
+  private final Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "himerace", false);
 
   public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs) {
     if (mapIDs.length < 3) {

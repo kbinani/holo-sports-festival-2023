@@ -59,7 +59,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private final @Nonnull World world;
   private final @Nonnull JavaPlugin owner;
   private Status status = Status.IDLE;
-  private final Teams teams = new Teams(Main.sScoreboardTeamPrefix + "kibasen");
+  private final Teams teams = new Teams(Main.sScoreboardTeamPrefix + "kibasen", false);
   private final Registrants registrants = new Registrants(teams, this);
   private @Nullable Cancellable countdown;
   private @Nullable Session session;

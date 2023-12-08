@@ -8,9 +8,11 @@ import javax.annotation.Nonnull;
 
 public class Teams {
   private final String prefix;
+  private final boolean allowFriendlyFire;
 
-  public Teams(String prefix) {
+  public Teams(String prefix, boolean allowFriendlyFire) {
     this.prefix = prefix;
+    this.allowFriendlyFire = allowFriendlyFire;
   }
 
   public @Nonnull Team ensure(TeamColor color) {
@@ -27,7 +29,7 @@ public class Teams {
       team = scoreboard.registerNewTeam(name);
     }
     team.color(textColor);
-    team.setAllowFriendlyFire(false);
+    team.setAllowFriendlyFire(allowFriendlyFire);
     return team;
   }
 }
