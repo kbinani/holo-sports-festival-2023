@@ -274,12 +274,12 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         var princess = team.getPrincess();
         if (princess != null) {
           broadcast(
-            text(String.format("  - [姫] %s", princess.getName()), RED)
+            text(String.format("  - [姫] %s", princess.getName()), color.textColor)
           );
         }
         for (var knight : team.getKnights()) {
           broadcast(
-            text(String.format("  - %s", knight.getName()), RED)
+            text(String.format("  - %s", knight.getName()), color.textColor)
           );
         }
       }
