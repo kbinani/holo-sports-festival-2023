@@ -1,0 +1,26 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "minecraft:item/blaze_rod"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "item/blaze_rod_baton_red"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "item/blaze_rod_baton_white"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "item/blaze_rod_baton_yellow"
+    }
+  ]
+}

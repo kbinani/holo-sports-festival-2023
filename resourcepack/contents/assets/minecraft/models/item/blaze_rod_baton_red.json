@@ -1,0 +1,33 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "item/baton_red"
+  },
+  "display": {
+    "firstperson_lefthand": {
+      "rotation": [
+        8,
+        -77,
+        -24
+      ],
+      "translation": [
+        1.5,
+        0,
+        0
+      ]
+    }
+  },
+  "groups": [
+    {
+      "name": "blaze_rod",
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "color": 0,
+      "children": []
+    }
+  ]
+}
