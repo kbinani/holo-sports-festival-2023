@@ -18,6 +18,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
@@ -336,6 +337,14 @@ public class FightStage extends AbstractStage {
     e.setCancelled(true);
     if (e.getEntity() instanceof Player player) {
       player.setFoodLevel(20);
+    }
+  }
+
+  @Override
+  protected void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
+    var item = e.getItem();
+    if (ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+      e.setDamage(0);
     }
   }
 

@@ -18,10 +18,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
@@ -219,6 +216,12 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.entityExhaustion(e, participation);
+    }
+  }
+
+  void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
+    for (var stage : stages.values()) {
+      stage.playerItemDamage(e, participation);
     }
   }
 

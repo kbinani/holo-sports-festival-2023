@@ -16,10 +16,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
@@ -525,6 +522,21 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     var level = levels.get(participation.color);
     level.onEntityExhaustion(e, participation);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerItemDamage(PlayerItemDamageEvent e) {
+    if (status != Status.ACTIVE) {
+      return;
+    }
+    var player = e.getPlayer();
+    var participation = getCurrentParticipation(player);
+    if (participation == null) {
+      return;
+    }
+    var level = levels.get(participation.color);
+    level.onPlayerItemDamage(e, participation);
   }
 
   private void onClickJoin(Player player, TeamColor color, Role role) {

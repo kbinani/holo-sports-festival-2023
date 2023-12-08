@@ -15,10 +15,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
@@ -176,6 +173,12 @@ public abstract class AbstractStage {
     }
   }
 
+  public final void playerItemDamage(PlayerItemDamageEvent e, Participation participation) {
+    if (started && !finished) {
+      onPlayerItemDamage(e, participation);
+    }
+  }
+
   protected void onTick() {
   }
 
@@ -234,6 +237,9 @@ public abstract class AbstractStage {
   }
 
   protected void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
+  }
+
+  protected void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
   }
 
   protected abstract void onStart();
