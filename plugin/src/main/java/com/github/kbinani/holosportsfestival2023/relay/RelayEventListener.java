@@ -630,6 +630,10 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     }
     releaseTrackAndFieldOwnership();
     Bukkit.getServer().getOnlinePlayers().forEach(RelayEventListener::ClearItem);
+
+    // NOTE: 逆走防止
+    Editor.Fill(world, pos(55, 82, 67), pos(63, 82, 67), Material.BARRIER);
+
     status = Status.IDLE;
   }
 
