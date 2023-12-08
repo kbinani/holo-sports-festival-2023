@@ -65,7 +65,7 @@ public class TrackAndField {
     relayAnnounceEntryListSign = pos(1, 80, 71);
     relayResumeSign = pos(0, 80, 71);
 
-    announceBounds = new BoundingBox(x(-63), y(80), z(13), x(72), 500, z(92));
+    announceBounds = new BoundingBox(x(-63), y(79), z(13), x(72), 500, z(92));
     photoSpotBounds = new BoundingBox(x(-6), y(80), z(48), x(15), y(83), z(54));
   }
 
