@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.relay;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -47,6 +48,8 @@ class Race {
   private final Map<TeamColor, BossBar> bars = new HashMap<>();
   private final @Nonnull Point3i safeSpot;
   private final @Nonnull UUID id = UUID.randomUUID();
+  private final @Nonnull Point3i[] fireworkSpotsEven;
+  private final @Nonnull Point3i[] fireworkSpotsOdd;
 
   private Race(
     @Nonnull JavaPlugin owner,
@@ -83,6 +86,12 @@ class Race {
     } else {
       goalDetectionArae = new BoundingBox(x(-1), y(80), z(22), x(4) + 0.5, y(85), z(29));
     }
+    fireworkSpotsEven = new Point3i[]{
+      pos(4, 80, 74), pos(4, 80, 84)
+    };
+    fireworkSpotsOdd = new Point3i[]{
+      pos(4, 80, 20), pos(4, 80, 30)
+    };
     teams.clear();
   }
 
@@ -331,9 +340,13 @@ class Race {
       return;
     }
     team.currentRunningOrder = orderLength;
-    //TODO: 花火
     goals.add(new Record(color, System.currentTimeMillis()));
     broadcast(prefix.append(color.component()).append(text("がゴールしました！", WHITE)));
+    var fireworks = order % 2 == 0 ? fireworkSpotsOdd : fireworkSpotsEven;
+    for (var spot : fireworks) {
+      var c = color.fireworkColor;
+      FireworkRocket.Launch(world, spot, new Color[]{c}, new Color[]{c}, 20, 1, false, true);
+    }
     updateBossBar(color);
     for (var t : teams.values()) {
       if (t.currentRunningOrder < t.getOrderLength()) {
