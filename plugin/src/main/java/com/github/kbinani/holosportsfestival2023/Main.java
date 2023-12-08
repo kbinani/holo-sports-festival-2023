@@ -13,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginManager;
@@ -210,6 +211,12 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public void onPlayerQuit(PlayerQuitEvent e) {
     var player = e.getPlayer();
     Cloakroom.shared.restore(player);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onEntityExhaustion(EntityExhaustionEvent e) {
+    e.setCancelled(true);
   }
 
   @Override

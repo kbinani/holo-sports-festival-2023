@@ -333,14 +333,6 @@ public class FightStage extends AbstractStage {
   }
 
   @Override
-  protected void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
-    e.setCancelled(true);
-    if (e.getEntity() instanceof Player player) {
-      player.setFoodLevel(20);
-    }
-  }
-
-  @Override
   protected void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
     var item = e.getItem();
     if (ItemTag.HasByte(item, Stage.FIGHT.tag)) {

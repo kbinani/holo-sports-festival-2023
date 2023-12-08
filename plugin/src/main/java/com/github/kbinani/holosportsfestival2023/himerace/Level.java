@@ -213,12 +213,6 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     }
   }
 
-  void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
-    for (var stage : stages.values()) {
-      stage.entityExhaustion(e, participation);
-    }
-  }
-
   void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
     for (var stage : stages.values()) {
       stage.playerItemDamage(e, participation);

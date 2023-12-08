@@ -509,23 +509,6 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
 
   @EventHandler
   @SuppressWarnings("unused")
-  public void onEntityExhaustion(EntityExhaustionEvent e) {
-    if (status != Status.ACTIVE) {
-      return;
-    }
-    if (!(e.getEntity() instanceof Player player)) {
-      return;
-    }
-    var participation = getCurrentParticipation(player);
-    if (participation == null) {
-      return;
-    }
-    var level = levels.get(participation.color);
-    level.onEntityExhaustion(e, participation);
-  }
-
-  @EventHandler
-  @SuppressWarnings("unused")
   public void onPlayerItemDamage(PlayerItemDamageEvent e) {
     if (status != Status.ACTIVE) {
       return;

@@ -167,12 +167,6 @@ public abstract class AbstractStage {
     }
   }
 
-  public final void entityExhaustion(EntityExhaustionEvent e, Participation participation) {
-    if (started && !finished) {
-      onEntityExhaustion(e, participation);
-    }
-  }
-
   public final void playerItemDamage(PlayerItemDamageEvent e, Participation participation) {
     if (started && !finished) {
       onPlayerItemDamage(e, participation);
@@ -234,9 +228,6 @@ public abstract class AbstractStage {
   }
 
   protected void onEntityRegainHealth(EntityRegainHealthEvent e, Participation participation) {
-  }
-
-  protected void onEntityExhaustion(EntityExhaustionEvent e, Participation participation) {
   }
 
   protected void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {

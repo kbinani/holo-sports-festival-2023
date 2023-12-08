@@ -10,7 +10,6 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -136,17 +135,6 @@ class Session {
       return;
     }
     e.setCancelled(true);
-  }
-
-  void onEntityExhaustion(EntityExhaustionEvent e) {
-    if (!(e.getEntity() instanceof Player player)) {
-      return;
-    }
-    if (!isParticipant(player)) {
-      return;
-    }
-    e.setCancelled(true);
-    player.setFoodLevel(20);
   }
 
   private void updateBossBarName() {
