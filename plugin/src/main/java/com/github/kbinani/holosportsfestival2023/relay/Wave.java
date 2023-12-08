@@ -2,6 +2,8 @@ package com.github.kbinani.holosportsfestival2023.relay;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.ThreadLocalRandom;
@@ -58,6 +60,8 @@ class Wave {
     var distance = t * sSpeed;
     var width = endX - startX;
 
+    BoundingBox bounds = null;
+
     for (int i = 0; i < 5; i++) {
       var bubble = bubbles[i];
 
@@ -75,6 +79,36 @@ class Wave {
       this.xLast[i] = x;
       var y = yCandidates[yIndex[i]];
       bubble.teleport(new Location(world, x * sign, y, z));
+      var b = bubble.getBoundingBox();
+      if (b != null) {
+        if (bounds == null) {
+          bounds = bubble.getBoundingBox();
+        } else {
+          bounds.union(b);
+        }
+      }
     }
+    if (bounds != null) {
+      world.getNearbyEntities(bounds).forEach(it -> {
+        if (!(it instanceof Player player)) {
+          return;
+        }
+        if (player.getPortalCooldown() == 0 && hitTest(player)) {
+          var velocity = player.getVelocity();
+          velocity.setX(-0.25);
+          player.setVelocity(velocity);
+          player.setPortalCooldown(20);
+        }
+      });
+    }
+  }
+
+  boolean hitTest(Player player) {
+    for (var bubble : bubbles) {
+      if (bubble.hitTest(player)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

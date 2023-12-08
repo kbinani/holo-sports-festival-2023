@@ -6,8 +6,11 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,5 +51,28 @@ class Bubble {
       index++;
       cloud.teleport(new Location(world, x, location.getY(), z), TeleportFlag.EntityState.RETAIN_PASSENGERS);
     }
+  }
+
+  boolean hitTest(Player player) {
+    var playerBounds = player.getBoundingBox();
+    for (var cloud : clouds) {
+      if (cloud.getBoundingBox().overlaps(playerBounds)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Nullable
+  BoundingBox getBoundingBox() {
+    BoundingBox box = null;
+    for (var cloud : clouds) {
+      if (box == null) {
+        box = cloud.getBoundingBox();
+      } else {
+        box.union(cloud.getBoundingBox());
+      }
+    }
+    return box;
   }
 }
