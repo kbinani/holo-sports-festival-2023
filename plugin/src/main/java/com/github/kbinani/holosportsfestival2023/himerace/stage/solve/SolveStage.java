@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
 import com.github.kbinani.holosportsfestival2023.Editor;
+import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
@@ -36,6 +37,7 @@ import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener.itemTag;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -327,6 +329,16 @@ public class SolveStage extends AbstractStage {
     var princess = team.getPrincess();
     if (princess != null) {
       princess.teleport(pos(-91, 85, 34).toLocation(world).add(0.5, 0, 0.5));
+      var inventory = princess.getInventory();
+      var materials = new Material[]{Material.RED_WOOL, Material.ORANGE_WOOL, Material.YELLOW_WOOL, Material.PINK_WOOL};
+      for (var i = 0; i < materials.length; i++) {
+        var item = ItemBuilder.For(materials[i])
+          .displayName(text("ブロックを置いて解答！ / Place the block to answer!"))
+          .customByteTag(itemTag)
+          .customByteTag(Stage.SOLVE.tag)
+          .build();
+        inventory.setItem(i, item);
+      }
     }
     quiz.build(world, quizOrigin);
     Bukkit.getScheduler().runTaskLater(owner, () -> {
