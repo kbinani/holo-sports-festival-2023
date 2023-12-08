@@ -68,13 +68,26 @@ public class Team implements Level.Delegate {
     }
   }
 
+  private void clearInventoryExceptEquipments(Player player) {
+    var equipment = player.getEquipment();
+    var helmet = equipment.getHelmet();
+    var chestplate = equipment.getChestplate();
+    var leggings = equipment.getLeggings();
+    var boots = equipment.getBoots();
+    player.getInventory().clear();
+    equipment.setHelmet(helmet);
+    equipment.setChestplate(chestplate);
+    equipment.setLeggings(leggings);
+    equipment.setBoots(boots);
+  }
+
   @Override
   public void levelDidClearStage(Stage stage) {
     if (princess != null) {
-      ClearItems(princess, stage.tag);
+      clearInventoryExceptEquipments(princess);
     }
     for (var knight : knights) {
-      ClearItems(knight, stage.tag);
+      clearInventoryExceptEquipments(knight);
     }
     switch (stage) {
       case CARRY -> {
