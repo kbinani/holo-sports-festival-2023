@@ -247,6 +247,9 @@ public class TrackAndField {
     fill(pos(-43, 80, 73), pos(-42, 87, 73), material);
     fill(pos(-41, 80, 74), pos(-40, 87, 74), material);
     fill(pos(-39, 87, 75), pos(-3, 80, 75), material);
+    fill(pos(-37, 84, 76), pos(-33, 87, 76), material);
+    fill(pos(-32, 85, 76), pos(-32, 87, 76), material);
+    fill(pos(-31, 84, 76), pos(-13, 87, 76), material);
 
     // 外周
     fill(pos(-2, 85, 83), pos(44, 80, 83), material);
@@ -277,6 +280,9 @@ public class TrackAndField {
     fill(pos(-44, 87, 82), pos(-44, 80, 82), material);
     fill(pos(-43, 82, 82), pos(-43, 80, 82), material);
     fill(pos(-42, 87, 83), pos(-3, 80, 83), material);
+    fill(pos(-37, 84, 82), pos(-33, 87, 82), material);
+    fill(pos(-32, 85, 82), pos(-32, 87, 82), material);
+    fill(pos(-31, 84, 82), pos(-13, 87, 82), material);
   }
 
   private void fill(Point3i from, Point3i to, Material material) {
