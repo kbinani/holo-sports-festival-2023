@@ -8,6 +8,7 @@ import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFadeEvent;
@@ -244,7 +245,10 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   @EventHandler
   @SuppressWarnings("unused")
   public void onEntityExhaustion(EntityExhaustionEvent e) {
-    e.setCancelled(true);
+    if (!(e.getEntity() instanceof Player player)) {
+      return;
+    }
+    e.setExhaustion(0);
   }
 
   @EventHandler
