@@ -66,7 +66,7 @@ public class TrackAndField {
     relayResumeSign = pos(0, 80, 71);
 
     announceBounds = new BoundingBox(x(-63), y(79), z(13), x(72), 500, z(92));
-    photoSpotBounds = new BoundingBox(x(-6), y(80), z(48), x(15), y(83), z(54));
+    photoSpotBounds = new BoundingBox(x(-6), y(80), z(49), x(15), y(83), z(55));
   }
 
   public void setMode(Mode mode) {
@@ -122,19 +122,19 @@ public class TrackAndField {
 
   public void setEnablePhotoSpot(boolean enable) {
     if (enable) {
-      fill(pos(-6, 80, 48), pos(0, 80, 53), Material.WHITE_CONCRETE);
-      fill(pos(-6, 81, 48), pos(9, 81, 51), Material.WHITE_CONCRETE);
-      fill(pos(-6, 82, 48), pos(0, 82, 49), Material.WHITE_CONCRETE);
-      fill(pos(1, 80, 48), pos(7, 80, 53), Material.PINK_CONCRETE);
-      fill(pos(1, 81, 48), pos(7, 81, 51), Material.PINK_CONCRETE);
-      fill(pos(1, 82, 48), pos(7, 82, 49), Material.PINK_CONCRETE);
-      fill(pos(8, 80, 48), pos(14, 80, 53), Material.YELLOW_CONCRETE);
-      fill(pos(8, 81, 48), pos(14, 81, 51), Material.YELLOW_CONCRETE);
-      fill(pos(8, 82, 48), pos(14, 82, 49), Material.YELLOW_CONCRETE);
+      fill(pos(-6, 80, 49), pos(0, 80, 54), Material.WHITE_CONCRETE);
+      fill(pos(-6, 81, 49), pos(9, 81, 52), Material.WHITE_CONCRETE);
+      fill(pos(-6, 82, 49), pos(0, 82, 50), Material.WHITE_CONCRETE);
+      fill(pos(1, 80, 49), pos(7, 80, 54), Material.PINK_CONCRETE);
+      fill(pos(1, 81, 49), pos(7, 81, 52), Material.PINK_CONCRETE);
+      fill(pos(1, 82, 49), pos(7, 82, 50), Material.PINK_CONCRETE);
+      fill(pos(8, 80, 49), pos(14, 80, 54), Material.YELLOW_CONCRETE);
+      fill(pos(8, 81, 49), pos(14, 81, 52), Material.YELLOW_CONCRETE);
+      fill(pos(8, 82, 49), pos(14, 82, 50), Material.YELLOW_CONCRETE);
     } else {
-      fill(pos(-6, 80, 48), pos(14, 80, 53), Material.AIR);
-      fill(pos(-6, 81, 48), pos(14, 81, 51), Material.AIR);
-      fill(pos(-6, 82, 48), pos(14, 82, 49), Material.AIR);
+      fill(pos(-6, 80, 49), pos(14, 80, 54), Material.AIR);
+      fill(pos(-6, 81, 49), pos(14, 81, 52), Material.AIR);
+      fill(pos(-6, 82, 49), pos(14, 82, 50), Material.AIR);
     }
   }
 
