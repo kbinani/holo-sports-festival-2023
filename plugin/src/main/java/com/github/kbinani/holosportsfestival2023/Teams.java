@@ -17,10 +17,10 @@ public class Teams {
 
   public @Nonnull Team ensure(TeamColor color) {
     var name = prefix + "_" + color.text;
-    return ensure(name, color.textColor);
+    return ensure(name, color.teamColor);
   }
 
-  private @Nonnull Team ensure(String name, NamedTextColor textColor) {
+  private @Nonnull Team ensure(String name, NamedTextColor teamColor) {
     var server = Bukkit.getServer();
     var manager = server.getScoreboardManager();
     var scoreboard = manager.getMainScoreboard();
@@ -28,7 +28,7 @@ public class Teams {
     if (team == null) {
       team = scoreboard.registerNewTeam(name);
     }
-    team.color(textColor);
+    team.color(teamColor);
     team.setAllowFriendlyFire(allowFriendlyFire);
     return team;
   }
