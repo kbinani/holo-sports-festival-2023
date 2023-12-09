@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 group = 'com.github.kbinani'
-version = "${System.env.HOLO_SPORTS_FESTIVAL_2023_PLUGIN_VERSION ?: "1.2.0"}"
+version = '1.2.0'
 
 java {
   toolchain.languageVersion.set(JavaLanguageVersion.of(17))
@@ -18,14 +18,6 @@ repositories {
 dependencies {
   compileOnly 'io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT'
   compileOnly 'org.jetbrains:annotations:23.0.0'
-}
-
-processResources {
-  filesMatching('plugin.yml') {
-    expand(
-      version: project.version
-    )
-  }
 }
 
 wrapper {
