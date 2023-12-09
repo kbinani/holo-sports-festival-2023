@@ -317,6 +317,7 @@ class Race {
       clearedCheckpoint.put(color, index);
       player.setBedSpawnLocation(blockLocation, true);
       player.playSound(blockLocation, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+      player.swingMainHand();
       delegate.raceDidDetectCheckpoint(color, player, index);
     }
   }
