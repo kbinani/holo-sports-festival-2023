@@ -110,6 +110,7 @@ class Race {
       var team = entry.getValue();
       var player = team.getAssignedPlayer(0);
       if (player != null) {
+        player.setGameMode(GameMode.ADVENTURE);
         Players.Distribute(world, getStartingArea(0), player);
       }
     }
