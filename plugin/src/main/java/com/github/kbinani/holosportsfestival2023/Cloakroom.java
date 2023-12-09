@@ -43,4 +43,8 @@ public class Cloakroom {
     inventory.setContents(stored);
     return true;
   }
+
+  public boolean isStored(Player player) {
+    return storage.containsKey(player.getUniqueId());
+  }
 }

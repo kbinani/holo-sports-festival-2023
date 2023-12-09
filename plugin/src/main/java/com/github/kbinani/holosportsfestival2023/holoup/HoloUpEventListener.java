@@ -299,6 +299,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void onClickSpectator(Player player) {
+    if (Cloakroom.shared.isStored(player)) {
+      return;
+    }
     var id = player.getUniqueId();
     if (spectators.contains(id)) {
       player.setGameMode(GameMode.ADVENTURE);
