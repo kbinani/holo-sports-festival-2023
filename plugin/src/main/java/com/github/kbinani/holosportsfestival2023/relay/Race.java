@@ -2,10 +2,7 @@ package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -126,9 +123,11 @@ class Race {
       team.currentRunningOrder = 0;
       var player = team.getAssignedPlayer(0);
       if (player != null) {
+        player.setGameMode(GameMode.ADVENTURE);
         player.getInventory().setItemInOffHand(CreateBaton(color));
         var next = team.getAssignedPlayer(1);
         if (next != null) {
+          next.setGameMode(GameMode.ADVENTURE);
           Players.Distribute(world, getStartingArea(1), next);
           notifyNextRunner(next, player);
         }
@@ -274,6 +273,7 @@ class Race {
     // defender の次の走者を所定の位置に移動
     var next = team.getAssignedPlayer(defenderOrder + 1);
     if (next != null) {
+      next.setGameMode(GameMode.ADVENTURE);
       Players.Distribute(world, getStartingArea(defenderOrder + 1), next);
       notifyNextRunner(next, defender);
     }
