@@ -527,6 +527,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
   private void broadcast(Component message) {
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
+    owner.getComponentLogger().info(message);
   }
 
   private static int x(int x) {

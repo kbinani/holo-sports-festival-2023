@@ -747,6 +747,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
 
   private void broadcast(Component message) {
     Players.Within(world, delegate.relayGetAnnounceBounds(), player -> player.sendMessage(message));
+    owner.getComponentLogger().info(message);
   }
 
   private int x(int x) {

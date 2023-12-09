@@ -176,6 +176,7 @@ class Session {
 
   private void broadcast(Component message) {
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
+    owner.getComponentLogger().info(message);
   }
 
   private @Nullable Unit getUnitByAttacker(Player attacker) {

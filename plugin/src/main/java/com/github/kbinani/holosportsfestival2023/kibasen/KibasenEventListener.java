@@ -414,6 +414,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
   private void broadcast(Component message) {
     Players.Within(world, delegate.kibasenGetAnnounceBounds(), player -> player.sendMessage(message));
+    owner.getComponentLogger().info(message);
   }
 
   private void reset() {

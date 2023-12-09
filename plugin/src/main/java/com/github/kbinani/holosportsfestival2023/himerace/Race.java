@@ -192,5 +192,6 @@ class Race implements Team.Delegate {
 
   private void broadcast(Component message) {
     Players.Within(world, announceBounds, player -> player.sendMessage(message));
+    owner.getComponentLogger().info(message);
   }
 }
