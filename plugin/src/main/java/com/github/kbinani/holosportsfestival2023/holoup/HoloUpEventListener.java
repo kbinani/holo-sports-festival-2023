@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.holoup;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -20,8 +21,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -37,7 +37,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private static final Point3i abortSign = pos(-36, 100, -29);
   private static final Point3i startSign = pos(-37, 100, -29);
   private static final Point3i entryListSign = pos(-35, 100, -29);
+  private static final Point3i spectatorSign = pos(-39, 100, -29);
   private static final BoundingBox announceBounds = new BoundingBox(x(-59), y(99), z(-63), x(12), 500, z(-19));
+  private static final BoundingBox safeArea = new BoundingBox(x(-45), y(100) - 0.5, z(-34), x(-31), y(100) - 0.5, z(-23));
   static final String itemTag = "holo_sports_festival_holoup";
   static final String itemTagStrong = "holo_sports_festival_holoup_trident_strong";
 
@@ -47,6 +49,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private final Map<TeamColor, Player> registrants = new HashMap<>();
   private @Nullable Cancellable countdownTask;
   private @Nullable Race race;
+  private final Set<UUID> spectators = new HashSet<>();
 
   public HoloUpEventListener(World world, JavaPlugin owner) {
     this.world = world;
@@ -98,7 +101,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     Editor.StandingSign(world, joinSignYellow, Material.OAK_SIGN, 0,
       title, TeamColor.YELLOW.component(), Component.empty(), text("右クリでエントリー！", AQUA)
     );
-    Editor.StandingSign(world, pos(-39, 100, -29), Material.OAK_SIGN, 0,
+    Editor.StandingSign(world, spectatorSign, Material.OAK_SIGN, 0,
       title, text("観戦者", DARK_PURPLE), text("Spectator", DARK_PURPLE), text("右クリでエントリー！", AQUA)
     );
 
@@ -126,6 +129,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     if (race != null) {
       race.cleanup();
     }
+    for (var id : spectators) {
+      var player = Bukkit.getPlayer(id);
+      if (player != null) {
+        Players.Distribute(world, safeArea, player);
+        player.setGameMode(GameMode.ADVENTURE);
+      }
+    }
+    spectators.clear();
     race = null;
   }
 
@@ -172,6 +183,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           }
         } else if (location.equals(entryListSign)) {
           announceEntryList();
+        } else if (location.equals(spectatorSign)) {
+          onClickSpectator(player);
         }
       }
       case COUNTDOWN -> {
@@ -191,6 +204,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           announceEntryList();
         } else if (location.equals(startSign)) {
           player.sendMessage(text("ゲームが既に開始しています。", RED));
+        } else if (location.equals(spectatorSign)) {
+          onClickSpectator(player);
         }
       }
       case ACTIVE -> {
@@ -211,6 +226,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
             .append(text("ゲームを中断しました", RED)));
         } else if (location.equals(startSign)) {
           player.sendMessage(text("ゲームが既に開始しています。", RED));
+        } else if (location.equals(spectatorSign)) {
+          onClickSpectator(player);
         }
       }
     }
@@ -279,6 +296,27 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     if (race != null) {
       race.onPlayerLeave(player);
     }
+  }
+
+  private void onClickSpectator(Player player) {
+    var id = player.getUniqueId();
+    if (spectators.contains(id)) {
+      player.setGameMode(GameMode.ADVENTURE);
+      spectators.remove(id);
+      return;
+    }
+    if (race != null) {
+      if (race.contains(player)) {
+        return;
+      }
+    }
+    for (var p : registrants.values()) {
+      if (p.getUniqueId().equals(id)) {
+        return;
+      }
+    }
+    player.setGameMode(GameMode.SPECTATOR);
+    spectators.add(id);
   }
 
   private void announceEntryList() {
@@ -350,6 +388,9 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void onClickJoin(Player player, TeamColor color) {
+    if (spectators.contains(player.getUniqueId())) {
+      return;
+    }
     var current = registrants.get(color);
     if (current == null) {
       if (registrants.containsValue(player)) {

@@ -473,6 +473,9 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   private void onClickJoin(Player player, TeamColor color) {
+    if (player.getGameMode() == GameMode.SPECTATOR) {
+      return;
+    }
     for (var entry : teams.entrySet()) {
       var team = entry.getValue();
       var c = entry.getKey();

@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.himerace;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -529,6 +530,9 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
 
   private void onClickJoin(Player player, TeamColor color, Role role) {
     if (status != Status.IDLE) {
+      return;
+    }
+    if (player.getGameMode() == GameMode.SPECTATOR) {
       return;
     }
     Team team = teams.get(color);

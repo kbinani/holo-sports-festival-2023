@@ -75,6 +75,7 @@ class Race {
         player.setHealth(maxHealth.getValue());
       }
       player.setFoodLevel(20);
+      player.setGameMode(GameMode.ADVENTURE);
     }
     updateBars();
   }
@@ -274,6 +275,15 @@ class Race {
         .append(text("ゲームを中断しました", RED)));
       delegate.raceDidFinish();
     }
+  }
+
+  boolean contains(Player player) {
+    for (var p : participants.values()) {
+      if (player.getUniqueId().equals(p.getUniqueId())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static void RecoverStrongTrident(Player player) {

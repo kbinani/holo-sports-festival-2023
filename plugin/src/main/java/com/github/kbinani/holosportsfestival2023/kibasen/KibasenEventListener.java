@@ -3,6 +3,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
@@ -161,6 +162,9 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
         return;
       }
       if (!(e.getRightClicked() instanceof Player vehicle)) {
+        return;
+      }
+      if (vehicle.getGameMode() == GameMode.SPECTATOR) {
         return;
       }
       if (!ItemTag.HasByte(item, itemTag)) {
@@ -374,6 +378,9 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   }
 
   private void onClickJoin(Player player, TeamColor color) {
+    if (player.getGameMode() == GameMode.SPECTATOR) {
+      return;
+    }
     var current = registrants.getParticipation(player);
     if (current == null) {
       registrants.addAttacker(player, color);
