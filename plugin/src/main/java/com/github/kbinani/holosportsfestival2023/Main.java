@@ -16,6 +16,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.SpawnChangeEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -42,6 +43,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   private boolean isLevelsReady = false;
   private @Nullable TrackAndField taf;
   private @Nullable TrackAndFieldOwner tafOwner;
+  private int spawnProtection = 16;
 
   @Override
   public void onEnable() {
@@ -55,6 +57,12 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
       return;
     }
     world = overworld.get();
+    if (miniGames.isEmpty()) {
+      miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
+      miniGames.add(new HoloUpEventListener(world, this));
+      miniGames.add(new KibasenEventListener(world, this, this));
+      miniGames.add(new RelayEventListener(world, this, this));
+    }
 
     List<String> reasons = new ArrayList<>();
     List<String> warnings = new ArrayList<>();
@@ -84,23 +92,36 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     if (doWeatherCycle != null && doWeatherCycle) {
       reasons.add("the \"Holoup\" mini-game is not playable as the doWeatherCycle gamerule is set to true");
     }
+
+    var props = new Properties();
     try {
-      var props = new Properties();
       props.load(new FileInputStream("server.properties"));
-      var spawnAnimals = props.getProperty("spawn-animals");
-      if (!Boolean.parseBoolean(spawnAnimals)) {
-        reasons.add("the \"Himerace\" mini-game is not playable as the spawn-animals is set to false");
-      }
     } catch (Throwable e) {
       reasons.add("cannot read server.properties");
     }
 
-    if (!reasons.isEmpty()) {
-      getLogger().log(java.util.logging.Level.SEVERE, "Disabling the plugin because:");
-      for (String reason : reasons) {
-        getLogger().log(java.util.logging.Level.SEVERE, "  " + reason);
+    var spawnAnimals = props.getProperty("spawn-animals");
+    if (!Boolean.parseBoolean(spawnAnimals)) {
+      reasons.add("the \"Himerace\" mini-game is not playable as the spawn-animals is set to false");
+    }
+
+    try {
+      var spawnProtectionValue = props.getProperty("spawn-protection");
+      spawnProtection = Integer.parseInt(spawnProtectionValue);
+    } catch (Throwable e) {
+    }
+    if (spawnProtection > 0) {
+      var spawn = world.getSpawnLocation();
+      var cx = spawn.getBlockX() / 16;
+      var cz = spawn.getBlockZ() / 16;
+      var protectedBounds = new BoundingBox((cx - spawnProtection) * 16, -100, (cz - spawnProtection) * 16, (cx + spawnProtection) * 16, 500, (cz + spawnProtection) * 16);
+      for (var game : miniGames) {
+        if (game.miniGameGetBoundingBox().overlaps(protectedBounds)) {
+          reasons.add("mini-game overlaps world spawn protection: " + game.getClass().getSimpleName());
+        }
       }
-      pluginManager.disablePlugin(this);
+    }
+    if (disablePluginBecause(reasons)) {
       return;
     }
     if (!warnings.isEmpty()) {
@@ -111,16 +132,22 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
 
     pluginManager.registerEvents(this, this);
 
-    if (miniGames.isEmpty()) {
-      miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
-      miniGames.add(new HoloUpEventListener(world, this));
-      miniGames.add(new KibasenEventListener(world, this, this));
-      miniGames.add(new RelayEventListener(world, this, this));
-    }
     for (var miniGame : miniGames) {
       pluginManager.registerEvents(miniGame, this);
     }
     cleanupScoreboardTeams();
+  }
+
+  private boolean disablePluginBecause(List<String> reasons) {
+    if (reasons.isEmpty()) {
+      return false;
+    }
+    getLogger().log(java.util.logging.Level.SEVERE, "Disabling the plugin because:");
+    for (String reason : reasons) {
+      getLogger().log(java.util.logging.Level.SEVERE, "  " + reason);
+    }
+    getServer().getPluginManager().disablePlugin(this);
+    return true;
   }
 
   private void cleanupScoreboardTeams() {
@@ -146,6 +173,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   }
 
   @EventHandler
+  @SuppressWarnings("unused")
   public void onPlayerJoin(PlayerJoinEvent e) {
     if (!isLevelsReady) {
       isLevelsReady = true;
@@ -217,6 +245,29 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   @SuppressWarnings("unused")
   public void onEntityExhaustion(EntityExhaustionEvent e) {
     e.setCancelled(true);
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onSpawnChange(SpawnChangeEvent e) {
+    var world = e.getWorld();
+    if (world != this.world) {
+      return;
+    }
+    var reasons = new ArrayList<String>();
+    if (spawnProtection <= 0) {
+      return;
+    }
+    var spawn = world.getSpawnLocation();
+    var cx = spawn.getBlockX() / 16;
+    var cz = spawn.getBlockZ() / 16;
+    var protectedBounds = new BoundingBox((cx - spawnProtection) * 16, -100, (cz - spawnProtection) * 16, (cx + spawnProtection) * 16, 500, (cz + spawnProtection) * 16);
+    for (var game : miniGames) {
+      if (game.miniGameGetBoundingBox().overlaps(protectedBounds)) {
+        reasons.add("mini-game overlaps world spawn protection: " + game.getClass().getSimpleName());
+      }
+    }
+    disablePluginBecause(reasons);
   }
 
   @Override

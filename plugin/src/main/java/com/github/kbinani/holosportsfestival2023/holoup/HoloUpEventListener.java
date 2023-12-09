@@ -64,6 +64,11 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   @Override
+  public BoundingBox miniGameGetBoundingBox() {
+    return announceBounds;
+  }
+
+  @Override
   public void raceDidFinish() {
     reset();
   }

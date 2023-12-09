@@ -114,6 +114,11 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     cleanupPlayer(player);
   }
 
+  @Override
+  public BoundingBox miniGameGetBoundingBox() {
+    return announceBounds;
+  }
+
   private void cleanupPlayer(Player player) {
     ClearItems(player, itemTag);
 

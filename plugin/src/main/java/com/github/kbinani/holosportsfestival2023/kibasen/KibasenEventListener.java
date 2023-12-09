@@ -81,6 +81,11 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
     ClearItems(player);
   }
 
+  @Override
+  public BoundingBox miniGameGetBoundingBox() {
+    return delegate.kibasenGetAnnounceBounds();
+  }
+
   @EventHandler
   @SuppressWarnings("unused")
   public void onPlayerInteract(PlayerInteractEvent e) {

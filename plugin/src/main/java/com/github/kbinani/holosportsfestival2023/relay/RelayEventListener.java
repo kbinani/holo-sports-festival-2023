@@ -101,6 +101,11 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     ClearItem(player);
   }
 
+  @Override
+  public BoundingBox miniGameGetBoundingBox() {
+    return delegate.relayGetAnnounceBounds();
+  }
+
   @EventHandler
   @SuppressWarnings("unused")
   public void onItemSpawn(ItemSpawnEvent e) {
