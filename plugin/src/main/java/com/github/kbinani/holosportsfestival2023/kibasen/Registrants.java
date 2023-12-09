@@ -81,7 +81,8 @@ class Registrants {
         }
         if (unit.vehicle == null || !unit.vehicle.isOnline()) {
           // https://youtu.be/D9vmP7Qj4TI?t=1398
-          broadcast(text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName()), RED));
+          //NOTE: 本家では prefix 無し
+          broadcast(prefix.append(text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName()), RED)));
           return false;
         }
       }
@@ -162,7 +163,8 @@ class Registrants {
     var team = teams.ensure(color);
     team.addPlayer(player);
 
-    broadcast(text(player.getName() + "が", WHITE)
+    broadcast(prefix
+      .append(text(player.getName() + "が", WHITE))
       .append(color.component())
       .append(text("にエントリーしました。", WHITE))
     );
