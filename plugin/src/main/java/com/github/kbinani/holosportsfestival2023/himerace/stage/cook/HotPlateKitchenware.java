@@ -33,6 +33,7 @@ class HotPlateKitchenware extends AbstractKitchenware {
     c.editMeta(ItemMeta.class, it -> {
       //NOTE: 鉄板の焚き火は着火操作必要無いぽい: https://youtu.be/ZNGqqCothRc?t=9815
       it.displayName(text("🔥🔥🔥", RED));
+      it.setCustomModelData(2);
     });
     inventory.setContents(new ItemStack[]{
       bsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, gsgp, bsgp,

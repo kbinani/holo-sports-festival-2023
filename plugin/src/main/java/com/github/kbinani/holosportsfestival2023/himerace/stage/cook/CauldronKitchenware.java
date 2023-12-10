@@ -73,9 +73,7 @@ class CauldronKitchenware extends AbstractKitchenware {
     }
     var campfire = new ItemStack(Material.CAMPFIRE);
     campfire.editMeta(ItemMeta.class, it -> {
-      if (count == 0) {
-        it.setCustomModelData(1);
-      }
+      it.setCustomModelData(count == 0 ? 1 : 2);
       it.displayName(text("🔥🔥🔥", count == 0 ? DARK_GRAY : RED));
     });
     for (var i = 47; i <= 51; i++) {
