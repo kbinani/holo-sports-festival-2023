@@ -113,9 +113,9 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     }
     if (spawnProtection > 0) {
       var spawn = world.getSpawnLocation();
-      var cx = spawn.getBlockX() / 16;
-      var cz = spawn.getBlockZ() / 16;
-      var protectedBounds = new BoundingBox((cx - spawnProtection) * 16, -100, (cz - spawnProtection) * 16, (cx + spawnProtection) * 16, 500, (cz + spawnProtection) * 16);
+      var bx = spawn.getBlockX();
+      var bz = spawn.getBlockZ();
+      var protectedBounds = new BoundingBox(bx - spawnProtection, -100, bz - spawnProtection, bx + spawnProtection, 500, bz + spawnProtection);
       for (var game : miniGames) {
         if (game.miniGameGetBoundingBox().overlaps(protectedBounds)) {
           reasons.add("mini-game overlaps world spawn protection: " + game.getClass().getSimpleName());
