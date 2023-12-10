@@ -17,6 +17,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.world.SpawnChangeEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,6 +30,9 @@ import javax.annotation.Nullable;
 import java.io.FileInputStream;
 import java.util.*;
 import java.util.logging.Level;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 @SuppressWarnings("unused")
 public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate, RelayEventListener.Delegate {
@@ -187,6 +191,20 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
       miniGame.miniGameClearItem(player);
     }
     player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
+  }
+
+  @EventHandler
+  @SuppressWarnings("unused")
+  public void onPlayerResourcePackStatus(PlayerResourcePackStatusEvent e) {
+    var player = e.getPlayer();
+    switch (e.getStatus()) {
+      case DECLINED -> {
+        player.kick(text("Resource pack discarded. You must apply the server resource pack to join", RED));
+      }
+      case FAILED_DOWNLOAD -> {
+        getLogger().warning("リソースパックが FAILED_DOWNLOAD となっているプレイヤーがいます: " + player.getName());
+      }
+    }
   }
 
   @EventHandler
