@@ -302,27 +302,27 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void onClickSpectator(Player player) {
-    if (Cloakroom.shared.isStored(player)) {
-      return;
-    }
-    var id = player.getUniqueId();
-    if (spectators.contains(id)) {
-      player.setGameMode(GameMode.ADVENTURE);
-      spectators.remove(id);
-      return;
-    }
-    if (race != null) {
-      if (race.contains(player)) {
-        return;
-      }
-    }
-    for (var p : registrants.values()) {
-      if (p.getUniqueId().equals(id)) {
-        return;
-      }
-    }
-    player.setGameMode(GameMode.SPECTATOR);
-    spectators.add(id);
+//    if (Cloakroom.shared.isStored(player)) {
+//      return;
+//    }
+//    var id = player.getUniqueId();
+//    if (spectators.contains(id)) {
+//      player.setGameMode(GameMode.ADVENTURE);
+//      spectators.remove(id);
+//      return;
+//    }
+//    if (race != null) {
+//      if (race.contains(player)) {
+//        return;
+//      }
+//    }
+//    for (var p : registrants.values()) {
+//      if (p.getUniqueId().equals(id)) {
+//        return;
+//      }
+//    }
+//    player.setGameMode(GameMode.SPECTATOR);
+//    spectators.add(id);
   }
 
   private void announceEntryList() {
