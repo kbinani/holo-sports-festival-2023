@@ -85,11 +85,11 @@ class Session {
     if (!(e.getDamager() instanceof Player offence)) {
       return;
     }
-    var defenceUnit = getUnitByAttacker(defence);
+    var defenceUnit = getUnit(defence);
     if (defenceUnit == null) {
       return;
     }
-    var offenceUnit = getUnitByAttacker(offence);
+    var offenceUnit = getUnit(offence);
     if (offenceUnit == null) {
       return;
     }
@@ -179,10 +179,13 @@ class Session {
     owner.getComponentLogger().info(message);
   }
 
-  private @Nullable Unit getUnitByAttacker(Player attacker) {
+  private @Nullable Unit getUnit(Player attacker) {
     for (var entry : participants.entrySet()) {
       for (var unit : entry.getValue()) {
         if (unit.attacker == attacker) {
+          return unit;
+        }
+        if (unit.vehicle == attacker) {
           return unit;
         }
       }
