@@ -1,6 +1,6 @@
 name: holo-sports-festival-2023
 api-version: 1.20
-version: 1.3.0
+version: ${version}
 main: com.github.kbinani.holosportsfestival2023.Main
 commands:
   holosportsfestival2023:
