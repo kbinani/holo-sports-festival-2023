@@ -21,6 +21,7 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 import static net.kyori.adventure.text.Component.text;
@@ -47,8 +48,8 @@ public class CarryStage extends AbstractStage {
   private final Region2D[] secondFloorRegions;
   private Set<Point2i> activeFloorBlocks = new HashSet<>();
   private final Map<Player, BlockDisplay> headBlocks = new HashMap<>();
-  private boolean firstGateOpen = false;
-  private boolean secondGateOpen = false;
+  private @Nullable Boolean firstGateOpen = null;
+  private @Nullable Boolean secondGateOpen = null;
   private final @Nonnull Delegate delegate;
   private PrincessStatus princessStatus = PrincessStatus.FALL;
   private float progress = 0;
@@ -166,7 +167,7 @@ public class CarryStage extends AbstractStage {
   }
 
   void setOpenFirstGate(boolean open) {
-    if (firstGateOpen == open) {
+    if (firstGateOpen != null && firstGateOpen == open) {
       return;
     }
     firstGateOpen = open;
@@ -177,7 +178,7 @@ public class CarryStage extends AbstractStage {
   }
 
   void setOpenSecondGate(boolean open) {
-    if (secondGateOpen == open) {
+    if (secondGateOpen != null && secondGateOpen == open) {
       return;
     }
     secondGateOpen = open;
