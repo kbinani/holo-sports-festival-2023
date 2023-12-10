@@ -47,6 +47,7 @@ class Race {
   private final @Nonnull UUID id = UUID.randomUUID();
   private final @Nonnull Point3i[] fireworkSpotsEven;
   private final @Nonnull Point3i[] fireworkSpotsOdd;
+  private final @Nonnull Announcer announcer;
 
   private Race(
     @Nonnull JavaPlugin owner,
@@ -55,11 +56,13 @@ class Race {
     @Nonnull Point3i offset,
     @Nonnull BoundingBox announceBounds,
     @Nonnull Point3i safeSpot,
+    @Nonnull Announcer announcer,
     @Nonnull Delegate delegate) //
   {
     this.owner = owner;
     this.world = world;
     this.offset = offset;
+    this.announcer = announcer;
     this.delegate = delegate;
     this.announceBounds = announceBounds;
     this.safeSpot = safeSpot;
@@ -144,6 +147,7 @@ class Race {
     @Nonnull Point3i offset,
     @Nonnull BoundingBox announceBounds,
     @Nonnull Point3i safeSpot,
+    @Nonnull Announcer announcer,
     @Nonnull Delegate delegate) //
   {
     int count = -1;
@@ -178,7 +182,7 @@ class Race {
     if (ids.size() != total) {
       return new Result<>(null, text("複数のチームに重複して参加登録しているプレイヤーがいます", RED));
     }
-    return new Result<>(new Race(owner, world, teams, offset, announceBounds, safeSpot, delegate), null);
+    return new Result<>(new Race(owner, world, teams, offset, announceBounds, safeSpot, announcer, delegate), null);
   }
 
   private void updateBossBar(TeamColor color) {
@@ -415,8 +419,7 @@ class Race {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 
   private int x(int x) {

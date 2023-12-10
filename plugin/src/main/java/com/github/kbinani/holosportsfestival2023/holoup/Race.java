@@ -19,6 +19,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BoundingBox;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
@@ -51,16 +52,25 @@ class Race {
   private final HashMap<TeamColor, Long> goaledMillis = new HashMap<>();
   private final Map<TeamColor, Integer> clearedCheckpoint = new HashMap<>();
   private final Map<Player, BukkitTask> tridentCooldownTask = new HashMap<>();
+  private final @Nonnull Announcer announcer;
 
   private static final long durationSeconds = 300;
   static final int groundLevel = y(100);
 
-  Race(JavaPlugin owner, World world, BoundingBox announceBounds, Map<TeamColor, Player> registrants, Delegate delegate) {
+  Race(
+    @Nonnull JavaPlugin owner,
+    @Nonnull World world,
+    @Nonnull BoundingBox announceBounds,
+    @Nonnull  Map<TeamColor, Player> registrants,
+    @Nonnull Announcer announcer,
+    @Nonnull Delegate delegate) //
+  {
     this.owner = owner;
     this.world = world;
     this.participants = new HashMap<>(registrants);
     this.delegate = delegate;
     this.announceBounds = announceBounds;
+    this.announcer = announcer;
     registrants.clear();
     var scheduler = Bukkit.getScheduler();
     timeoutTask = scheduler.runTaskLater(owner, this::finish, durationSeconds * 20);
@@ -447,7 +457,6 @@ class Race {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 }

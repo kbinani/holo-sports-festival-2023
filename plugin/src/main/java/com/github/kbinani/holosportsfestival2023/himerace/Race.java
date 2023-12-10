@@ -1,7 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
+import com.github.kbinani.holosportsfestival2023.Announcer;
 import com.github.kbinani.holosportsfestival2023.BossBar;
-import com.github.kbinani.holosportsfestival2023.Players;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.apache.logging.log4j.util.TriConsumer;
@@ -34,8 +34,9 @@ class Race implements Team.Delegate {
   private final Map<TeamColor, BossBar> bossBars = new HashMap<>();
   private final BukkitTask timer;
   private final @Nonnull Delegate delegate;
+  private final @Nonnull Announcer announcer;
 
-  Race(JavaPlugin owner, World world, Map<TeamColor, Team> teams, @Nonnull Delegate delegate) {
+  Race(JavaPlugin owner, World world, Map<TeamColor, Team> teams, @Nonnull Announcer announcer, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.world = world;
     for (var team : teams.values()) {
@@ -44,6 +45,7 @@ class Race implements Team.Delegate {
     }
     this.teams = new HashMap<>(teams);
     this.delegate = delegate;
+    this.announcer = announcer;
     teams.clear();
     startTimeMillis = System.currentTimeMillis();
     timer = Bukkit.getScheduler().runTaskTimer(owner, this::tick, 0, 10);
@@ -191,7 +193,6 @@ class Race implements Team.Delegate {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 }

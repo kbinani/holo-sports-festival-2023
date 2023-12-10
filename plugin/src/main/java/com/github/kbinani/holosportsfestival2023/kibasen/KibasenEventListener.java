@@ -65,10 +65,12 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private @Nullable Session session;
   private final @Nonnull Delegate delegate;
   private @Nullable TrackAndField taf;
+  private @Nonnull Announcer announcer;
 
-  public KibasenEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
+  public KibasenEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Announcer announcer, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.world = world;
+    this.announcer = announcer;
     this.delegate = delegate;
   }
 
@@ -346,7 +348,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
 
   private void start() {
     this.countdown = null;
-    var session = this.registrants.promote(owner, world, delegate.kibasenGetAnnounceBounds(), this);
+    var session = this.registrants.promote(owner, world, delegate.kibasenGetAnnounceBounds(), announcer, this);
     if (session == null) {
       abort();
       return;
@@ -413,8 +415,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, delegate.kibasenGetAnnounceBounds(), player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, delegate.kibasenGetAnnounceBounds());
   }
 
   private void reset() {

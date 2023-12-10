@@ -4,6 +4,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventListener;
 import com.github.kbinani.holosportsfestival2023.holoup.HoloUpEventListener;
 import com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener;
 import com.github.kbinani.holosportsfestival2023.relay.RelayEventListener;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
@@ -35,7 +36,7 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 @SuppressWarnings("unused")
-public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate, RelayEventListener.Delegate {
+public class Main extends JavaPlugin implements Listener, KibasenEventListener.Delegate, RelayEventListener.Delegate, Announcer {
   enum TrackAndFieldOwner {
     KIBASEN,
     RELAY,
@@ -63,10 +64,10 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     }
     world = overworld.get();
     if (miniGames.isEmpty()) {
-      miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}));
-      miniGames.add(new HoloUpEventListener(world, this));
-      miniGames.add(new KibasenEventListener(world, this, this));
-      miniGames.add(new RelayEventListener(world, this, this));
+      miniGames.add(new HimeraceEventListener(world, this,  new int[]{0, 1, 2}, this));
+      miniGames.add(new HoloUpEventListener(world, this, this));
+      miniGames.add(new KibasenEventListener(world, this, this, this));
+      miniGames.add(new RelayEventListener(world, this, this, this));
     }
 
     List<String> reasons = new ArrayList<>();
@@ -392,6 +393,14 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.RELAY) {
       this.tafOwner = null;
       getLogger().log(Level.INFO, "ownership of track and field was released from relay");
+    }
+  }
+
+  @Override
+  public void announce(Component message, BoundingBox bounds) {
+    Players.Within(world, bounds, player -> player.sendMessage(message));
+    if (Component.IS_NOT_EMPTY.test(message)) {
+      getComponentLogger().info(message);
     }
   }
 

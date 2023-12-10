@@ -20,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
@@ -43,17 +44,19 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   static final String itemTag = "holo_sports_festival_holoup";
   static final String itemTagStrong = "holo_sports_festival_holoup_trident_strong";
 
-  private final World world;
-  private final JavaPlugin owner;
+  private final @Nonnull World world;
+  private final @Nonnull JavaPlugin owner;
   private Status status = Status.IDLE;
   private final Map<TeamColor, Player> registrants = new HashMap<>();
   private @Nullable Cancellable countdownTask;
   private @Nullable Race race;
   private final Set<UUID> spectators = new HashSet<>();
+  private final @Nonnull Announcer announcer;
 
-  public HoloUpEventListener(World world, JavaPlugin owner) {
+  public HoloUpEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Announcer announcer) {
     this.world = world;
     this.owner = owner;
+    this.announcer = announcer;
   }
 
   @Override
@@ -384,7 +387,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       this.race.cancel();
       this.race = null;
     }
-    this.race = new Race(owner, world, announceBounds, registrants, this);
+    this.race = new Race(owner, world, announceBounds, registrants, announcer, this);
     status = Status.ACTIVE;
     broadcast(prefix
       .append(text("ゲームがスタートしました。", WHITE)));
@@ -526,8 +529,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 
   private static int x(int x) {

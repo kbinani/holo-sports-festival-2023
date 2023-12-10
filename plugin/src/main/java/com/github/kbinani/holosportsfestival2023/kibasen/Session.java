@@ -48,6 +48,7 @@ class Session {
   private final BukkitTask tick;
   private final BossBar bossBar;
   private final long startTimeMillis;
+  private final @Nonnull Announcer announcer;
 
   Session(
     JavaPlugin owner,
@@ -55,7 +56,8 @@ class Session {
     BoundingBox announceBounds,
     @Nonnull Delegate delegate,
     @Nonnull Teams teams,
-    Map<TeamColor, ArrayList<Unit>> participants
+    Map<TeamColor, ArrayList<Unit>> participants,
+    @Nonnull Announcer announcer
   ) {
     this.owner = owner;
     this.world = world;
@@ -66,6 +68,7 @@ class Session {
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
     this.tick = scheduler.runTaskTimer(owner, this::tick, 0, 20);
     this.delegate = delegate;
+    this.announcer = announcer;
     respawnLocation.put(TeamColor.RED, pos(4, 80, 69));
     respawnLocation.put(TeamColor.WHITE, pos(-13, 80, 35));
     respawnLocation.put(TeamColor.YELLOW, pos(21, 80, 35));
@@ -175,8 +178,7 @@ class Session {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 
   private @Nullable Unit getUnit(Player attacker) {

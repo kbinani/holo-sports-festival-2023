@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BoundingBox;
 import org.spigotmc.event.entity.EntityDismountEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,13 +46,15 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private @Nullable Race race;
   private @Nullable Cancellable countdown;
   private final Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "himerace", false);
+  private final @Nonnull Announcer announcer;
 
-  public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs) {
+  public HimeraceEventListener(World world, JavaPlugin owner, int[] mapIDs, @Nonnull Announcer announcer) {
     if (mapIDs.length < 3) {
       throw new RuntimeException();
     }
     this.world = world;
     this.owner = owner;
+    this.announcer = announcer;
     this.levels.put(TeamColor.RED, new Level(world, owner, TeamColor.RED, Pos(-100, 80, -61), mapIDs[0]));
     this.levels.put(TeamColor.WHITE, new Level(world, owner, TeamColor.WHITE, Pos(-116, 80, -61), mapIDs[1]));
     this.levels.put(TeamColor.YELLOW, new Level(world, owner, TeamColor.YELLOW, Pos(-132, 80, -61), mapIDs[2]));
@@ -575,8 +578,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, announceBounds, player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, announceBounds);
   }
 
   private void startCountdown() {
@@ -601,7 +603,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     if (status != Status.COUNTDOWN) {
       return;
     }
-    var race = new Race(owner, world, teams, this);
+    var race = new Race(owner, world, teams, announcer, this);
     if (race.isEmpty()) {
       return;
     }

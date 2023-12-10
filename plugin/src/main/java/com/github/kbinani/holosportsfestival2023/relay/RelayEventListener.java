@@ -78,10 +78,12 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private final @Nonnull Point3i safeSpot = pos(4, 80, 60);
   private final @Nonnull Teams scoreboardTeams = new Teams(Main.sScoreboardTeamPrefix + "relay", true);
   private final @Nonnull BoundingBox poseChangeDetectionArea;
+  private final @Nonnull Announcer announcer;
 
-  public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Delegate delegate) {
+  public RelayEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Announcer announcer, @Nonnull Delegate delegate) {
     this.world = world;
     this.owner = owner;
+    this.announcer = announcer;
     this.delegate = delegate;
     pistonPositions = new HashSet<>();
     pistonPositions.add(pos(57, 79, 57));
@@ -545,7 +547,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       broadcast(prefix.append(text("他の競技が進行中です。ゲームを開始できません。", RED)));
       return;
     }
-    var result = Race.From(owner, world, this.teams, offset, delegate.relayGetAnnounceBounds(), safeSpot, this);
+    var result = Race.From(owner, world, this.teams, offset, delegate.relayGetAnnounceBounds(), safeSpot, announcer, this);
     if (result.reason != null) {
       broadcast(prefix.append(result.reason));
       return;
@@ -746,8 +748,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   private void broadcast(Component message) {
-    Players.Within(world, delegate.relayGetAnnounceBounds(), player -> player.sendMessage(message));
-    owner.getComponentLogger().info(message);
+    announcer.announce(message, delegate.relayGetAnnounceBounds());
   }
 
   private int x(int x) {

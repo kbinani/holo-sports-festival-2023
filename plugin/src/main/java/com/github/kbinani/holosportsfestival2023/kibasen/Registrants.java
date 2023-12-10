@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
-import com.github.kbinani.holosportsfestival2023.Cloakroom;
-import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
-import com.github.kbinani.holosportsfestival2023.Teams;
+import com.github.kbinani.holosportsfestival2023.*;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -91,7 +88,7 @@ class Registrants {
   }
 
   @Nullable
-  Session promote(JavaPlugin owner, World world, BoundingBox announceBounds, Session.Delegate delegate) {
+  Session promote(@Nonnull JavaPlugin owner, @Nonnull World world, @Nonnull BoundingBox announceBounds, @Nonnull Announcer announcer, @Nonnull Session.Delegate delegate) {
     if (registrants.isEmpty()) {
       return null;
     }
@@ -114,7 +111,7 @@ class Registrants {
       participants.put(color, units);
     }
     registrants.clear();
-    return new Session(owner, world, announceBounds, delegate, teams, participants);
+    return new Session(owner, world, announceBounds, delegate, teams, participants, announcer);
   }
 
   void announceEntryList() {
