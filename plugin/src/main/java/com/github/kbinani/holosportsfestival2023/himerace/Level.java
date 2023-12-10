@@ -11,6 +11,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.stage.solve.SolveStage
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
@@ -60,6 +61,8 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     void levelRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery);
 
     void levelRequestsClearGoatHornCooltime();
+
+    @Nullable Player levelRequestsVisibleAlivePlayer(Mob enemy);
 
     void levelDidClearStage(Stage stage);
   }
@@ -359,6 +362,13 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   @Override
   public void fightStageRequestsClearGoatHornCooltime() {
     this.delegate.use(Delegate::levelRequestsClearGoatHornCooltime);
+  }
+
+  @Override
+  public @Nullable Player fightStageRequestsVisibleAlivePlayer(Mob enemy) {
+    return delegate.use((delegate) -> {
+      return delegate.levelRequestsVisibleAlivePlayer(enemy);
+    });
   }
 
   @Override

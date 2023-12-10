@@ -63,6 +63,8 @@ public class FightStage extends AbstractStage {
 
     void fightStageRequestsClearGoatHornCooltime();
 
+    @Nullable Player fightStageRequestsVisibleAlivePlayer(Mob enemy);
+
     void fightStageDidFinish();
   }
 
@@ -215,7 +217,7 @@ public class FightStage extends AbstractStage {
 
         for (var enemy : enemies) {
           if (enemy.getTarget() == player) {
-            enemy.setTarget(null);
+            setTargetVisiblePlayer(enemy);
           }
         }
       }
@@ -348,11 +350,13 @@ public class FightStage extends AbstractStage {
       if (target != null) {
         if (target instanceof Player player) {
           if (deadPlayerSeats.containsKey(player.getUniqueId())) {
-            enemy.setTarget(null);
+            setTargetVisiblePlayer(enemy);
           }
         } else {
-          enemy.setTarget(null);
+          setTargetVisiblePlayer(enemy);
         }
+      } else {
+        setTargetVisiblePlayer(enemy);
       }
     }
   }
@@ -368,7 +372,7 @@ public class FightStage extends AbstractStage {
       }
     }
     for (var location : locations) {
-      this.enemies.add(summonHoglin(location, wave, waveRound));
+      this.enemies.add(setTargetVisiblePlayer(summonHoglin(location, wave, waveRound)));
     }
   }
 
@@ -383,8 +387,16 @@ public class FightStage extends AbstractStage {
       }
     }
     for (var location : locations) {
-      this.enemies.add(summonPiglinBrute(location, wave, waveRound));
+      this.enemies.add(setTargetVisiblePlayer(summonPiglinBrute(location, wave, waveRound)));
     }
+  }
+
+  private Mob setTargetVisiblePlayer(Mob enemy) {
+    var player = delegate.fightStageRequestsVisibleAlivePlayer(enemy);
+    if (player != null) {
+      enemy.setTarget(player);
+    }
+    return enemy;
   }
 
   private static void Recover(Player player) {

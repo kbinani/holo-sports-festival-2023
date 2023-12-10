@@ -10,6 +10,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.meta.MusicInstrumentMeta;
@@ -324,6 +325,33 @@ public class Team implements Level.Delegate {
         }
       }
     }
+  }
+
+  @Override
+  public @Nullable Player levelRequestsVisibleAlivePlayer(Mob enemy) {
+    record Candidate(Player player, double distance) {
+    }
+    var candidates = new ArrayList<Candidate>();
+    for (var knight : knights) {
+      var seat = knight.getVehicle();
+      if (seat != null) {
+        continue;
+      }
+      if (enemy.getPathfinder().findPath(knight) != null) {
+        candidates.add(new Candidate(knight, knight.getLocation().toVector().distanceSquared(enemy.getLocation().toVector())));
+      }
+    }
+    if (princess != null) {
+      if (enemy.getPathfinder().findPath(princess) != null) {
+        candidates.add(new Candidate(princess, princess.getLocation().toVector().distanceSquared(enemy.getLocation().toVector())));
+      }
+    }
+    if (candidates.isEmpty()) {
+      return null;
+    }
+    candidates.sort(Comparator.comparingDouble(it -> it.distance));
+    var target = candidates.stream().findFirst();
+    return target.map(candidate -> candidate.player).orElse(null);
   }
 
   @Override
