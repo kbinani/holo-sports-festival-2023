@@ -54,7 +54,7 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelPlaySound(Sound sound);
 
-    void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
+    void levelRequestsTeleport(@Nonnull Function<Player, Location> predicate);
 
     void levelRequestsHealthRecovery();
 
@@ -341,9 +341,9 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   @Override
-  public void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
+  public void fightStageRequestsTeleport(@Nonnull Function<Player, Location> predicate) {
     this.delegate.use(d -> {
-      d.levelRequestsTeleport(location, predicate);
+      d.levelRequestsTeleport(predicate);
     });
   }
 

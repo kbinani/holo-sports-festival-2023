@@ -280,14 +280,16 @@ public class Team implements Level.Delegate {
   }
 
   @Override
-  public void levelRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate) {
+  public void levelRequestsTeleport(@Nonnull Function<Player, Location> predicate) {
     if (princess != null) {
-      if (predicate == null || predicate.apply(princess)) {
+      var location = predicate.apply(princess);
+      if (location != null) {
         princess.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
       }
     }
     for (var knight : knights) {
-      if (predicate == null || predicate.apply(knight)) {
+      var location = predicate.apply(knight);
+      if (location != null) {
         knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
       }
     }

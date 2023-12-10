@@ -55,7 +55,7 @@ public class FightStage extends AbstractStage {
 
     void fightStageSendTitle(Title title);
 
-    void fightStageRequestsTeleport(Location location, @Nullable Function<Player, Boolean> predicate);
+    void fightStageRequestsTeleport(@Nonnull Function<Player, Location> predicate);
 
     void fightStageRequestsHealthRecovery();
 
@@ -190,10 +190,17 @@ public class FightStage extends AbstractStage {
         setEnableFence(true);
         updateStandingSign(wave);
         Bukkit.getScheduler().runTaskLater(owner, () -> {
-          delegate.fightStageRequestsTeleport(
-            safeArea.toLocation(world).add(0.5, 0, 0.5),
-            this::playerNeedsEvacuation
-          );
+          delegate.fightStageRequestsTeleport((player) -> {
+            var location = player.getLocation();
+            if (playerNeedsEvacuation(player)) {
+              return safeArea.toLocation(world).add(0.5, 0, 0.5);
+            } else if (location.getY() < y(80)) {
+              location.setY(y(80));
+              return location;
+            } else {
+              return null;
+            }
+          });
         }, 0);
         delegate.fightStageRequestsHealthRecovery();
       }
@@ -464,10 +471,17 @@ public class FightStage extends AbstractStage {
     this.waveProgress = 0;
     this.waveRound = 0;
     clearDeadPlayerSeats();
-    delegate.fightStageRequestsTeleport(
-      safeArea.toLocation(world).add(0.5, 0, 0.5),
-      this::playerNeedsEvacuation
-    );
+    delegate.fightStageRequestsTeleport((player) -> {
+      var location = player.getLocation();
+      if (playerNeedsEvacuation(player)) {
+        return safeArea.toLocation(world).add(0.5, 0, 0.5);
+      } else if (location.getY() < y(80)) {
+        location.setY(y(80));
+        return location;
+      } else {
+        return null;
+      }
+    });
     setEnableFence(true);
     updateStandingSign(next);
     var title = Title.title(
@@ -674,9 +688,13 @@ public class FightStage extends AbstractStage {
           return;
         }
         if (wave == Wave.Wave1 && waveRound == 0) {
-          delegate.fightStageRequestsTeleport(safeArea.toLocation(world).add(0.5, 0, 0.5), (p) -> {
+          delegate.fightStageRequestsTeleport(p -> {
             var z = p.getLocation().getZ();
-            return z < z(51);
+            if (z < z(51)) {
+              return safeArea.toLocation(world).add(0.5, 0, 0.5);
+            } else {
+              return null;
+            }
           });
           closeGate();
         }
