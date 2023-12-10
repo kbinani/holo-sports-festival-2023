@@ -10,10 +10,14 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
 
 public class Editor {
+  private static final StackWalker sStackWalker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+
   private Editor() {
   }
 
@@ -35,20 +39,21 @@ public class Editor {
   }
 
   public static void Fill(@Nonnull World world, Point3i from, Point3i to, BlockData blockData) {
-    Load(world, from, to);
-    int x0 = Math.min(from.x, to.x);
-    int y0 = Math.min(from.y, to.y);
-    int z0 = Math.min(from.z, to.z);
-    int x1 = Math.max(from.x, to.x);
-    int y1 = Math.max(from.y, to.y);
-    int z1 = Math.max(from.z, to.z);
-    for (int y = y0; y <= y1; y++) {
-      for (int z = z0; z <= z1; z++) {
-        for (int x = x0; x <= x1; x++) {
-          world.setBlockData(x, y, z, blockData);
+    Load(world, from, to, () -> {
+      int x0 = Math.min(from.x, to.x);
+      int y0 = Math.min(from.y, to.y);
+      int z0 = Math.min(from.z, to.z);
+      int x1 = Math.max(from.x, to.x);
+      int y1 = Math.max(from.y, to.y);
+      int z1 = Math.max(from.z, to.z);
+      for (int y = y0; y <= y1; y++) {
+        for (int z = z0; z <= z1; z++) {
+          for (int x = x0; x <= x1; x++) {
+            world.setBlockData(x, y, z, blockData);
+          }
         }
       }
-    }
+    });
   }
 
   public static void Set(@Nonnull World world, Point3i pos, Material material) {
@@ -63,7 +68,10 @@ public class Editor {
     Fill(world, pos, pos, blockData);
   }
 
-  private static void Load(@Nonnull World world, Point3i from, Point3i to) {
+  private static void Load(@Nonnull World world, Point3i from, Point3i to, Runnable callback) {
+    final Class<?> clazz = sStackWalker.getCallerClass();
+    final var plugin = JavaPlugin.getProvidingPlugin(clazz);
+
     int cx0 = from.x >> 4;
     int cz0 = from.z >> 4;
     int cx1 = to.x >> 4;
@@ -78,32 +86,40 @@ public class Editor {
       cz0 = cz1;
       cz1 = t;
     }
+    var tickets = new HashSet<Point2i>();
     for (int cx = cx0; cx <= cx1; cx++) {
       for (int cz = cz0; cz <= cz1; cz++) {
         if (!world.isChunkLoaded(cx, cz)) {
           world.loadChunk(cx, cz);
         }
+        if (plugin.isEnabled()) {
+          world.addPluginChunkTicket(cx, cz, plugin);
+          tickets.add(new Point2i(cx, cz));
+        }
       }
+    }
+    callback.run();
+    for (var chunk : tickets) {
+      world.removePluginChunkTicket(chunk.x, chunk.z, plugin);
     }
   }
 
   public static void StandingSign(@Nonnull World world, Point3i p, Material material, int rot, Component line0, Component line1, Component line2, Component line3) {
-    int cx = p.x >> 4;
-    int cz = p.z >> 4;
-    world.loadChunk(cx, cz);
-    BlockData blockData = material.createBlockData("[rotation=" + rot + "]");
-    world.setBlockData(p.x, p.y, p.z, blockData);
-    Block block = world.getBlockAt(p.x, p.y, p.z);
-    BlockState state = block.getState();
-    if (!(state instanceof Sign sign)) {
-      return;
-    }
-    var side = sign.getSide(Side.FRONT);
-    side.line(0, line0);
-    side.line(1, line1);
-    side.line(2, line2);
-    side.line(3, line3);
-    sign.setWaxed(true);
-    sign.update();
+    Load(world, p, p, () -> {
+      BlockData blockData = material.createBlockData("[rotation=" + rot + "]");
+      world.setBlockData(p.x, p.y, p.z, blockData);
+      Block block = world.getBlockAt(p.x, p.y, p.z);
+      BlockState state = block.getState();
+      if (!(state instanceof Sign sign)) {
+        return;
+      }
+      var side = sign.getSide(Side.FRONT);
+      side.line(0, line0);
+      side.line(1, line1);
+      side.line(2, line2);
+      side.line(3, line3);
+      sign.setWaxed(true);
+      sign.update();
+    });
   }
 }
