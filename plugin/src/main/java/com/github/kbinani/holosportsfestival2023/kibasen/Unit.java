@@ -85,10 +85,10 @@ class Unit {
       attacker.showTitle(title);
       vehicle.showTitle(title);
     }
-    var display = ensureHealthDisplay();
-    display.update();
     attacker.setHealth(2 * health);
     vehicle.setHealth(2 * health);
+    var display = ensureHealthDisplay();
+    display.update();
     return health == maxHealth;
   }
 
