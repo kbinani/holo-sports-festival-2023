@@ -28,6 +28,9 @@ class Race {
   private record Record(TeamColor color, long goalTimeMillis) {
   }
 
+  private record StartingArea(BoundingBox box, float yaw) {
+  }
+
   private final @Nonnull JavaPlugin owner;
   private final @Nonnull World world;
   final @Nonnull Map<TeamColor, Team> teams;
@@ -114,7 +117,8 @@ class Race {
       var player = team.getAssignedPlayer(0);
       if (player != null) {
         player.setGameMode(GameMode.ADVENTURE);
-        Players.Distribute(world, getStartingArea(0), player);
+        var area = getStartingArea(0);
+        Players.Distribute(world, area.box, area.yaw, player);
       }
     }
   }
@@ -132,7 +136,8 @@ class Race {
         var next = team.getAssignedPlayer(1);
         if (next != null) {
           next.setGameMode(GameMode.ADVENTURE);
-          Players.Distribute(world, getStartingArea(1), next);
+          var area = getStartingArea(1);
+          Players.Distribute(world, area.box, area.yaw, next);
           notifyNextRunner(next, player);
         }
       }
@@ -279,7 +284,8 @@ class Race {
     var next = team.getAssignedPlayer(defenderOrder + 1);
     if (next != null) {
       next.setGameMode(GameMode.ADVENTURE);
-      Players.Distribute(world, getStartingArea(defenderOrder + 1), next);
+      var area = getStartingArea(defenderOrder + 1);
+      Players.Distribute(world, area.box, area.yaw, next);
       notifyNextRunner(next, defender);
     }
     attacker.sendMessage(prefix.append(text("3秒後にスポーン地点にレポートされます！", WHITE)));
@@ -396,13 +402,13 @@ class Race {
     }
   }
 
-  private BoundingBox getStartingArea(int order) {
+  private StartingArea getStartingArea(int order) {
     if (order == 0) {
-      return startingArea;
+      return new StartingArea(startingArea, -90);
     } else if (order % 2 == 0) {
-      return startingAreaEven;
+      return new StartingArea(startingAreaEven, 90);
     } else {
-      return startingAreaOdd;
+      return new StartingArea(startingAreaOdd, -90);
     }
   }
 

@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
@@ -36,6 +37,14 @@ public class Players {
   }
 
   public static void Distribute(World world, BoundingBox box, Player player) {
+    DistributeImpl(world, box, null, player);
+  }
+
+  public static void Distribute(World world, BoundingBox box, float yaw, Player player) {
+    DistributeImpl(world, box, yaw, player);
+  }
+
+  private static void DistributeImpl(World world, BoundingBox box, @Nullable Float yaw, Player player) {
     if (player.getWorld() != world) {
       return;
     }
@@ -56,6 +65,9 @@ public class Players {
     location.setX(x);
     location.setY(y);
     location.setZ(z);
+    if (yaw != null) {
+      location.setYaw(yaw);
+    }
     player.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND);
   }
 }
