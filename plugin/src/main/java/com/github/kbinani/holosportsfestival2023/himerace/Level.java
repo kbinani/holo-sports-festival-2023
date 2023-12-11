@@ -195,7 +195,9 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   void onBlockPlace(BlockPlaceEvent e, Participation participation) {
     var stage = stages.get(active);
     if (stage == null) {
-      e.setCancelled(true);
+      if (!e.getPlayer().isOp()) {
+        e.setCancelled(true);
+      }
     } else {
       stage.blockPlace(e, participation);
     }

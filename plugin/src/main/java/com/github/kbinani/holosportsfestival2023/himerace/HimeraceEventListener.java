@@ -421,9 +421,6 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
   @SuppressWarnings("unused")
   public void onBlockPlace(BlockPlaceEvent e) {
     var player = e.getPlayer();
-    if (player.isOp()) {
-      return;
-    }
     var block = e.getBlock();
     var location = block.getLocation();
     if (!announceBounds.contains(location.toVector())) {
@@ -431,12 +428,16 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
 
     if (status != Status.ACTIVE) {
-      e.setCancelled(true);
+      if (!player.isOp()) {
+        e.setCancelled(true);
+      }
       return;
     }
     var participation = getCurrentParticipation(player);
     if (participation == null) {
-      e.setCancelled(true);
+      if (!player.isOp()) {
+        e.setCancelled(true);
+      }
       return;
     }
     var level = levels.get(participation.color);

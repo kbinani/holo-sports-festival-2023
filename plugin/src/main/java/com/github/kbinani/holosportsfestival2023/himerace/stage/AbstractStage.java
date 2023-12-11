@@ -220,7 +220,9 @@ public abstract class AbstractStage {
   }
 
   protected void onBlockPlace(BlockPlaceEvent e, Participation participation) {
-    e.setCancelled(true);
+    if (!e.getPlayer().isOp()) {
+      e.setCancelled(true);
+    }
   }
 
   protected void onEntityPlace(EntityPlaceEvent e, Participation participation) {

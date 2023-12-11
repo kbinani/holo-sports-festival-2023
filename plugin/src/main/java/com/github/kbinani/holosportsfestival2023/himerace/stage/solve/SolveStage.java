@@ -15,9 +15,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -170,96 +170,82 @@ public class SolveStage extends AbstractStage {
     if (participation.role != Role.PRINCESS) {
       return;
     }
-    switch (e.getAction()) {
-      case PHYSICAL -> {
-        var block = e.getClickedBlock();
-        if (block == null) {
-          return;
-        }
-        var location = new Point3i(block.getLocation());
-        if (location.equals(pressurePlatePos)) {
-          startQuiz(participation.team);
-        }
+    if (e.getAction() == Action.PHYSICAL) {
+      var block = e.getClickedBlock();
+      if (block == null) {
+        return;
       }
-      case RIGHT_CLICK_BLOCK -> {
-        e.setCancelled(true);
-        var block = e.getClickedBlock();
-        if (block == null) {
-          return;
-        }
-        var quiz = this.quiz;
-        if (quiz == null) {
-          return;
-        }
-        var location = new Point3i(block.getLocation());
-        var face = e.getBlockFace();
-        if ((location.equals(pos(-92, 86, 36)) && face == BlockFace.EAST) ||
-          (location.equals(pos(-91, 85, 36)) && face == BlockFace.UP) ||
-          (location.equals(pos(-90, 86, 36)) && face == BlockFace.WEST) ||
-          (location.equals(pos(-91, 87, 36)) && face == BlockFace.DOWN)) {
-          if (penaltyCooldown != null) {
-            return;
-          }
-          var materialActual = e.getMaterial();
-          var materialExpected = quiz.answer().material;
-          if (materialActual == materialExpected) {
-            setGateOpened(true);
-            setFinished(true);
-            var title = CreateCorrectAnswerTitle();
-            delegate.solveStageSendTitle(title);
-            delegate.solveStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
-          } else {
-            // 回答が間違いだった場合.
-            // 26 日の配信では間違いだった場合は即ブロック設置がキャンセルになっていたぽいけど,
-            // それだと騎士達の提案を待たずに姫側がガチャするのが最速になってしまう.
-            // 対策として, 間違いだった場合は何秒か間を空けて違う問題を出題した方がいい気がする.
-            var title = CreatePenaltyTitle(sPenaltySeconds);
-            delegate.solveStageSendTitle(title);
-            if (penaltyCooldown != null) {
-              penaltyCooldown.cancel();
-            }
-            Quiz.Conceal(world, quizOrigin, quizConcealer);
-            final var count = new AtomicInteger(sPenaltySeconds);
-            penaltyCooldown = Bukkit.getScheduler().runTaskTimer(owner, () -> {
-              if (finished || !started) {
-                if (this.penaltyCooldown != null) {
-                  this.penaltyCooldown.cancel();
-                  this.penaltyCooldown = null;
-                }
-              }
-              var c = count.decrementAndGet();
-              if (c == 0) {
-                this.penaltyCooldown.cancel();
-                this.penaltyCooldown = null;
-                this.delegate.solveStageSendTitle(CreateQuestionChangedTitle());
-                this.quiz = Quiz.Create(ThreadLocalRandom.current());
-                this.quiz.build(world, quizOrigin);
-              } else {
-                this.delegate.solveStageSendTitle(CreatePenaltyTitle(c));
-              }
-            }, 20, 20);
-          }
-        }
+      var location = new Point3i(block.getLocation());
+      if (location.equals(pressurePlatePos)) {
+        startQuiz(participation.team);
       }
     }
   }
 
   @Override
   protected void onBlockPlace(BlockPlaceEvent e, Participation participation) {
+    var player = e.getPlayer();
     if (participation.role != Role.PRINCESS) {
-      e.setCancelled(true);
+      if (!player.isOp()) {
+        e.setCancelled(true);
+      }
       return;
     }
     var block = e.getBlock();
-    if (!answerBlockPos.equals(new Point3i(block.getLocation()))) {
-      e.setCancelled(true);
+    var location = new Point3i(block.getLocation());
+    if (!answerBlockPos.equals(location)) {
+      if (!player.isOp()) {
+        e.setCancelled(true);
+      }
       return;
     }
-    switch (block.getType()) {
-      case RED_WOOL, YELLOW_WOOL, PINK_WOOL, WHITE_WOOL -> {
-        // nop
+    e.setCancelled(true);
+    var quiz = this.quiz;
+    if (quiz == null) {
+      return;
+    }
+    if (penaltyCooldown != null) {
+      return;
+    }
+    player.swingMainHand();
+    var materialActual = block.getType();
+    var materialExpected = quiz.answer().material;
+    if (materialActual == materialExpected) {
+      setGateOpened(true);
+      setFinished(true);
+      var title = CreateCorrectAnswerTitle();
+      delegate.solveStageSendTitle(title);
+      delegate.solveStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
+    } else {
+      // 回答が間違いだった場合.
+      // 26 日の配信では間違いだった場合は即ブロック設置がキャンセルになっていたぽいけど,
+      // それだと騎士達の提案を待たずに姫側がガチャするのが最速になってしまう.
+      // 対策として, 間違いだった場合は何秒か間を空けて違う問題を出題した方がいい気がする.
+      var title = CreatePenaltyTitle(sPenaltySeconds);
+      delegate.solveStageSendTitle(title);
+      if (penaltyCooldown != null) {
+        penaltyCooldown.cancel();
       }
-      default -> e.setCancelled(true);
+      Quiz.Conceal(world, quizOrigin, quizConcealer);
+      final var count = new AtomicInteger(sPenaltySeconds);
+      penaltyCooldown = Bukkit.getScheduler().runTaskTimer(owner, () -> {
+        if (finished || !started) {
+          if (this.penaltyCooldown != null) {
+            this.penaltyCooldown.cancel();
+            this.penaltyCooldown = null;
+          }
+        }
+        var c = count.decrementAndGet();
+        if (c == 0) {
+          this.penaltyCooldown.cancel();
+          this.penaltyCooldown = null;
+          this.delegate.solveStageSendTitle(CreateQuestionChangedTitle());
+          this.quiz = Quiz.Create(ThreadLocalRandom.current());
+          this.quiz.build(world, quizOrigin);
+        } else {
+          this.delegate.solveStageSendTitle(CreatePenaltyTitle(c));
+        }
+      }, 20, 20);
     }
   }
 
