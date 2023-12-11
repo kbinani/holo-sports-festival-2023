@@ -347,6 +347,7 @@ public class SolveStage extends AbstractStage {
     Kill.EntitiesByType(world, new BoundingBox(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1), EntityType.ITEM_FRAME);
     itemFrame = world.spawn(new Point3i(x, y, z).toLocation(world).add(0.5, 0.5, 0.96875), ItemFrame.class, CreatureSpawnEvent.SpawnReason.COMMAND, (it) -> {
       it.addScoreboardTag(Stage.SOLVE.tag);
+      it.setFixed(true);
       var item = new ItemStack(Material.FILLED_MAP, 1);
       if (!(item.getItemMeta() instanceof MapMeta meta)) {
         return;
