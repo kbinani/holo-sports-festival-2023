@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -28,6 +29,7 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -339,7 +341,11 @@ public class SolveStage extends AbstractStage {
     if (itemFrame != null) {
       itemFrame.remove();
     }
-    itemFrame = world.spawn(pos(-91, 87, 35).toLocation(world).add(0.5, 0.5, 0.96875), ItemFrame.class, CreatureSpawnEvent.SpawnReason.COMMAND, (it) -> {
+    var x = x(-91);
+    var y = y(87);
+    var z = z(35);
+    Kill.EntitiesByType(world, new BoundingBox(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1), EntityType.ITEM_FRAME);
+    itemFrame = world.spawn(new Point3i(x, y, z).toLocation(world).add(0.5, 0.5, 0.96875), ItemFrame.class, CreatureSpawnEvent.SpawnReason.COMMAND, (it) -> {
       it.addScoreboardTag(Stage.SOLVE.tag);
       var item = new ItemStack(Material.FILLED_MAP, 1);
       if (!(item.getItemMeta() instanceof MapMeta meta)) {
