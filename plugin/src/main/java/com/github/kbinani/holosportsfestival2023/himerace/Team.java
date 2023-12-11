@@ -125,7 +125,7 @@ public class Team implements Level.Delegate {
       case COOK -> {
         if (princess != null) {
           princess.setFoodLevel(20);
-          princess.setGameMode(GameMode.ADVENTURE);
+          princess.setGameMode(GameMode.SURVIVAL);
         }
         for (var knight : knights) {
           knight.setGameMode(GameMode.ADVENTURE);
