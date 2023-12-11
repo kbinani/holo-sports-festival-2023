@@ -97,6 +97,12 @@ class Session {
       return;
     }
     e.setCancelled(true);
+    if (offence != offenceUnit.attacker) {
+      return;
+    }
+    if (defence != defenceUnit.attacker) {
+      return;
+    }
     var equipment = offence.getEquipment();
     var item = equipment.getItemInMainHand();
     if (item.getType() != Material.WOODEN_SWORD) {
