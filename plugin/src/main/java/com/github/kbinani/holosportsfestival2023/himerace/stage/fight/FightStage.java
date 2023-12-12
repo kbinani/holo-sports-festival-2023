@@ -136,7 +136,7 @@ public class FightStage extends AbstractStage {
   @Override
   protected void onEntityDeath(EntityDeathEvent e) {
     var entity = e.getEntity();
-    if (illusioner != null && illusioner.entity == entity) {
+    if (illusioner != null && illusioner.entity.get() == entity) {
       illusioner.dispose();
       illusioner = null;
     }
