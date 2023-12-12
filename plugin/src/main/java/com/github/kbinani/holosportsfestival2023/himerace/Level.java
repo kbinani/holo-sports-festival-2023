@@ -56,11 +56,9 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelRequestsTeleport(@Nonnull Function<Player, Location> predicate);
 
-    void levelRequestsHealthRecovery();
-
     void levelRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery);
 
-    void levelRequestsClearGoatHornCooltime();
+    void levelDidFinishFightStageWaveOrStep();
 
     @Nullable
     Player levelRequestsVisibleAlivePlayer(Mob enemy);
@@ -351,8 +349,8 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
   }
 
   @Override
-  public void fightStageRequestsHealthRecovery() {
-    this.delegate.use(Delegate::levelRequestsHealthRecovery);
+  public void fightStageDidFinishWaveOrStep() {
+    this.delegate.use(Delegate::levelDidFinishFightStageWaveOrStep);
   }
 
   @Override
@@ -360,11 +358,6 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
     this.delegate.use(it -> {
       it.levelRequestsEncouragingKnights(excludeHealthRecovery);
     });
-  }
-
-  @Override
-  public void fightStageRequestsClearGoatHornCooltime() {
-    this.delegate.use(Delegate::levelRequestsClearGoatHornCooltime);
   }
 
   @Override

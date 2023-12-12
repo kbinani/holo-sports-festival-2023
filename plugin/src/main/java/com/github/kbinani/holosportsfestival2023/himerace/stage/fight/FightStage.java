@@ -56,11 +56,9 @@ public class FightStage extends AbstractStage {
 
     void fightStageRequestsTeleport(@Nonnull Function<Player, Location> predicate);
 
-    void fightStageRequestsHealthRecovery();
-
     void fightStageRequestsEncouragingKnights(Set<UUID> exclutHealthRecovery);
 
-    void fightStageRequestsClearGoatHornCooltime();
+    void fightStageDidFinishWaveOrStep();
 
     @Nullable
     Player fightStageRequestsVisibleAlivePlayer(Mob enemy);
@@ -202,7 +200,7 @@ public class FightStage extends AbstractStage {
             }
           });
         }, 0);
-        delegate.fightStageRequestsHealthRecovery();
+        delegate.fightStageDidFinishWaveOrStep();
       }
       case KNIGHT -> {
         var player = e.getPlayer();
@@ -468,7 +466,7 @@ public class FightStage extends AbstractStage {
       clearDeadPlayerSeats();
       delegate.fightStageSendTitle(title);
       delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
-      delegate.fightStageRequestsHealthRecovery();
+      delegate.fightStageDidFinishWaveOrStep();
 
       delegate.fightStageDidFinish();
       return;
@@ -497,8 +495,7 @@ public class FightStage extends AbstractStage {
     );
     delegate.fightStageSendTitle(title);
     delegate.fightStagePlaySound(Sound.ENTITY_PLAYER_LEVELUP);
-    delegate.fightStageRequestsHealthRecovery();
-    delegate.fightStageRequestsClearGoatHornCooltime();
+    delegate.fightStageDidFinishWaveOrStep();
   }
 
   private void clearDeadPlayerSeats() {

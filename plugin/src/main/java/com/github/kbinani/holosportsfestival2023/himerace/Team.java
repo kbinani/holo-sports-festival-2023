@@ -296,14 +296,17 @@ public class Team implements Level.Delegate {
   }
 
   @Override
-  public void levelRequestsHealthRecovery() {
+  public void levelDidFinishFightStageWaveOrStep() {
     if (princess != null) {
+      princess.setCooldown(Material.GOAT_HORN, 0);
+      princess.setFireTicks(0);
       var maxHealth = princess.getAttribute(Attribute.GENERIC_MAX_HEALTH);
       if (maxHealth != null) {
         princess.setHealth(maxHealth.getValue());
       }
     }
     for (var knight : knights) {
+      knight.setFireTicks(0);
       var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
       if (maxHealth != null) {
         knight.setHealth(maxHealth.getValue());
@@ -354,13 +357,6 @@ public class Team implements Level.Delegate {
     candidates.sort(Comparator.comparingDouble(it -> it.distance));
     var target = candidates.stream().findFirst();
     return target.map(candidate -> candidate.player).orElse(null);
-  }
-
-  @Override
-  public void levelRequestsClearGoatHornCooltime() {
-    if (princess != null) {
-      princess.setCooldown(Material.GOAT_HORN, 0);
-    }
   }
 
   void dispose() {
