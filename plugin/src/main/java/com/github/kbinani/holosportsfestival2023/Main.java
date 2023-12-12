@@ -64,7 +64,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
     }
     world = overworld.get();
     if (miniGames.isEmpty()) {
-      miniGames.add(new HimeraceEventListener(world, this,  new int[]{0, 1, 2}, this));
+      miniGames.add(new HimeraceEventListener(world, this, new int[]{0, 1, 2}, this));
       miniGames.add(new HoloUpEventListener(world, this, this));
       miniGames.add(new KibasenEventListener(world, this, this, this));
       miniGames.add(new RelayEventListener(world, this, this, this));

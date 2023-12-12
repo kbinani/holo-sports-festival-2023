@@ -61,7 +61,7 @@ class Race {
     @Nonnull JavaPlugin owner,
     @Nonnull World world,
     @Nonnull BoundingBox announceBounds,
-    @Nonnull  Map<TeamColor, Player> registrants,
+    @Nonnull Map<TeamColor, Player> registrants,
     @Nonnull Announcer announcer,
     @Nonnull Delegate delegate) //
   {

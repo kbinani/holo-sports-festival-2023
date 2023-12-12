@@ -60,7 +60,8 @@ public class FightStage extends AbstractStage {
 
     void fightStageRequestsClearGoatHornCooltime();
 
-    @Nullable Player fightStageRequestsVisibleAlivePlayer(Mob enemy);
+    @Nullable
+    Player fightStageRequestsVisibleAlivePlayer(Mob enemy);
 
     void fightStageDidFinish();
   }
@@ -579,7 +580,7 @@ public class FightStage extends AbstractStage {
   }
 
   private EntityTracking<Mob> summonBlaze(Point3i location, Wave w, int round) {
-    var entity =  world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
     });
     return new EntityTracking<>(entity);
