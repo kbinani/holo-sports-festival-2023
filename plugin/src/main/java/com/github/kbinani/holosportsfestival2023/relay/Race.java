@@ -74,9 +74,9 @@ class Race {
     this.teams = new HashMap<>(teams);
     batonPassAreaEven = new BoundingBox(x(-1), y(80), z(76), x(10), y(85), z(83));
     batonPassAreaOdd = new BoundingBox(x(-1), y(80), z(22), x(10), y(85), z(29));
-    startingArea = new BoundingBox(x(4), y(80), z(76), x(5), y(80), z(83));
-    startingAreaEven = new BoundingBox(x(5), y(80), z(76), x(6), y(80), z(79));
-    startingAreaOdd = new BoundingBox(x(3), y(80), z(26), x(4), y(80), z(29));
+    startingArea = new BoundingBox(x(4), y(80), z(76) + 0.5, x(5), y(80), z(82) + 0.5);
+    startingAreaEven = new BoundingBox(x(5), y(80), z(76) + 0.5, x(6), y(80), z(79) + 0.5);
+    startingAreaOdd = new BoundingBox(x(3), y(80), z(25) + 0.5, x(4), y(80), z(28) + 0.5);
     var count = 0;
     for (var entry : this.teams.entrySet()) {
       var color = entry.getKey();
