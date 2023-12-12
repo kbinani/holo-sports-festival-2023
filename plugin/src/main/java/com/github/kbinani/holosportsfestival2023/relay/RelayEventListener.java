@@ -504,10 +504,16 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       .append(text(String.format("%sが", player.getName()), WHITE))
       .append(color.component())
       .append(text("にエントリーしました。", WHITE)));
-    player.sendMessage(prefix
-      .append(text("エントリーブックを使用して走順を選択してください！", WHITE)));
-    player.sendMessage(prefix
-      .append(text("Right-click while having the Entry Book equipped to select your relay position!", WHITE)));
+
+    //NOTE: 本家では日英両方のメッセージが全員に送られている.
+    if (player.locale().getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+      player.sendMessage(prefix
+        .append(text("エントリーブックを使用して走順を選択してください！", WHITE)));
+    } else {
+      player.sendMessage(prefix
+        .append(text("Right-click while having the Entry Book equipped to select your relay position!", WHITE)));
+    }
+
     var inventory = player.getInventory();
     inventory.setItem(0, createEntryBook());
   }

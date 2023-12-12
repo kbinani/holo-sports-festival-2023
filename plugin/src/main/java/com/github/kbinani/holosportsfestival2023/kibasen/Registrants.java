@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener.*;
@@ -166,9 +167,12 @@ class Registrants {
       .append(text("にエントリーしました。", WHITE))
     );
 
-    player.sendMessage(prefix
-      .append(text("Right-click with the saddle on the player you want to make your horse!", WHITE))
-    );
+    if (!player.locale().getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+      //NOTE: 本家では英語メッセージは全員に送られている
+      player.sendMessage(prefix
+        .append(text("Right-click with the saddle on the player you want to make your horse!", WHITE))
+      );
+    }
 
     var unit = new MutableUnit(player);
     var units = registrants.computeIfAbsent(color, (c) -> new ArrayList<>());

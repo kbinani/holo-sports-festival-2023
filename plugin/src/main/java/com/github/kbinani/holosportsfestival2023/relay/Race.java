@@ -313,14 +313,18 @@ class Race {
   }
 
   private void notifyNextRunner(Player next, Player prev) {
-    next.sendMessage(prefix
-      .append(text(prev.getName(), GOLD))
-      .append(text("からバトンを受け取って下さい！", WHITE)));
-    next.sendMessage(prefix
-      .append(text("Have ", WHITE))
-      .append(text(prev.getName(), GOLD))
-      .append(text(" pass you the baton!", WHITE))
-    );
+    //NOTE: 本家では日英両方のメッセージが全員に送られている.
+    if (next.locale().getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+      next.sendMessage(prefix
+        .append(text(prev.getName(), GOLD))
+        .append(text("からバトンを受け取って下さい！", WHITE)));
+    } else {
+      next.sendMessage(prefix
+        .append(text("Have ", WHITE))
+        .append(text(prev.getName(), GOLD))
+        .append(text(" pass you the baton!", WHITE))
+      );
+    }
   }
 
   void onPlayerMove(PlayerMoveEvent e) {
