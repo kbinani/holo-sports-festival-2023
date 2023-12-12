@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 
-import com.github.kbinani.holosportsfestival2023.Editor;
-import com.github.kbinani.holosportsfestival2023.ItemTag;
-import com.github.kbinani.holosportsfestival2023.Kill;
-import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.*;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
@@ -85,8 +82,8 @@ public class FightStage extends AbstractStage {
   private final Point3i safeArea = pos(-94, 80, 53);
   private final BoundingBox attackBounds = new BoundingBox(x(-99), y(80), z(50) + 0.5, x(-88), y(93), z(85) + 0.5);
   private final String stageEnemyTag;
-  private final Map<UUID, Entity> deadPlayerSeats = new HashMap<>();
-  private final List<Mob> enemies = new ArrayList<>();
+  private final Map<UUID, EntityTracking<Entity>> deadPlayerSeats = new HashMap<>();
+  private final List<EntityTracking<? extends Mob>> enemies = new ArrayList<>();
   private @Nullable Illusioner illusioner;
 
   public FightStage(
@@ -122,7 +119,7 @@ public class FightStage extends AbstractStage {
     Kill.EntitiesByScoreboardTag(world, Stage.FIGHT.tag);
     setEnableFence(false);
     for (var seat : deadPlayerSeats.values()) {
-      seat.remove();
+      seat.get().remove();
     }
     deadPlayerSeats.clear();
     if (illusioner != null) {
@@ -130,7 +127,7 @@ public class FightStage extends AbstractStage {
       illusioner = null;
     }
     for (var enemy : enemies) {
-      enemy.remove();
+      enemy.get().remove();
     }
     enemies.clear();
   }
@@ -142,7 +139,7 @@ public class FightStage extends AbstractStage {
       illusioner.dispose();
       illusioner = null;
     }
-    if (!enemies.remove(entity)) {
+    if (!enemies.removeIf(it -> it.get() == entity)) {
       return;
     }
     e.setDroppedExp(0);
@@ -184,7 +181,7 @@ public class FightStage extends AbstractStage {
         );
         delegate.fightStageSendTitle(title);
 
-        enemies.forEach(Mob::remove);
+        enemies.forEach(it -> it.get().remove());
         enemies.clear();
         clearDeadPlayerSeats();
         setEnableFence(true);
@@ -218,13 +215,14 @@ public class FightStage extends AbstractStage {
         var id = player.getUniqueId();
         var current = deadPlayerSeats.get(id);
         if (current != null) {
-          current.remove();
+          current.get().remove();
         }
-        deadPlayerSeats.put(id, seat);
+        deadPlayerSeats.put(id, new EntityTracking<>(seat));
 
-        for (var enemy : enemies) {
+        for (var enemyTracking : enemies) {
+          var enemy = enemyTracking.get();
           if (enemy.getTarget() == player) {
-            setTargetVisiblePlayer(enemy);
+            setTargetVisiblePlayer(enemyTracking);
           }
         }
       }
@@ -253,8 +251,9 @@ public class FightStage extends AbstractStage {
     if (e.getRightClicked() instanceof Player knight && ItemTag.HasByte(usedItem, Stage.FIGHT.tag) && ItemTag.HasByte(usedItem, itemTag)) {
       switch (usedItem.getType()) {
         case RED_BED -> {
-          var seat = deadPlayerSeats.get(knight.getUniqueId());
-          if (seat != null) {
+          var seatTracking = deadPlayerSeats.get(knight.getUniqueId());
+          if (seatTracking != null) {
+            var seat = seatTracking.get();
             seat.removePassenger(knight);
             seat.remove();
             deadPlayerSeats.remove(knight.getUniqueId());
@@ -268,8 +267,8 @@ public class FightStage extends AbstractStage {
         }
         case GOLDEN_SHOVEL -> {
           // 回復量は4: https://youtu.be/aca8Oy9v8tQ?t=9920
-          var seat = deadPlayerSeats.get(knight.getUniqueId());
-          if (seat == null) {
+          var seatTracking = deadPlayerSeats.get(knight.getUniqueId());
+          if (seatTracking == null) {
             var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealth != null) {
               var health = Math.min(knight.getHealth() + 4, maxHealth.getValue());
@@ -289,7 +288,7 @@ public class FightStage extends AbstractStage {
     if (!(e.getEntity() instanceof LivingEntity defender)) {
       return;
     }
-    var isMobDefender = enemies.stream().anyMatch(it -> it.getUniqueId().equals(defender.getUniqueId()));
+    var isMobDefender = enemies.stream().anyMatch(it -> it.get() == defender);
     LivingEntity attacker;
     if (e.getDamager() instanceof LivingEntity damager) {
       attacker = damager;
@@ -302,7 +301,7 @@ public class FightStage extends AbstractStage {
     } else {
       return;
     }
-    var isMobAttacker = enemies.stream().anyMatch(it -> it.getUniqueId().equals(attacker.getUniqueId()));
+    var isMobAttacker = enemies.stream().anyMatch(it -> it.get() == attacker);
     if (isMobAttacker && isMobDefender) {
       e.setCancelled(true);
       return;
@@ -351,19 +350,20 @@ public class FightStage extends AbstractStage {
 
   @Override
   protected void onTick() {
-    var enemies = new ArrayList<Mob>(this.enemies);
-    for (var enemy : enemies) {
+    var enemies = new ArrayList<>(this.enemies);
+    for (var enemyTracking : enemies) {
+      var enemy = enemyTracking.get();
       var target = enemy.getTarget();
       if (target != null) {
         if (target instanceof Player player) {
           if (deadPlayerSeats.containsKey(player.getUniqueId())) {
-            setTargetVisiblePlayer(enemy);
+            setTargetVisiblePlayer(enemyTracking);
           }
         } else {
-          setTargetVisiblePlayer(enemy);
+          setTargetVisiblePlayer(enemyTracking);
         }
       } else {
-        setTargetVisiblePlayer(enemy);
+        setTargetVisiblePlayer(enemyTracking);
       }
     }
   }
@@ -371,11 +371,12 @@ public class FightStage extends AbstractStage {
   private void unlinkHostileHoglins() {
     //NOTE: hoglin は setTarget(null) としても敵対状態が解除されないので, いったん kill して別個体を同じ位置にスポーンさせる.
     var locations = new ArrayList<Location>();
-    for (var enemy : new ArrayList<Mob>(enemies)) {
+    for (var enemyTracking : new ArrayList<>(enemies)) {
+      var enemy = enemyTracking.get();
       if (enemy instanceof Hoglin) {
         locations.add(enemy.getLocation());
         enemy.remove();
-        this.enemies.remove(enemy);
+        this.enemies.remove(enemyTracking);
       }
     }
     for (var location : locations) {
@@ -386,11 +387,12 @@ public class FightStage extends AbstractStage {
   private void unlinkHostilePiglinBrute() {
     //NOTE: piglin_brute は setTarget(null) としても敵対状態が解除されないので, いったん kill して別個体を同じ位置にスポーンさせる.
     var locations = new ArrayList<Location>();
-    for (var enemy : new ArrayList<Mob>(enemies)) {
+    for (var enemyTracking : new ArrayList<>(enemies)) {
+      var enemy = enemyTracking.get();
       if (enemy instanceof PiglinBrute) {
         locations.add(enemy.getLocation());
         enemy.remove();
-        this.enemies.remove(enemy);
+        this.enemies.remove(enemyTracking);
       }
     }
     for (var location : locations) {
@@ -398,12 +400,13 @@ public class FightStage extends AbstractStage {
     }
   }
 
-  private Mob setTargetVisiblePlayer(Mob enemy) {
+  private EntityTracking<? extends Mob> setTargetVisiblePlayer(EntityTracking<? extends Mob> enemyTracking) {
+    var enemy = enemyTracking.get();
     var player = delegate.fightStageRequestsVisibleAlivePlayer(enemy);
     if (player != null) {
       enemy.setTarget(player);
     }
-    return enemy;
+    return enemyTracking;
   }
 
   private static void Recover(Player player) {
@@ -497,8 +500,8 @@ public class FightStage extends AbstractStage {
 
   private void clearDeadPlayerSeats() {
     for (var entry : deadPlayerSeats.entrySet()) {
-      var seat = entry.getValue();
-      seat.remove();
+      var seatTracking = entry.getValue();
+      seatTracking.get().remove();
     }
     deadPlayerSeats.clear();
   }
@@ -534,8 +537,8 @@ public class FightStage extends AbstractStage {
     }
   }
 
-  private Mob summonZombie(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonZombie(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Zombie.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setAdult();
@@ -545,20 +548,22 @@ public class FightStage extends AbstractStage {
       equipment.setHelmet(new ItemStack(Material.IRON_HELMET));
       equipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonSpider(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonSpider(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Spider.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       for (var passenger : it.getPassengers()) {
         passenger.remove();
       }
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonSkeleton(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonSkeleton(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Skeleton.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
@@ -570,25 +575,28 @@ public class FightStage extends AbstractStage {
       equipment.setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
       equipment.setBoots(new ItemStack(Material.CHAINMAIL_BOOTS));
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonBlaze(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonBlaze(Point3i location, Wave w, int round) {
+    var entity =  world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Blaze.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonHoglin(Location location, Wave w, int round) {
-    return world.spawn(location, Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonHoglin(Location location, Wave w, int round) {
+    var entity = world.spawn(location, Hoglin.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setAdult();
       it.setImmuneToZombification(true);
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonPiglinBrute(Location location, Wave w, int round) {
-    return world.spawn(location, PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonPiglinBrute(Location location, Wave w, int round) {
+    var entity = world.spawn(location, PiglinBrute.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       it.setImmuneToZombification(true);
@@ -597,10 +605,11 @@ public class FightStage extends AbstractStage {
       equipment.clear();
       equipment.setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonPillager(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonPillager(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world).add(0.5, 0, 0.5), Pillager.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
@@ -608,10 +617,11 @@ public class FightStage extends AbstractStage {
       equipment.clear();
       equipment.setItemInMainHand(new ItemStack(Material.CROSSBOW));
     });
+    return new EntityTracking<>(entity);
   }
 
-  private Mob summonVindicator(Point3i location, Wave w, int round) {
-    return world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
+  private EntityTracking<Mob> summonVindicator(Point3i location, Wave w, int round) {
+    var entity = world.spawn(location.toLocation(world, 0, 180).add(0.5, 0, 0.5), Vindicator.class, CreatureSpawnEvent.SpawnReason.COMMAND, it -> {
       setupEnemy(it, w, round);
 
       var equipment = it.getEquipment();
@@ -619,6 +629,7 @@ public class FightStage extends AbstractStage {
       equipment.clear();
       equipment.setItemInMainHand(new ItemStack(Material.IRON_AXE));
     });
+    return new EntityTracking<>(entity);
   }
 
   private Illusioner summonIllusioner(Point3i location, Wave w, int round) {

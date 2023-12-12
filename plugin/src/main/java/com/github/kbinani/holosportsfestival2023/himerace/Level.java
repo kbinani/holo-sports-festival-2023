@@ -62,7 +62,8 @@ class Level implements CarryStage.Delegate, BuildStage.Delegate, CookStage.Deleg
 
     void levelRequestsClearGoatHornCooltime();
 
-    @Nullable Player levelRequestsVisibleAlivePlayer(Mob enemy);
+    @Nullable
+    Player levelRequestsVisibleAlivePlayer(Mob enemy);
 
     void levelDidClearStage(Stage stage);
   }

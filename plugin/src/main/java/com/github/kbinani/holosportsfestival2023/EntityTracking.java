@@ -12,7 +12,7 @@ public class EntityTracking<T extends Entity> {
     this.entity = entity;
   }
 
-  public @Nonnull  T get() {
+  public @Nonnull T get() {
     if (!entity.isValid()) {
       var id = entity.getUniqueId();
       var next = Bukkit.getServer().getEntity(id);

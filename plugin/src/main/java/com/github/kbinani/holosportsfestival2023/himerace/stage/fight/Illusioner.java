@@ -1,5 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.fight;
 
+import com.github.kbinani.holosportsfestival2023.EntityTracking;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 class Illusioner implements IllusionerProjectile.Delegate {
   private static final long sStrongAttackCooltimeDurationMillis = 5 * 1000;
 
-  final @Nonnull org.bukkit.entity.Illusioner entity;
+  final @Nonnull EntityTracking<org.bukkit.entity.Illusioner> entity;
   private final @Nonnull JavaPlugin owner;
   private final @Nonnull BukkitTask attackTimer;
   private final @Nonnull BoundingBox attackBounds;
@@ -38,7 +39,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
     int round //
   ) {
     this.owner = owner;
-    this.entity = entity;
+    this.entity = new EntityTracking<>(entity);
     this.attackBounds = attackBounds;
     int period = 20;
     this.attackTimer = Bukkit.getScheduler().runTaskTimer(owner, this::attack, period, period);
@@ -48,7 +49,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
   }
 
   void dispose() {
-    entity.remove();
+    entity.get().remove();
     attackTimer.cancel();
     if (attackMotionTimeoutTimer != null) {
       attackMotionTimeoutTimer.cancel();
@@ -62,7 +63,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
   }
 
   private void attack() {
-    if (entity.isDead()) {
+    if (entity.get().isDead()) {
       dispose();
       return;
     }
@@ -86,13 +87,13 @@ class Illusioner implements IllusionerProjectile.Delegate {
     }
     if (strongAttackCooltimeMillis == null || strongAttackCooltimeMillis < now) {
       this.strongAttackCooltimeMillis = now + sStrongAttackCooltimeDurationMillis;
-      entity.setSpell(Spellcaster.Spell.WOLOLO);
+      entity.get().setSpell(Spellcaster.Spell.WOLOLO);
       if (attackMotionTimeoutTimer != null) {
         attackMotionTimeoutTimer.cancel();
       }
       attackMotionTimeoutTimer = Bukkit.getScheduler().runTaskLater(owner, () -> {
         this.attackMotionTimeoutTimer = null;
-        this.entity.setSpell(Spellcaster.Spell.NONE);
+        this.entity.get().setSpell(Spellcaster.Spell.NONE);
       }, 2 * 20);
       locations.forEach(it -> launchProjectile(it, true));
     } else {
@@ -107,7 +108,7 @@ class Illusioner implements IllusionerProjectile.Delegate {
   }
 
   private void launchProjectile(Location location, boolean strong) {
-    var projectile = new IllusionerProjectile(owner, entity.getLocation().add(0, 2, 0), location, strong, round, this);
+    var projectile = new IllusionerProjectile(owner, entity.get().getLocation().add(0, 2, 0), location, strong, round, this);
     this.projectiles.add(projectile);
   }
 
