@@ -68,7 +68,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private final List<Wave> waves = new ArrayList<>();
   private boolean wavePrepared = false;
   private boolean breadHangerPrepared = false;
-  private final List<ArmorStand> breadHangers = new ArrayList<>();
+  private final List<EntityTracking<ArmorStand>> breadHangers = new ArrayList<>();
   private Status status = Status.IDLE;
   private final @Nonnull Delegate delegate;
   private @Nullable Race race;
@@ -145,7 +145,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   public void onPlayerArmorStandManipulateEvent(PlayerArmorStandManipulateEvent e) {
     var armorStand = e.getRightClicked();
     for (var stand : breadHangers) {
-      if (stand == armorStand) {
+      if (stand.get() == armorStand) {
         e.setCancelled(true);
         return;
       }
@@ -164,7 +164,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     if (!(e.getEntity() instanceof ArmorStand armorStand)) {
       return;
     }
-    if (breadHangers.stream().noneMatch((it -> it == armorStand))) {
+    if (breadHangers.stream().noneMatch(it -> it.get() == armorStand)) {
       return;
     }
     e.setCancelled(true);
@@ -688,7 +688,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
         var e = it.getEquipment();
         e.setHelmet(new ItemStack(Material.BREAD));
       });
-      breadHangers.add(stand);
+      breadHangers.add(new EntityTracking<>(stand));
     }
   }
 

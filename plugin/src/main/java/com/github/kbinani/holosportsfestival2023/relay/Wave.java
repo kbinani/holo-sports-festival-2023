@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 class Wave {
@@ -18,7 +19,7 @@ class Wave {
   private final double z;
   private final int[] yIndex;
   private final long startTimeMillis;
-  private final Bubble[] bubbles;
+  private final ArrayList<Bubble> bubbles;
   private final double initX;
   private final int sign;
   private final double[] xLast;
@@ -43,16 +44,22 @@ class Wave {
       yIndex, yIndex, yIndex, yIndex, yIndex
     };
     this.startTimeMillis = System.currentTimeMillis();
-    this.bubbles = new Bubble[]{
-      new Bubble(world, new Location(world, initX - 2, yCandidates[yIndex], z), scoreboardTag),
-      new Bubble(world, new Location(world, initX - 1, yCandidates[yIndex], z), scoreboardTag),
-      new Bubble(world, new Location(world, initX, yCandidates[yIndex], z), scoreboardTag),
-      new Bubble(world, new Location(world, initX + 1, yCandidates[yIndex], z), scoreboardTag),
-      new Bubble(world, new Location(world, initX + 2, yCandidates[yIndex], z), scoreboardTag),
-    };
+    this.bubbles = new ArrayList<Bubble>();
+    bubbles.add(new Bubble(world, new Location(world, initX - 2, yCandidates[yIndex], z), scoreboardTag));
+    bubbles.add(new Bubble(world, new Location(world, initX - 1, yCandidates[yIndex], z), scoreboardTag));
+    bubbles.add(new Bubble(world, new Location(world, initX, yCandidates[yIndex], z), scoreboardTag));
+    bubbles.add(new Bubble(world, new Location(world, initX + 1, yCandidates[yIndex], z), scoreboardTag));
+    bubbles.add(new Bubble(world, new Location(world, initX + 2, yCandidates[yIndex], z), scoreboardTag));
     this.xLast = new double[]{this.initX - 2, this.initX - 1, this.initX, this.initX + 1, this.initX + 2};
 
     tick();
+  }
+
+  void dispose() {
+    for (var bubble : bubbles) {
+      bubble.dispose();
+    }
+    bubbles.clear();
   }
 
   void tick() {
@@ -63,7 +70,7 @@ class Wave {
     BoundingBox bounds = null;
 
     for (int i = 0; i < 5; i++) {
-      var bubble = bubbles[i];
+      var bubble = bubbles.get(i);
 
       var nx = initX + distance - startX + 2 - i;
       var dx = nx - width * (int) Math.floor(nx / width);
