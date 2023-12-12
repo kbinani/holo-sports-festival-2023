@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -20,6 +21,7 @@ import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({PlayerExtension.class})
 class Race {
   interface Delegate {
     void raceDidFinish();
@@ -118,7 +120,7 @@ class Race {
       if (player != null) {
         player.setGameMode(GameMode.ADVENTURE);
         var area = getStartingArea(0);
-        Players.Distribute(world, area.box, area.yaw, player);
+        player.spread(area.box, area.yaw);
       }
     }
   }
@@ -137,7 +139,7 @@ class Race {
         if (next != null) {
           next.setGameMode(GameMode.ADVENTURE);
           var area = getStartingArea(1);
-          Players.Distribute(world, area.box, area.yaw, next);
+          next.spread(area.box, area.yaw);
           notifyNextRunner(next, player);
         }
       }
@@ -285,7 +287,7 @@ class Race {
     if (next != null) {
       next.setGameMode(GameMode.ADVENTURE);
       var area = getStartingArea(defenderOrder + 1);
-      Players.Distribute(world, area.box, area.yaw, next);
+      next.spread(area.box, area.yaw);
       notifyNextRunner(next, defender);
     }
     attacker.sendMessage(prefix.append(text("3秒後にスポーン地点にレポートされます！", WHITE)));

@@ -1,5 +1,6 @@
 package com.github.kbinani.holosportsfestival2023;
 
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Material;
@@ -16,6 +17,7 @@ import org.bukkit.potion.PotionType;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+@ExtensionMethod({ItemStackExtension.class})
 public class ItemBuilder {
   private final ItemStack item;
 
@@ -41,8 +43,8 @@ public class ItemBuilder {
     return this;
   }
 
-  public ItemBuilder customByteTag(String name) {
-    ItemTag.AddByte(item, name);
+  public ItemBuilder customTag(String name) {
+    item.addCustomTag(name);
     return this;
   }
 

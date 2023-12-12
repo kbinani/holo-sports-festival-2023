@@ -1,9 +1,10 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
 import com.github.kbinani.holosportsfestival2023.Colors;
-import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.Point2i;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.WorldExtension;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,6 +13,7 @@ import java.awt.*;
 import java.util.Random;
 import java.util.function.Function;
 
+@ExtensionMethod({WorldExtension.class})
 class Quiz {
   enum Cell {
     RED('r', Material.RED_WOOL, Colors.red),
@@ -167,7 +169,7 @@ class Quiz {
         for (int y = 0; y < height; y++) {
           var material = materialFromPointFunction.apply(new Point2i(x, y));
           var location = top.added(0, -y, 0);
-          Editor.Fill(world, location, location, material.createBlockData());
+          world.fill(location, location, material.createBlockData());
         }
       }
     }

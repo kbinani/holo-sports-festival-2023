@@ -241,8 +241,8 @@ class Race {
     if (index >= 0) {
       var clayBall = ItemBuilder.For(Material.CLAY_BALL)
         .amount(1)
-        .customByteTag(itemTag)
-        .customByteTag(itemTagStrong)
+        .customTag(itemTag)
+        .customTag(itemTagStrong)
         .flags(ItemFlag.HIDE_ATTRIBUTES)
         .displayName(text("HoloUp用トライデント（強）", DARK_GRAY))
         .build();

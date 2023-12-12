@@ -5,6 +5,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Team;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,6 +28,7 @@ import java.util.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 
+@ExtensionMethod({WorldExtension.class})
 public class CarryStage extends AbstractStage {
   public interface Delegate {
     void carryStageDidFinish();
@@ -172,9 +174,9 @@ public class CarryStage extends AbstractStage {
     }
     firstGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-98, 80, -38), pos(-97, 80, -38), block);
-    Editor.Fill(world, pos(-95, 80, -38), pos(-93, 80, -38), block);
-    Editor.Fill(world, pos(-91, 80, -38), pos(-90, 80, -38), block);
+    world.fill(pos(-98, 80, -38), pos(-97, 80, -38), block);
+    world.fill(pos(-95, 80, -38), pos(-93, 80, -38), block);
+    world.fill(pos(-91, 80, -38), pos(-90, 80, -38), block);
   }
 
   void setOpenSecondGate(boolean open) {
@@ -183,7 +185,7 @@ public class CarryStage extends AbstractStage {
     }
     secondGateOpen = open;
     var block = open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]";
-    Editor.Fill(world, pos(-98, 80, -24), pos(-90, 80, -24), block);
+    world.fill(pos(-98, 80, -24), pos(-90, 80, -24), block);
   }
 
   void setPrincessStatus(PrincessStatus status, Team team) {
@@ -223,13 +225,13 @@ public class CarryStage extends AbstractStage {
       if (activeFloorBlocks.contains(p)) {
         continue;
       }
-      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.BARRIER);
+      world.fill(new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.BARRIER);
     }
     for (var p : activeFloorBlocks) {
       if (blocks.contains(p)) {
         continue;
       }
-      Editor.Fill(world, new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.AIR);
+      world.fill(new Point3i(p.x, y, p.z), new Point3i(p.x, y, p.z), Material.AIR);
     }
     this.activeFloorBlocks = blocks;
   }
@@ -326,10 +328,10 @@ public class CarryStage extends AbstractStage {
   private void resetFloors() {
     activeFloorBlocks.clear();
     for (var region : firstFloorRegions) {
-      Editor.Fill(world, new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
+      world.fill(new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
     }
     for (var region : secondFloorRegions) {
-      Editor.Fill(world, new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
+      world.fill(new Point3i(region.northWest.x, y(82), region.northWest.z), new Point3i(region.southEast.x, y(82), region.southEast.z), "air");
     }
   }
 

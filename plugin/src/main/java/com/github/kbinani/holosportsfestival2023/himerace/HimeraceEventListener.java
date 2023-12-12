@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.himerace;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -31,6 +32,7 @@ import static com.github.kbinani.holosportsfestival2023.himerace.Team.maxHealthM
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({ItemStackExtension.class})
 public class HimeraceEventListener implements MiniGame, Race.Delegate {
   private static final Point3i offset = new Point3i(0, 0, 0);
   public static final Component title = text("[Himerace]", AQUA);
@@ -142,7 +144,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       if (item == null) {
         continue;
       }
-      if (ItemTag.HasByte(item, tag)) {
+      if (item.hasCustomTag(tag)) {
         inventory.clear(i);
       }
     }
@@ -560,20 +562,20 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       );
       var equipment = player.getEquipment();
       equipment.setHelmet(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_HELMET : Material.IRON_HELMET)
-        .customByteTag(itemTag)
-        .customByteTag(Stage.FIGHT.tag)
+        .customTag(itemTag)
+        .customTag(Stage.FIGHT.tag)
         .build());
       equipment.setChestplate(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_CHESTPLATE : Material.IRON_CHESTPLATE)
-        .customByteTag(itemTag)
-        .customByteTag(Stage.FIGHT.tag)
+        .customTag(itemTag)
+        .customTag(Stage.FIGHT.tag)
         .build());
       equipment.setLeggings(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_LEGGINGS : Material.IRON_LEGGINGS)
-        .customByteTag(itemTag)
-        .customByteTag(Stage.FIGHT.tag)
+        .customTag(itemTag)
+        .customTag(Stage.FIGHT.tag)
         .build());
       equipment.setBoots(ItemBuilder.For(role == Role.PRINCESS ? Material.GOLDEN_BOOTS : Material.IRON_BOOTS)
-        .customByteTag(itemTag)
-        .customByteTag(Stage.FIGHT.tag)
+        .customTag(itemTag)
+        .customTag(Stage.FIGHT.tag)
         .build());
     }
   }

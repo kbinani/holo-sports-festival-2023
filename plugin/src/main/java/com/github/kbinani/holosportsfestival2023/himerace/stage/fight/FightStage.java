@@ -6,6 +6,7 @@ import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
 import io.papermc.paper.entity.TeleportFlag;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -34,6 +35,7 @@ import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventLi
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class, ItemStackExtension.class})
 public class FightStage extends AbstractStage {
   // wave1
   //   クモx2
@@ -157,7 +159,7 @@ public class FightStage extends AbstractStage {
       return;
     }
     var stack = item.getItemStack();
-    if (ItemTag.HasByte(stack, itemTag)) {
+    if (stack.hasCustomTag(itemTag)) {
       return;
     }
     //NOTE: Entity#clearLootTable が効いていないのでここで削除する
@@ -249,7 +251,7 @@ public class FightStage extends AbstractStage {
     var princess = e.getPlayer();
     var inventory = princess.getInventory();
     var usedItem = inventory.getItem(hand);
-    if (e.getRightClicked() instanceof Player knight && ItemTag.HasByte(usedItem, Stage.FIGHT.tag) && ItemTag.HasByte(usedItem, itemTag)) {
+    if (e.getRightClicked() instanceof Player knight && usedItem.hasCustomTag(Stage.FIGHT.tag) && usedItem.hasCustomTag(itemTag)) {
       switch (usedItem.getType()) {
         case RED_BED -> {
           var seatTracking = deadPlayerSeats.get(knight.getUniqueId());
@@ -344,7 +346,7 @@ public class FightStage extends AbstractStage {
   @Override
   protected void onPlayerItemDamage(PlayerItemDamageEvent e, Participation participation) {
     var item = e.getItem();
-    if (ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+    if (item.hasCustomTag(Stage.FIGHT.tag)) {
       e.setDamage(0);
     }
   }
@@ -514,7 +516,7 @@ public class FightStage extends AbstractStage {
 
   private void setEnableFence(boolean enable) {
     var material = enable ? "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]" : "air";
-    Editor.Fill(world, pos(-98, 80, 56), pos(-90, 80, 56), material);
+    world.fill(pos(-98, 80, 56), pos(-90, 80, 56), material);
   }
 
   private void setupEnemy(Mob mob, Wave wave, int round) {
@@ -647,7 +649,7 @@ public class FightStage extends AbstractStage {
 
   private void updateStandingSign(@Nullable Wave wave) {
     if (wave == null) {
-      Editor.Set(world, signPos, Material.AIR);
+      world.set(signPos, Material.AIR);
     } else {
       Editor.StandingSign(world, signPos, Material.CRIMSON_SIGN, 8,
         title,
@@ -687,7 +689,7 @@ public class FightStage extends AbstractStage {
           return;
         }
         var item = e.getItem();
-        if (item != null && !player.hasCooldown(item.getType()) && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+        if (item != null && !player.hasCooldown(item.getType()) && item.hasCustomTag(itemTag) && item.hasCustomTag(Stage.FIGHT.tag)) {
           switch (item.getType()) {
             case RED_BED -> e.setCancelled(true);
             case GOAT_HORN -> {
@@ -716,7 +718,7 @@ public class FightStage extends AbstractStage {
       }
       case RIGHT_CLICK_AIR -> {
         var item = e.getItem();
-        if (item != null && !player.hasCooldown(item.getType()) && item.getType() == Material.GOAT_HORN && ItemTag.HasByte(item, itemTag) && ItemTag.HasByte(item, Stage.FIGHT.tag)) {
+        if (item != null && !player.hasCooldown(item.getType()) && item.getType() == Material.GOAT_HORN && item.hasCustomTag(itemTag) && item.hasCustomTag(Stage.FIGHT.tag)) {
           delegate.fightStageRequestsEncouragingKnights(deadPlayerSeats.keySet());
         }
       }

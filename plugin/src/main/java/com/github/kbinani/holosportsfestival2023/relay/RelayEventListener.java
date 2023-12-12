@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -35,6 +36,7 @@ import java.util.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class, ItemStackExtension.class})
 public class RelayEventListener implements MiniGame, Race.Delegate {
   public interface Delegate {
     Point3i relayGetJoinSignLocation(TeamColor color);
@@ -135,7 +137,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     if (pistonPositions.contains(location)) {
       var pressurePlatePos = location.added(0, 2, 0);
       Bukkit.getScheduler().runTaskLater(owner, () -> {
-        Editor.Set(world, pressurePlatePos, Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
+        world.set(pressurePlatePos, Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
       }, 10);
     }
   }
@@ -207,7 +209,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
         }
       }
       if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
-        if (item != null && item.getType() == Material.BOOK && ItemTag.HasByte(item, sItemTag)) {
+        if (item != null && item.getType() == Material.BOOK && item.hasCustomTag(sItemTag)) {
           for (var team : teams.values()) {
             if (team.players().contains(player)) {
               var inventory = ensureEntryBookInventory();
@@ -341,7 +343,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     }
     var item = e.getItem();
     var player = e.getPlayer();
-    if (item.getType() == Material.BREAD && ItemTag.HasByte(item, race.getBreadId())) {
+    if (item.getType() == Material.BREAD && item.hasCustomTag(race.getBreadId())) {
       player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
       player.setFoodLevel(20);
     }
@@ -513,7 +515,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   private @Nonnull ItemStack createEntryBook() {
     return ItemBuilder.For(Material.BOOK)
       .displayName(text("エントリーブック (右クリックで使用) / Entry Book (Right click to open)", GOLD))
-      .customByteTag(sItemTag)
+      .customTag(sItemTag)
       .build();
   }
 
@@ -523,7 +525,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
         it.setCustomModelData(color.ordinal() + 1);
       })
       .displayName(color.component().append(text("チームバトン", WHITE)))
-      .customByteTag(sItemTag)
+      .customTag(sItemTag)
       .build();
   }
 
@@ -642,7 +644,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     Bukkit.getServer().getOnlinePlayers().forEach(RelayEventListener::ClearItem);
 
     // NOTE: 逆走防止
-    Editor.Fill(world, pos(55, 82, 67), pos(63, 82, 67), Material.BARRIER);
+    world.fill(pos(55, 82, 67), pos(63, 82, 67), Material.BARRIER);
 
     status = Status.IDLE;
   }
@@ -654,7 +656,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       if (item == null) {
         continue;
       }
-      if (ItemTag.HasByte(item, sItemTag)) {
+      if (item.hasCustomTag(sItemTag)) {
         inventory.clear(i);
       }
     }
@@ -696,8 +698,8 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     if (status == Status.ACTIVE && race != null) {
       return ItemBuilder.For(Material.BREAD)
         .displayName(text("元気が出るパン", GOLD))
-        .customByteTag(sItemTag)
-        .customByteTag(race.getBreadId())
+        .customTag(sItemTag)
+        .customTag(race.getBreadId())
         .build();
     } else {
       return new ItemStack(Material.BREAD);

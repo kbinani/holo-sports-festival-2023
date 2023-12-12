@@ -94,8 +94,8 @@ public class Team implements Level.Delegate {
       case CARRY -> {
         if (princess != null) {
           var book = ItemBuilder.For(Material.BOOK)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.BUILD.tag)
+            .customTag(itemTag)
+            .customTag(Stage.BUILD.tag)
             .displayName(text("回答する！(右クリックで開く) / Answer Book (Right click to open)", AQUA))
             .build();
           var inventory = princess.getInventory();
@@ -136,21 +136,21 @@ public class Team implements Level.Delegate {
         if (princess != null) {
           var inventory = princess.getInventory();
           inventory.setItem(0, ItemBuilder.For(Material.GOLDEN_SHOVEL)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .displayName(text("回復の杖 (右クリックで使用) / Healing Wand (Right click to use)", GOLD))
             .build());
           inventory.setItem(1, ItemBuilder.For(Material.GOAT_HORN)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .displayName(text("ヤギの角笛 (右クリックで使用) / Goat Horn (Right click to use)", GOLD))
             .meta(MusicInstrumentMeta.class, (it) -> {
               it.setInstrument(MusicInstrument.SING);
             })
             .build());
           inventory.setItem(2, ItemBuilder.For(Material.RED_BED)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .displayName(text("ベッド (右クリックで使用) / Bed (Right click to use)", GOLD))
             .build());
           princess.setGameMode(GameMode.ADVENTURE);
@@ -158,25 +158,25 @@ public class Team implements Level.Delegate {
         for (var knight : knights) {
           var inventory = knight.getInventory();
           var sword = ItemBuilder.For(Material.IRON_SWORD)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .build();
           inventory.setItem(0, sword);
           inventory.setHeldItemSlot(0);
           var shield = ItemBuilder.For(Material.SHIELD)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .build();
           inventory.setItemInOffHand(shield);
           var bow = ItemBuilder.For(Material.BOW)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .enchant(Enchantment.ARROW_INFINITE, 1)
             .build();
           inventory.setItem(1, bow);
           var arrow = ItemBuilder.For(Material.ARROW)
-            .customByteTag(itemTag)
-            .customByteTag(Stage.FIGHT.tag)
+            .customTag(itemTag)
+            .customTag(Stage.FIGHT.tag)
             .build();
           inventory.setItem(2, arrow);
           knight.setGameMode(GameMode.ADVENTURE);

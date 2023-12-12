@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023;
 
 import com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventListener;
 import com.github.kbinani.holosportsfestival2023.relay.RelayEventListener;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -13,6 +14,7 @@ import javax.annotation.Nullable;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class})
 public class TrackAndField {
   public enum Mode {
     IDLE,
@@ -110,11 +112,11 @@ public class TrackAndField {
 
   public void setRelayStartGateEnabled(boolean enable) {
     if (enable) {
-      Editor.Set(world, pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
-      Editor.Set(world, pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
-      Editor.Fill(world, pos(5, 80, 81), pos(5, 80, 77), "dark_oak_fence[east=false,north=true,south=true,waterlogged=false,west=false]");
-      Editor.Set(world, pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
-      Editor.Set(world, pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
+      world.set(pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
+      world.set(pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
+      world.fill(pos(5, 80, 81), pos(5, 80, 77), "dark_oak_fence[east=false,north=true,south=true,waterlogged=false,west=false]");
+      world.set(pos(5, 80, 82), "dark_oak_fence[east=false,north=true,south=false,waterlogged=false,west=false]");
+      world.set(pos(5, 80, 76), "dark_oak_fence[east=false,north=false,south=true,waterlogged=false,west=false]");
     } else {
       fill(pos(5, 80, 82), pos(5, 80, 76), Material.AIR);
     }
@@ -166,12 +168,12 @@ public class TrackAndField {
         kibasenTitle, Component.empty(), Component.empty(), text("エントリーリスト", AQUA)
       );
     } else {
-      Editor.Set(world, kibasenJoinRedSign, Material.AIR);
-      Editor.Set(world, kibasenJoinWhiteSign, Material.AIR);
-      Editor.Set(world, kibasenJoinYellowSign, Material.AIR);
-      Editor.Set(world, kibasenStartSign, Material.AIR);
-      Editor.Set(world, kibasenAbortSign, Material.AIR);
-      Editor.Set(world, kibasenEntryListSign, Material.AIR);
+      world.set(kibasenJoinRedSign, Material.AIR);
+      world.set(kibasenJoinWhiteSign, Material.AIR);
+      world.set(kibasenJoinYellowSign, Material.AIR);
+      world.set(kibasenStartSign, Material.AIR);
+      world.set(kibasenAbortSign, Material.AIR);
+      world.set(kibasenEntryListSign, Material.AIR);
     }
   }
 
@@ -215,13 +217,13 @@ public class TrackAndField {
         relayTitle, Component.empty(), Component.empty(), text("ゲームを再開する", GOLD)
       );
     } else {
-      Editor.Set(world, relayJoinRedSign, Material.AIR);
-      Editor.Set(world, relayJoinWhiteSign, Material.AIR);
-      Editor.Set(world, relayJoinYellowSign, Material.AIR);
-      Editor.Set(world, relayStartSign, Material.AIR);
-      Editor.Set(world, relayAbortSign, Material.AIR);
-      Editor.Set(world, relayAnnounceEntryListSign, Material.AIR);
-      Editor.Set(world, relayResumeSign, Material.AIR);
+      world.set(relayJoinRedSign, Material.AIR);
+      world.set(relayJoinWhiteSign, Material.AIR);
+      world.set(relayJoinYellowSign, Material.AIR);
+      world.set(relayStartSign, Material.AIR);
+      world.set(relayAbortSign, Material.AIR);
+      world.set(relayAnnounceEntryListSign, Material.AIR);
+      world.set(relayResumeSign, Material.AIR);
     }
   }
 
@@ -286,7 +288,7 @@ public class TrackAndField {
   }
 
   private void fill(Point3i from, Point3i to, Material material) {
-    Editor.Fill(world, from, to, material);
+    world.fill(from, to, material);
   }
 
   private int x(int x) {

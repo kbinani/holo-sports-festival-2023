@@ -1,14 +1,15 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.solve;
 
-import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.WorldExtension;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.Team;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -43,6 +44,7 @@ import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventLi
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class})
 public class SolveStage extends AbstractStage {
   public interface Delegate {
     void solveStagePlaySound(Sound sound);
@@ -164,7 +166,7 @@ public class SolveStage extends AbstractStage {
       penaltyCooldown.cancel();
       penaltyCooldown = null;
     }
-    Editor.Set(world, pressurePlatePos, Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
+    world.set(pressurePlatePos, Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
   }
 
   @Override
@@ -302,11 +304,11 @@ public class SolveStage extends AbstractStage {
   }
 
   private void setGateOpened(boolean open) {
-    Editor.Fill(world, pos(-95, 85, 36), pos(-93, 85, 36), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
-    Editor.Set(world, pos(-98, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=false]");
-    Editor.Set(world, pos(-97, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
-    Editor.Set(world, pos(-91, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
-    Editor.Set(world, pos(-90, 80, 39), open ? "air" : "dark_oak_fence[east=false,north=false,south=false,waterlogged=false,west=true]");
+    world.fill(pos(-95, 85, 36), pos(-93, 85, 36), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
+    world.set(pos(-98, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=false]");
+    world.set(pos(-97, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
+    world.set(pos(-91, 80, 39), open ? "air" : "dark_oak_fence[east=true,north=false,south=false,waterlogged=false,west=true]");
+    world.set(pos(-90, 80, 39), open ? "air" : "dark_oak_fence[east=false,north=false,south=false,waterlogged=false,west=true]");
   }
 
   private void startQuiz(Team team) {
@@ -322,8 +324,8 @@ public class SolveStage extends AbstractStage {
       for (var i = 0; i < materials.length; i++) {
         var item = ItemBuilder.For(materials[i])
           .displayName(text("ブロックを置いて解答！ / Place the block to answer!"))
-          .customByteTag(itemTag)
-          .customByteTag(Stage.SOLVE.tag)
+          .customTag(itemTag)
+          .customTag(Stage.SOLVE.tag)
           .build();
         inventory.setItem(i, item);
       }
@@ -333,7 +335,7 @@ public class SolveStage extends AbstractStage {
       if (finished || !started) {
         return;
       }
-      Editor.Set(world, pressurePlatePos, Material.AIR);
+      world.set(pressurePlatePos, Material.AIR);
     }, 0);
   }
 

@@ -1,13 +1,14 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.ItemTag;
+import com.github.kbinani.holosportsfestival2023.ItemStackExtension;
 import com.github.kbinani.holosportsfestival2023.Kill;
 import com.github.kbinani.holosportsfestival2023.Point3i;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -39,6 +40,7 @@ import static com.github.kbinani.holosportsfestival2023.himerace.HimeraceEventLi
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({ItemStackExtension.class})
 public class CookStage extends AbstractStage {
   // 本番:
   //   赤組:
@@ -246,12 +248,12 @@ public class CookStage extends AbstractStage {
         continue;
       }
       var stack = item.getItemStack();
-      ItemTag.AddByte(stack, itemTag);
+      stack.addCustomTag(itemTag);
       var type = stack.getType();
       switch (type) {
         case CARROT, POTATO, WHEAT, BEETROOT -> {
           item.addScoreboardTag(Stage.COOK.tag);
-          ItemTag.AddByte(stack, Stage.COOK.tag);
+          stack.addCustomTag(Stage.COOK.tag);
         }
       }
     }
@@ -489,8 +491,8 @@ public class CookStage extends AbstractStage {
   }
 
   static ItemStack AddItemTag(ItemStack item) {
-    ItemTag.AddByte(item, Stage.COOK.tag);
-    ItemTag.AddByte(item, itemTag);
+    item.addCustomTag(Stage.COOK.tag);
+    item.addCustomTag(itemTag);
     return item;
   }
 
@@ -516,8 +518,8 @@ public class CookStage extends AbstractStage {
   public static @Nonnull ItemStack CreateRecipeBook0() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(text("秘伝のレシピブック", GOLD))
-      .customByteTag(Stage.COOK.tag)
-      .customByteTag(itemTag)
+      .customTag(Stage.COOK.tag)
+      .customTag(itemTag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();
@@ -533,8 +535,8 @@ public class CookStage extends AbstractStage {
   public static @Nonnull ItemStack CreateRecipeBook1() {
     var book = ItemBuilder.For(Material.WRITTEN_BOOK)
       .displayName(text("The Secret Recipe Book", GOLD))
-      .customByteTag(Stage.COOK.tag)
-      .customByteTag(itemTag)
+      .customTag(Stage.COOK.tag)
+      .customTag(itemTag)
       .build();
     book.editMeta(BookMeta.class, it -> {
       var tasks = GetRecipeBookTasks();

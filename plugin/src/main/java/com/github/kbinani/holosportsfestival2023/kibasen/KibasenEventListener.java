@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -32,6 +33,7 @@ import static com.github.kbinani.holosportsfestival2023.kibasen.Session.maxHealt
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class, ItemStackExtension.class})
 public class KibasenEventListener implements MiniGame, Registrants.Delegate, Session.Delegate {
   public interface Delegate {
     @Nullable
@@ -122,7 +124,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
           var item = e.getItem();
           if (item != null) {
             if (item.getType() == Material.BOOK) {
-              if (ItemTag.HasByte(item, itemTag)) {
+              if (item.hasCustomTag(itemTag)) {
                 var inventory = openLeaderRegistrationInventory();
                 if (inventory != null) {
                   player.openInventory(inventory);
@@ -169,7 +171,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       if (vehicle.getGameMode() == GameMode.SPECTATOR) {
         return;
       }
-      if (!ItemTag.HasByte(item, itemTag)) {
+      if (!item.hasCustomTag(itemTag)) {
         return;
       }
       registrants.addPassenger(attacker, vehicle);
@@ -312,7 +314,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
       if (item == null) {
         continue;
       }
-      if (ItemTag.HasByte(item, itemTag)) {
+      if (item.hasCustomTag(itemTag)) {
         inventory.clear(i);
       }
     }
@@ -397,14 +399,14 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   static ItemStack CreateSaddle() {
     return ItemBuilder.For(Material.SADDLE)
       .displayName(text("自分の馬を右クリックしてください！", GOLD))
-      .customByteTag(itemTag)
+      .customTag(itemTag)
       .build();
   }
 
   static ItemStack CreateBook() {
     return ItemBuilder.For(Material.BOOK)
       .displayName(text("大将にエントリー (右クリックで使用)", GOLD))
-      .customByteTag(itemTag)
+      .customTag(itemTag)
       .build();
   }
 
@@ -419,7 +421,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   }
 
   private void reset() {
-    Editor.Set(world, leaderRegistrationBarrel, Material.BARREL.createBlockData());
+    world.set(leaderRegistrationBarrel, Material.BARREL.createBlockData());
     registrants.clearLeaderRegistrationBarrel();
 
     Kill.EntitiesByScoreboardTag(world, healthDisplayScoreboardTag);

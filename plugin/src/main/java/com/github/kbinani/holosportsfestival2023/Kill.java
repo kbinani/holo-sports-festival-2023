@@ -1,5 +1,6 @@
 package com.github.kbinani.holosportsfestival2023;
 
+import lombok.experimental.ExtensionMethod;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -7,6 +8,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
+@ExtensionMethod({ItemStackExtension.class})
 public class Kill {
   private Kill() {
 
@@ -30,7 +32,7 @@ public class Kill {
     }
     if (entity instanceof Item item) {
       var stack = item.getItemStack();
-      return ItemTag.HasByte(stack, scoreboardTag);
+      return stack.hasCustomTag(scoreboardTag);
     } else {
       return false;
     }

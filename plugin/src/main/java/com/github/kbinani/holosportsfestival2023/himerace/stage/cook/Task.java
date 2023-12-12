@@ -1,7 +1,8 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.cook;
 
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.ItemTag;
+import com.github.kbinani.holosportsfestival2023.ItemStackExtension;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -16,6 +17,7 @@ import static com.github.kbinani.holosportsfestival2023.himerace.stage.cook.Cook
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({ItemStackExtension.class})
 public enum Task {
   BAKED_POTATO(TaskItem.BAKED_POTATO, true),
   COOKED_CHICKEN(TaskItem.COOKED_CHICKEN, true),
@@ -172,7 +174,7 @@ public enum Task {
     });
     for (var task : Task.values()) {
       if (task.item == taskItem) {
-        ItemTag.AddByte(item, task.getTag());
+        item.addCustomTag(task.getTag());
       }
     }
     return AddItemTag(item);

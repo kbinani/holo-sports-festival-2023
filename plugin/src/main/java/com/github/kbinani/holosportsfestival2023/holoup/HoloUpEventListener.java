@@ -1,6 +1,7 @@
 package com.github.kbinani.holosportsfestival2023.holoup;
 
 import com.github.kbinani.holosportsfestival2023.*;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -27,6 +28,7 @@ import java.util.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({PlayerExtension.class, ItemStackExtension.class})
 public class HoloUpEventListener implements MiniGame, Race.Delegate {
   // 位置をずらしたい場合はここでずらす
   private static final Point3i offset = new Point3i(0, 0, 0);
@@ -135,7 +137,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     for (var id : spectators) {
       var player = Bukkit.getPlayer(id);
       if (player != null) {
-        Players.Distribute(world, safeArea, player);
+        player.spread(safeArea);
         player.setGameMode(GameMode.ADVENTURE);
       }
     }
@@ -461,7 +463,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     var inventory = player.getInventory();
     ItemStack weak = ItemBuilder.For(Material.TRIDENT)
       .amount(1)
-      .customByteTag(itemTag)
+      .customTag(itemTag)
       .enchant(Enchantment.RIPTIDE, 1)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
       .displayName(text("HoloUp用トライデント（弱）", AQUA))
@@ -481,7 +483,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
     ItemStack bed = ItemBuilder.For(Material.RED_BED)
       .amount(1)
-      .customByteTag(itemTag)
+      .customTag(itemTag)
       .displayName(text("リスポーン地点に戻る（右クリック）", AQUA))
       .build();
     if (inventory.getItem(2) != null) {
@@ -496,8 +498,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   static ItemStack CreateStrongTrident() {
     return ItemBuilder.For(Material.TRIDENT)
       .amount(1)
-      .customByteTag(itemTag)
-      .customByteTag(itemTagStrong)
+      .customTag(itemTag)
+      .customTag(itemTagStrong)
       .enchant(Enchantment.RIPTIDE, 2)
       .flags(ItemFlag.HIDE_ATTRIBUTES)
       .displayName(text("HoloUp用トライデント（強）", GREEN))
@@ -505,7 +507,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   static boolean IsStrongItem(ItemStack item) {
-    return ItemTag.HasByte(item, itemTagStrong);
+    return item.hasCustomTag(itemTagStrong);
   }
 
   private void warnNonEmptySlot(Player player, int index) {
@@ -521,7 +523,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       if (item == null) {
         continue;
       }
-      if (ItemTag.HasByte(item, itemTag)) {
+      if (item.hasCustomTag(itemTag)) {
         inventory.clear(i);
       }
     }

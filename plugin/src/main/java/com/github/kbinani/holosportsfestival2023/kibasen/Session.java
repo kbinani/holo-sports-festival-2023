@@ -2,6 +2,7 @@ package com.github.kbinani.holosportsfestival2023.kibasen;
 
 import com.github.kbinani.holosportsfestival2023.*;
 import io.papermc.paper.entity.TeleportFlag;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -25,6 +26,7 @@ import static com.github.kbinani.holosportsfestival2023.kibasen.KibasenEventList
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({PlayerExtension.class, ItemStackExtension.class})
 class Session {
   interface Delegate {
     void sessionDidFinish();
@@ -108,7 +110,7 @@ class Session {
     if (item.getType() != Material.WOODEN_SWORD) {
       return;
     }
-    if (!ItemTag.HasByte(item, itemTag)) {
+    if (!item.hasCustomTag(itemTag)) {
       return;
     }
     if (defenceUnit.damagedBy(offence)) {
@@ -241,8 +243,8 @@ class Session {
         team.removePlayer(unit.attacker);
         team.removePlayer(unit.vehicle);
         unit.clean();
-        Players.Distribute(world, safeRespawnBounds, unit.vehicle);
-        Players.Distribute(world, safeRespawnBounds, unit.attacker);
+        unit.vehicle.spread(safeRespawnBounds);
+        unit.attacker.spread(safeRespawnBounds);
         Cloakroom.shared.restore(unit.vehicle);
         Cloakroom.shared.restore(unit.attacker);
       }

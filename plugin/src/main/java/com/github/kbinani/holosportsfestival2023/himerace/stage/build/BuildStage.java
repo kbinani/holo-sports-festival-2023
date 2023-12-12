@@ -1,13 +1,14 @@
 package com.github.kbinani.holosportsfestival2023.himerace.stage.build;
 
-import com.github.kbinani.holosportsfestival2023.Editor;
 import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.ItemTag;
+import com.github.kbinani.holosportsfestival2023.ItemStackExtension;
 import com.github.kbinani.holosportsfestival2023.Point3i;
+import com.github.kbinani.holosportsfestival2023.WorldExtension;
 import com.github.kbinani.holosportsfestival2023.himerace.Participation;
 import com.github.kbinani.holosportsfestival2023.himerace.Role;
 import com.github.kbinani.holosportsfestival2023.himerace.Stage;
 import com.github.kbinani.holosportsfestival2023.himerace.stage.AbstractStage;
+import lombok.experimental.ExtensionMethod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@ExtensionMethod({WorldExtension.class, ItemStackExtension.class})
 public class BuildStage extends AbstractStage {
   public interface Delegate {
     void buildStageSignalActionBarUpdate();
@@ -126,7 +128,7 @@ public class BuildStage extends AbstractStage {
     if (item.getType() != Material.BOOK) {
       return;
     }
-    if (!ItemTag.HasByte(item, Stage.BUILD.tag)) {
+    if (!item.hasCustomTag(Stage.BUILD.tag)) {
       return;
     }
     e.setCancelled(true);
@@ -288,7 +290,7 @@ public class BuildStage extends AbstractStage {
   }
 
   private void cleanupBuildArea() {
-    Editor.Fill(world, buildAreaFrom, buildAreaTo, Material.AIR);
+    world.fill(buildAreaFrom, buildAreaTo, Material.AIR);
     world.getNearbyEntities(buildArea).forEach(it -> {
       switch (it.getType()) {
         case PLAYER, AREA_EFFECT_CLOUD -> {
