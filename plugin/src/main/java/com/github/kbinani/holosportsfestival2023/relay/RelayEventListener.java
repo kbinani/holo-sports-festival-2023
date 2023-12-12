@@ -320,8 +320,12 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     if (before == Pose.SWIMMING && after != Pose.SWIMMING) {
       // https://youtu.be/ls3kb0qhT4E?t=11047
       player.setFoodLevel(2);
-      player.sendMessage(prefix.append(text("パンを左クリックで取って食べよう！", WHITE)));
-      player.sendMessage(prefix.append(text("Left click to get bread and eat it!", WHITE)));
+      //NOTE: 本家では日英両方のメッセージが全員に送られている.
+      if (player.locale().getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+        player.sendMessage(prefix.append(text("パンを左クリックで取って食べよう！", WHITE)));
+      } else {
+        player.sendMessage(prefix.append(text("Left click to get bread and eat it!", WHITE)));
+      }
       var times = Title.Times.times(Duration.ofMillis(0), Duration.ofMillis(2000), Duration.ofMillis(500));
       var title = Title.title(
         text("お腹が空いてしまった！", RED),
