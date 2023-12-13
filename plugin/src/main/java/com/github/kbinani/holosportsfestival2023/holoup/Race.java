@@ -38,7 +38,7 @@ class Race {
     void raceDidDetectCheckpoint(TeamColor color, Player player, int index);
   }
 
-  private final Map<TeamColor, Player> participants;
+  private final Map<TeamColor, EntityTracking<Player>> participants;
   private final JavaPlugin owner;
   private final World world;
   private final Delegate delegate;
@@ -61,7 +61,7 @@ class Race {
     @Nonnull JavaPlugin owner,
     @Nonnull World world,
     @Nonnull BoundingBox announceBounds,
-    @Nonnull Map<TeamColor, Player> registrants,
+    @Nonnull Map<TeamColor, EntityTracking<Player>> registrants,
     @Nonnull Announcer announcer,
     @Nonnull Delegate delegate) //
   {
@@ -77,7 +77,8 @@ class Race {
     startedMillis = System.currentTimeMillis();
     timerTask = scheduler.runTaskTimer(owner, this::tick, 0, 20);
     countdownTask = scheduler.runTaskLater(owner, this::startCountdown, (durationSeconds - 3) * 20);
-    for (var player : participants.values()) {
+    for (var playerTracking : participants.values()) {
+      var player = playerTracking.get();
       player.setBedSpawnLocation(player.getLocation(), true);
       player.setGameMode(GameMode.ADVENTURE);
       AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
@@ -111,14 +112,14 @@ class Race {
       task.cancel();
     }
     tridentCooldownTask.clear();
-    for (var player : participants.values()) {
-      Cloakroom.shared.restore(player);
+    for (var playerTracking : participants.values()) {
+      Cloakroom.shared.restore(playerTracking.get());
     }
   }
 
   private @Nullable TeamColor playerColor(Player player) {
     for (var entry : participants.entrySet()) {
-      if (entry.getValue() == player) {
+      if (entry.getValue().get() == player) {
         return entry.getKey();
       }
     }
@@ -134,7 +135,7 @@ class Race {
       return;
     }
     for (var entry : participants.entrySet()) {
-      if (entry.getValue() == player) {
+      if (entry.getValue().get() == player) {
         var color = entry.getKey();
         if (goaledMillis.containsKey(color)) {
           return;
@@ -287,15 +288,6 @@ class Race {
     }
   }
 
-  boolean contains(Player player) {
-    for (var p : participants.values()) {
-      if (player.getUniqueId().equals(p.getUniqueId())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private static void RecoverStrongTrident(Player player) {
     var inventory = player.getInventory();
     var index = -1;
@@ -375,8 +367,8 @@ class Race {
 
     broadcast(Component.empty());
     for (var color : TeamColor.all) {
-      var player = participants.get(color);
-      if (player == null) {
+      var playerTracking = participants.get(color);
+      if (playerTracking == null) {
         continue;
       }
       broadcast(Component.empty()
@@ -386,7 +378,7 @@ class Race {
       var score = this.score(color);
       var line = Component.empty()
         .appendSpace()
-        .append(text(String.format(" - %s", player.getName()), color.textColor))
+        .append(text(String.format(" - %s", playerTracking.get().getName()), color.textColor))
         .append(text(String.format(" %dm", score), score >= 200 ? GOLD : WHITE));
       var goal = goaledMillis.get(color);
       if (goal != null) {
@@ -416,8 +408,8 @@ class Race {
     var elapsed = (System.currentTimeMillis() - startedMillis) / 1000;
     var remaining = Math.max(0, durationSeconds - elapsed);
     for (var color : TeamColor.all) {
-      var player = participants.get(color);
-      if (player == null) {
+      var playerTracking = participants.get(color);
+      if (playerTracking == null) {
         continue;
       }
       var bar = bars.get(color);
@@ -433,7 +425,7 @@ class Race {
       bar.setProgress(score / 200.0f);
       var name = color.component()
         .appendSpace()
-        .append(text(player.getName(), WHITE))
+        .append(text(playerTracking.get().getName(), WHITE))
         .appendSpace()
         .append(text(String.format("%dm", score), GOLD))
         .append(text(String.format("/200m 残り時間: %d秒", remaining), WHITE));
@@ -442,14 +434,14 @@ class Race {
   }
 
   private int score(TeamColor color) {
-    var player = participants.get(color);
-    if (player == null) {
+    var playerTracking = participants.get(color);
+    if (playerTracking == null) {
       return 0;
     }
     if (goaledMillis.containsKey(color)) {
       return 200;
     }
-    return ScoreFromAltitude(player);
+    return ScoreFromAltitude(playerTracking.get());
   }
 
   private static int ScoreFromAltitude(Player player) {

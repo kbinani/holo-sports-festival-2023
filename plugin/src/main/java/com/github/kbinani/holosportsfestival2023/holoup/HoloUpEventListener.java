@@ -49,7 +49,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private final @Nonnull World world;
   private final @Nonnull JavaPlugin owner;
   private Status status = Status.IDLE;
-  private final Map<TeamColor, Player> registrants = new HashMap<>();
+  private final Map<TeamColor, EntityTracking<Player>> registrants = new HashMap<>();
   private @Nullable Cancellable countdownTask;
   private @Nullable Race race;
   private final Set<UUID> spectators = new HashSet<>();
@@ -120,8 +120,8 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
       title, Component.empty(), Component.empty(), text("エントリー リスト", GREEN)
     );
 
-    for (var player : registrants.values()) {
-      Cloakroom.shared.restore(player);
+    for (var playerTracking : registrants.values()) {
+      Cloakroom.shared.restore(playerTracking.get());
     }
     registrants.clear();
     status = Status.IDLE;
@@ -283,7 +283,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @SuppressWarnings("unused")
   public void onPlayerQuit(PlayerQuitEvent e) {
     var player = e.getPlayer();
-    if (registrants.containsValue(player)) {
+    if (registrants.values().stream().anyMatch(it -> it.get() == player)) {
       leave(player);
     }
     if (race != null) {
@@ -295,7 +295,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   @SuppressWarnings("unused")
   public void onPlayerChangedWorld(PlayerChangedWorldEvent e) {
     var player = e.getPlayer();
-    if (registrants.containsValue(player)) {
+    if (registrants.values().stream().anyMatch(it -> it.get() == player)) {
       leave(player);
     }
     if (race != null) {
@@ -340,11 +340,11 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         broadcast(Component.empty());
       }
       first = false;
-      var player = registrants.get(color);
-      int count = player == null ? 0 : 1;
+      var playerTracking = registrants.get(color);
+      int count = playerTracking == null ? 0 : 1;
       broadcast(text(String.format(" %s (%d)", color.text, count), color.textColor));
-      if (player != null) {
-        broadcast(text(String.format("  - %s", player.getName()), color.textColor));
+      if (playerTracking != null) {
+        broadcast(text(String.format("  - %s", playerTracking.get().getName()), color.textColor));
       }
     }
   }
@@ -371,14 +371,14 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
 
   private void start() {
     boolean ok = true;
-    for (var player : registrants.values()) {
-      if (!prepare(player)) {
+    for (var playerTracking : registrants.values()) {
+      if (!prepare(playerTracking.get())) {
         ok = false;
       }
     }
     if (!ok) {
-      for (var player : registrants.values()) {
-        clearItems(player);
+      for (var playerTracking : registrants.values()) {
+        clearItems(playerTracking.get());
       }
       broadcast(prefix
         .append(text("準備が整っていない参加者がいたため中断しました。", RED)));
@@ -401,7 +401,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
     }
     var current = registrants.get(color);
     if (current == null) {
-      if (registrants.containsValue(player)) {
+      if (registrants.values().stream().anyMatch(it -> it.get() == player)) {
         player.sendMessage(prefix
           .append(text("既に他のチームにエントリーしています。", RED))
         );
@@ -409,7 +409,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
         if (!Cloakroom.shared.store(player, prefix)) {
           return;
         }
-        registrants.put(color, player);
+        registrants.put(color, new EntityTracking<>(player));
         broadcast(prefix
           .append(text(player.getName(), color.textColor))
           .append(text("が", WHITE))
@@ -417,7 +417,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
           .append(text("にエントリーしました。", WHITE))
         );
       }
-    } else if (current == player) {
+    } else if (current.get() == player) {
       leave(player);
     } else {
       player.sendMessage(prefix
@@ -431,7 +431,7 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   private void leave(Player player) {
     @Nullable TeamColor color = null;
     for (var entry : registrants.entrySet()) {
-      if (entry.getValue().getUniqueId().equals(player.getUniqueId())) {
+      if (entry.getValue().get() == player) {
         color = entry.getKey();
         break;
       }
