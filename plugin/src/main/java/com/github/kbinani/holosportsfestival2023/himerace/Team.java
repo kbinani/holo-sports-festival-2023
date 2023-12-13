@@ -39,8 +39,8 @@ public class Team implements Level.Delegate {
 
   private final JavaPlugin owner;
   private final TeamColor color;
-  private @Nullable Player princess;
-  private final List<Player> knights = new LinkedList<>();
+  private @Nullable EntityTracking<Player> princessTracking;
+  private final List<EntityTracking<Player>> knights = new LinkedList<>();
   private final Map<UUID, HealthDisplay> healthDisplays = new HashMap<>();
   private static final int kMaxKnightPlayers = 2;
   private final Level level;
@@ -58,14 +58,14 @@ public class Team implements Level.Delegate {
 
   void onStart() {
     var team = this.teams.ensure(color);
-    if (princess != null) {
-      activateHealthModifier(princess);
-      princess.setGameMode(GameMode.ADVENTURE);
-      team.addEntity(princess);
+    if (princessTracking != null) {
+      activateHealthModifier(princessTracking.get());
+      princessTracking.get().setGameMode(GameMode.ADVENTURE);
+      team.addEntity(princessTracking.get());
     }
     for (var knight : knights) {
-      knight.setGameMode(GameMode.ADVENTURE);
-      team.addEntity(knight);
+      knight.get().setGameMode(GameMode.ADVENTURE);
+      team.addEntity(knight.get());
     }
   }
 
@@ -84,15 +84,16 @@ public class Team implements Level.Delegate {
 
   @Override
   public void levelDidClearStage(Stage stage) {
-    if (princess != null) {
-      clearInventoryExceptEquipments(princess);
+    if (princessTracking != null) {
+      clearInventoryExceptEquipments(princessTracking.get());
     }
     for (var knight : knights) {
-      clearInventoryExceptEquipments(knight);
+      clearInventoryExceptEquipments(knight.get());
     }
     switch (stage) {
       case CARRY -> {
-        if (princess != null) {
+        if (princessTracking != null) {
+          var princess = princessTracking.get();
           var book = ItemBuilder.For(Material.BOOK)
             .customTag(itemTag)
             .customTag(Stage.BUILD.tag)
@@ -103,11 +104,12 @@ public class Team implements Level.Delegate {
           princess.setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
-          knight.setGameMode(GameMode.CREATIVE);
+          knight.get().setGameMode(GameMode.CREATIVE);
         }
       }
       case BUILD -> {
-        if (princess != null) {
+        if (princessTracking != null) {
+          var princess = princessTracking.get();
           princess.setFoodLevel(2);
           princess.chat("お腹が空いてきちゃった・・・(I'm so hungry...)");
           var inventory = princess.getInventory();
@@ -115,7 +117,8 @@ public class Team implements Level.Delegate {
           inventory.setItem(1, CreateRecipeBook1());
           princess.setGameMode(GameMode.ADVENTURE);
         }
-        for (var knight : knights) {
+        for (var knightTracking : knights) {
+          var knight = knightTracking.get();
           var inventory = knight.getInventory();
           var emerald = Task.ToItem(TaskItem.EMERALD, 20);
           inventory.setItem(0, emerald);
@@ -123,17 +126,19 @@ public class Team implements Level.Delegate {
         }
       }
       case COOK -> {
-        if (princess != null) {
+        if (princessTracking != null) {
+          var princess = princessTracking.get();
           princess.setFoodLevel(20);
           princess.setGameMode(GameMode.SURVIVAL);
         }
         for (var knight : knights) {
-          knight.setGameMode(GameMode.ADVENTURE);
+          knight.get().setGameMode(GameMode.ADVENTURE);
         }
       }
       case SOLVE -> {
         activateHealthDisplays();
-        if (princess != null) {
+        if (princessTracking != null) {
+          var princess = princessTracking.get();
           var inventory = princess.getInventory();
           inventory.setItem(0, ItemBuilder.For(Material.GOLDEN_SHOVEL)
             .customTag(itemTag)
@@ -144,9 +149,7 @@ public class Team implements Level.Delegate {
             .customTag(itemTag)
             .customTag(Stage.FIGHT.tag)
             .displayName(text("ヤギの角笛 (右クリックで使用) / Goat Horn (Right click to use)", GOLD))
-            .meta(MusicInstrumentMeta.class, (it) -> {
-              it.setInstrument(MusicInstrument.SING);
-            })
+            .meta(MusicInstrumentMeta.class, (it) -> it.setInstrument(MusicInstrument.SING))
             .build());
           inventory.setItem(2, ItemBuilder.For(Material.RED_BED)
             .customTag(itemTag)
@@ -155,7 +158,8 @@ public class Team implements Level.Delegate {
             .build());
           princess.setGameMode(GameMode.ADVENTURE);
         }
-        for (var knight : knights) {
+        for (var knightTracking : knights) {
+          var knight = knightTracking.get();
           var inventory = knight.getInventory();
           var sword = ItemBuilder.For(Material.IRON_SWORD)
             .customTag(itemTag)
@@ -184,20 +188,21 @@ public class Team implements Level.Delegate {
       }
       case FIGHT -> {
         deactivateHealthDisplays();
-        if (princess != null) {
+        if (princessTracking != null) {
+          var princess = princessTracking.get();
           deactivateHealthModifier(princess);
           princess.setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
-          knight.setGameMode(GameMode.ADVENTURE);
+          knight.get().setGameMode(GameMode.ADVENTURE);
         }
       }
       case GOAL -> {
-        if (princess != null) {
-          princess.setGameMode(GameMode.ADVENTURE);
+        if (princessTracking != null) {
+          princessTracking.get().setGameMode(GameMode.ADVENTURE);
         }
         for (var knight : knights) {
-          knight.setGameMode(GameMode.ADVENTURE);
+          knight.get().setGameMode(GameMode.ADVENTURE);
         }
         if (delegate != null) {
           delegate.teamDidFinish(color);
@@ -211,11 +216,13 @@ public class Team implements Level.Delegate {
       display.dispose();
     }
     healthDisplays.clear();
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       var display = new HealthDisplay(owner, princess, itemTag);
       healthDisplays.put(princess.getUniqueId(), display);
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       var display = new HealthDisplay(owner, knight, itemTag);
       healthDisplays.put(knight.getUniqueId(), display);
     }
@@ -261,33 +268,37 @@ public class Team implements Level.Delegate {
 
   @Override
   public void levelSendTitle(Title title) {
-    if (princess != null) {
-      princess.showTitle(title);
+    if (princessTracking != null) {
+      princessTracking.get().showTitle(title);
     }
     for (var knight : knights) {
-      knight.showTitle(title);
+      knight.get().showTitle(title);
     }
   }
 
   @Override
   public void levelPlaySound(Sound sound) {
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       princess.playSound(princess.getLocation(), sound, 1, 1);
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       knight.playSound(knight.getLocation(), sound, 1, 1);
     }
   }
 
   @Override
   public void levelRequestsTeleport(@Nonnull Function<Player, Location> predicate) {
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       var location = predicate.apply(princess);
       if (location != null) {
         princess.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
       }
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       var location = predicate.apply(knight);
       if (location != null) {
         knight.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND, TeleportFlag.EntityState.RETAIN_PASSENGERS);
@@ -297,7 +308,8 @@ public class Team implements Level.Delegate {
 
   @Override
   public void levelDidFinishFightStageWaveOrStep() {
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       princess.setCooldown(Material.GOAT_HORN, 0);
       princess.setFireTicks(0);
       var maxHealth = princess.getAttribute(Attribute.GENERIC_MAX_HEALTH);
@@ -305,7 +317,8 @@ public class Team implements Level.Delegate {
         princess.setHealth(maxHealth.getValue());
       }
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       knight.setFireTicks(0);
       var maxHealth = knight.getAttribute(Attribute.GENERIC_MAX_HEALTH);
       if (maxHealth != null) {
@@ -316,10 +329,11 @@ public class Team implements Level.Delegate {
 
   @Override
   public void levelRequestsEncouragingKnights(Set<UUID> excludeHealthRecovery) {
-    if (princess != null) {
-      princess.sendMessage(prefix.append(text("みんなを鼓舞しました！", WHITE)));
+    if (princessTracking != null) {
+      princessTracking.get().sendMessage(prefix.append(text("みんなを鼓舞しました！", WHITE)));
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       knight.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 10 * 20, 0));
       knight.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 10 * 20, 0));
       knight.sendMessage(prefix.append(text("姫がみんなを鼓舞しています！", WHITE)));
@@ -337,7 +351,8 @@ public class Team implements Level.Delegate {
     record Candidate(Player player, double distance) {
     }
     var candidates = new ArrayList<Candidate>();
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       var seat = knight.getVehicle();
       if (seat != null) {
         continue;
@@ -346,7 +361,8 @@ public class Team implements Level.Delegate {
         candidates.add(new Candidate(knight, knight.getLocation().toVector().distanceSquared(enemy.getLocation().toVector())));
       }
     }
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       if (enemy.getPathfinder().findPath(princess) != null) {
         candidates.add(new Candidate(princess, princess.getLocation().toVector().distanceSquared(enemy.getLocation().toVector())));
       }
@@ -361,12 +377,14 @@ public class Team implements Level.Delegate {
 
   void dispose() {
     var team = teams.ensure(color);
-    if (princess != null) {
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       ClearItems(princess, itemTag);
       team.removeEntity(princess);
       Cloakroom.shared.restore(princess);
     }
-    for (var knight : knights) {
+    for (var knightTracking : knights) {
+      var knight = knightTracking.get();
       ClearItems(knight, itemTag);
       team.removeEntity(knight);
       Cloakroom.shared.restore(knight);
@@ -380,11 +398,11 @@ public class Team implements Level.Delegate {
     }
     return switch (role) {
       case PRINCESS -> {
-        if (princess == null) {
+        if (princessTracking == null) {
           if (!Cloakroom.shared.store(player, prefix)) {
             yield false;
           }
-          princess = player;
+          princessTracking = new EntityTracking<>(player);
           yield true;
         } else {
           //TODO: エラーメッセージ
@@ -396,7 +414,7 @@ public class Team implements Level.Delegate {
           if (!Cloakroom.shared.store(player, prefix)) {
             yield false;
           }
-          knights.add(player);
+          knights.add(new EntityTracking<>(player));
           yield true;
         } else {
           //TODO: エラーメッセージ
@@ -407,27 +425,27 @@ public class Team implements Level.Delegate {
   }
 
   void remove(Player player) {
-    if (player == princess) {
-      princess = null;
+    if (princessTracking != null && player == princessTracking.get()) {
+      princessTracking = null;
     }
-    knights.remove(player);
+    knights.removeIf(it -> it.get() == player);
     Cloakroom.shared.restore(player);
   }
 
-  public List<Player> getKnights() {
+  public List<EntityTracking<Player>> getKnights() {
     return new LinkedList<>(knights);
   }
 
-  public @Nullable Player getPrincess() {
-    return princess;
+  public @Nullable EntityTracking<Player> getPrincess() {
+    return princessTracking;
   }
 
   @Nullable
   Role getCurrentRole(Player player) {
-    if (princess != null && princess.getUniqueId().equals(player.getUniqueId())) {
+    if (princessTracking != null && princessTracking.get().getUniqueId().equals(player.getUniqueId())) {
       return Role.PRINCESS;
     }
-    if (knights.stream().anyMatch(it -> it.getUniqueId().equals(player.getUniqueId()))) {
+    if (knights.stream().anyMatch(it -> it.get().getUniqueId().equals(player.getUniqueId()))) {
       return Role.KNIGHT;
     }
     return null;
@@ -435,7 +453,7 @@ public class Team implements Level.Delegate {
 
   int size() {
     int i = knights.size();
-    if (princess != null) {
+    if (princessTracking != null) {
       i++;
     }
     return i;
@@ -457,11 +475,11 @@ public class Team implements Level.Delegate {
   }
 
   private void updateActionBar() {
-    if (princess != null) {
-      princess.sendActionBar(level.getActionBar(Role.PRINCESS));
+    if (princessTracking != null) {
+      princessTracking.get().sendActionBar(level.getActionBar(Role.PRINCESS));
     }
     for (var knight : knights) {
-      knight.sendActionBar(level.getActionBar(Role.KNIGHT));
+      knight.get().sendActionBar(level.getActionBar(Role.KNIGHT));
     }
   }
 }

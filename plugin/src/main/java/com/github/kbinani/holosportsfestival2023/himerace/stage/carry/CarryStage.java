@@ -110,7 +110,7 @@ public class CarryStage extends AbstractStage {
         setHeadBlocksForKnights(player, knights);
         var princess = team.getPrincess();
         if (princess != null) {
-          setPrincessStatus(isPrincessOnHeadBlock(princess) ? PrincessStatus.STATIONAL : PrincessStatus.FALL, team);
+          setPrincessStatus(isPrincessOnHeadBlock(princess.get()) ? PrincessStatus.STATIONAL : PrincessStatus.FALL, team);
         }
       }
       case PRINCESS -> {
@@ -199,12 +199,13 @@ public class CarryStage extends AbstractStage {
     }
   }
 
-  void setFloorForKnights(List<Player> players) {
+  void setFloorForKnights(List<EntityTracking<Player>> players) {
     if (princessStatus == PrincessStatus.FALL) {
       return;
     }
     var blocks = new HashSet<Point2i>();
-    for (var player : players) {
+    for (var playerTracking : players) {
+      var player = playerTracking.get();
       var location = player.getLocation();
       int minX = location.getBlockX() - 1;
       int minZ = location.getBlockZ() - 1;
@@ -236,9 +237,10 @@ public class CarryStage extends AbstractStage {
     this.activeFloorBlocks = blocks;
   }
 
-  void setHeadBlocksForKnights(Player knight, List<Player> knights) {
+  void setHeadBlocksForKnights(Player knight, List<EntityTracking<Player>> knights) {
     int index = -1;
-    for (Player player : knights) {
+    for (var playerTracking : knights) {
+      var player = playerTracking.get();
       index++;
       if (player != knight) {
         continue;

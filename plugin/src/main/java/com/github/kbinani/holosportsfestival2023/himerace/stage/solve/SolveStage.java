@@ -316,8 +316,9 @@ public class SolveStage extends AbstractStage {
       return;
     }
     quizStarted = true;
-    var princess = team.getPrincess();
-    if (princess != null) {
+    var princessTracking = team.getPrincess();
+    if (princessTracking != null) {
+      var princess = princessTracking.get();
       princess.teleport(pos(-91, 85, 34).toLocation(world).add(0.5, 0, 0.5));
       var inventory = princess.getInventory();
       var materials = new Material[]{Material.RED_WOOL, Material.ORANGE_WOOL, Material.YELLOW_WOOL, Material.PINK_WOOL};

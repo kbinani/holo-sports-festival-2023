@@ -68,9 +68,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     }
     status = s;
     switch (status) {
-      case IDLE -> {
-        miniGameReset();
-      }
+      case IDLE -> miniGameReset();
       case COUNTDOWN -> {
 
       }
@@ -90,9 +88,7 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
 
   @Override
   public void miniGameReset() {
-    levels.forEach((color, level) -> {
-      level.reset();
-    });
+    levels.forEach((color, level) -> level.reset());
     for (var team : teams.values()) {
       team.dispose();
     }
@@ -282,12 +278,12 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         var princess = team.getPrincess();
         if (princess != null) {
           broadcast(
-            text(String.format("  - [姫] %s", princess.getName()), color.textColor)
+            text(String.format("  - [姫] %s", princess.get().getName()), color.textColor)
           );
         }
         for (var knight : team.getKnights()) {
           broadcast(
-            text(String.format("  - %s", knight.getName()), color.textColor)
+            text(String.format("  - %s", knight.get().getName()), color.textColor)
           );
         }
       }
