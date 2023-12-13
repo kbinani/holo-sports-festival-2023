@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.AreaEffectCloud;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
@@ -32,13 +33,23 @@ class Bubble {
         it.setParticle(Particle.WATER_BUBBLE);
         it.addScoreboardTag(scoreboardTag);
       });
-      clouds.add(new EntityTracking<>(cloud));
+      var stand = world.spawn(new Location(world, x, center.getY() - 2, z), ArmorStand.class, it -> {
+        it.setInvulnerable(true);
+        it.setVisible(false);
+        it.addScoreboardTag(scoreboardTag);
+      });
+      stand.addPassenger(cloud);
+      clouds.add(new EntityTracking<>(stand));
     }
   }
 
   void dispose() {
     for (var cloud : clouds) {
-      cloud.get().remove();
+      var stand = cloud.get();
+      for (var passenger : new ArrayList<>(stand.getPassengers())) {
+        passenger.remove();
+      }
+      stand.remove();
     }
     clouds.clear();
   }
@@ -49,7 +60,7 @@ class Bubble {
       var cloud = clouds.get(index).get();
       var x = location.getX();
       var z = location.getZ() - (double) (sWidthZ / 2) + i;
-      cloud.teleport(new Location(world, x, location.getY(), z), TeleportFlag.EntityState.RETAIN_PASSENGERS);
+      cloud.teleport(new Location(world, x, location.getY() - 2, z), TeleportFlag.EntityState.RETAIN_PASSENGERS);
       index++;
     }
   }
