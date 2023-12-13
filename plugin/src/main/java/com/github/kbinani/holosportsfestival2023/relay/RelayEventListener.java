@@ -211,7 +211,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       if (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) {
         if (item != null && item.getType() == Material.BOOK && item.hasCustomTag(sItemTag)) {
           for (var team : teams.values()) {
-            if (team.players().contains(player)) {
+            if (team.contains(player)) {
               var inventory = ensureEntryBookInventory();
               player.openInventory(inventory);
               e.setCancelled(true);
@@ -357,7 +357,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     if (status == Status.IDLE) {
       for (var entry : teams.entrySet()) {
         var team = entry.getValue();
-        if (team.players().contains(player)) {
+        if (team.contains(player)) {
           return entry.getKey();
         }
       }
@@ -413,7 +413,8 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
       this.teams.putAll(teams);
     }
     for (var team : this.teams.values()) {
-      for (var player : team.players()) {
+      for (var playerTracking : team.players()) {
+        var player = playerTracking.get();
         ClearItem(player);
         var inventory = player.getInventory();
         inventory.setItem(0, createEntryBook());
@@ -487,7 +488,7 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
     for (var entry : teams.entrySet()) {
       var team = entry.getValue();
       var c = entry.getKey();
-      if (team.players().contains(player)) {
+      if (team.contains(player)) {
         var order = team.getCurrentOrder(player);
         team.remove(player);
         if (order != null) {

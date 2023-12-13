@@ -1,13 +1,17 @@
 package com.github.kbinani.holosportsfestival2023.relay;
 
 import com.github.kbinani.holosportsfestival2023.Cloakroom;
+import com.github.kbinani.holosportsfestival2023.EntityTracking;
 import com.github.kbinani.holosportsfestival2023.TeamColor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.github.kbinani.holosportsfestival2023.relay.RelayEventListener.ClearItem;
 import static net.kyori.adventure.text.Component.text;
@@ -16,14 +20,17 @@ import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 class Team {
   private final @Nonnull TeamColor color;
-  private final @Nonnull Player[] order = new Player[9];
-  private final @Nonnull Set<Player> players = new HashSet<>();
+  private final @Nonnull ArrayList<EntityTracking<Player>> order = new ArrayList<>(9);
+  private final @Nonnull Set<EntityTracking<Player>> players = new HashSet<>();
   int currentRunningOrder = 0;
   private final @Nonnull org.bukkit.scoreboard.Team scoreboardTeam;
 
   Team(@Nonnull TeamColor color, @Nonnull org.bukkit.scoreboard.Team team) {
     this.color = color;
     this.scoreboardTeam = team;
+    for (var i = 0; i < 9; i++) {
+      order.add(null);
+    }
   }
 
   Component getBossBarName() {
@@ -43,8 +50,9 @@ class Team {
   }
 
   void dispose() {
-    Arrays.fill(order, null);
-    players.forEach(player -> {
+    order.replaceAll(it -> null);
+    players.forEach(playerTracking -> {
+      var player = playerTracking.get();
       Cloakroom.shared.restore(player);
       ClearItem(player);
     });
@@ -54,8 +62,8 @@ class Team {
 
   int getOrderLength() {
     int count = 0;
-    for (Player player : order) {
-      if (player == null) {
+    for (var playerTracking : order) {
+      if (playerTracking == null) {
         break;
       } else {
         count++;
@@ -69,15 +77,15 @@ class Team {
   }
 
   boolean assign(Player player, int order) {
-    if (order < 0 || this.order.length <= order) {
+    if (order < 0 || this.order.size() <= order) {
       return false;
     }
-    if (!players.contains(player)) {
+    var tracking = players.stream().filter(it -> it.get() == player).findFirst().orElse(null);
+    if (tracking == null) {
       return false;
     }
-    if (this.order[order] == null) {
-      this.order[order] = player;
-      players.add(player);
+    if (this.order.get(order) == null) {
+      this.order.set(order, tracking);
       return true;
     } else {
       return false;
@@ -85,41 +93,44 @@ class Team {
   }
 
   void unassign(Player player) {
-    for (var i = 0; i < order.length; i++) {
-      if (order[i] == player) {
-        order[i] = null;
+    for (var i = 0; i < order.size(); i++) {
+      var tracking = order.get(i);
+      if (tracking != null && tracking.get() == player) {
+        order.set(i, null);
         break;
       }
     }
   }
 
   void add(@Nonnull Player player) {
-    players.add(player);
+    players.add(new EntityTracking<>(player));
     scoreboardTeam.addPlayer(player);
   }
 
   void remove(@Nonnull Player player) {
-    for (var i = 0; i < order.length; i++) {
-      if (order[i] == player) {
-        order[i] = null;
+    for (var i = 0; i < order.size(); i++) {
+      var tracking = order.get(i);
+      if (tracking != null && tracking.get() == player) {
+        order.set(i, null);
       }
     }
-    players.remove(player);
+    players.removeIf(it -> it.get() == player);
     scoreboardTeam.removePlayer(player);
   }
 
-  List<Player> players() {
+  List<EntityTracking<Player>> players() {
     return new ArrayList<>(players);
   }
 
   boolean contains(Player player) {
-    return getCurrentOrder(player) != null;
+    return players.stream().anyMatch(it -> it.get() == player);
   }
 
   @Nullable
   Integer getCurrentOrder(Player player) {
-    for (var i = 0; i < order.length; i++) {
-      if (order[i] == player) {
+    for (var i = 0; i < order.size(); i++) {
+      var tracking = order.get(i);
+      if (tracking != null && tracking.get() == player) {
         return i;
       }
     }
@@ -128,9 +139,14 @@ class Team {
 
   @Nullable
   Player getAssignedPlayer(int order) {
-    if (order < 0 || this.order.length <= order) {
+    if (order < 0 || this.order.size() <= order) {
       return null;
     }
-    return this.order[order];
+    var tracking = this.order.get(order);
+    if (tracking == null) {
+      return null;
+    } else {
+      return tracking.get();
+    }
   }
 }

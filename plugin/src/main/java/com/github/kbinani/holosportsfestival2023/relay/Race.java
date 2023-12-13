@@ -106,8 +106,8 @@ class Race {
 
   void teleportAll(Location location) {
     for (var team : teams.values()) {
-      team.players().forEach(player -> {
-        player.teleport(location);
+      team.players().forEach(it -> {
+        it.get().teleport(location);
       });
     }
   }
@@ -183,7 +183,7 @@ class Race {
     var ids = new HashSet<UUID>();
     for (var team : teams.values()) {
       for (var player : team.players()) {
-        ids.add(player.getUniqueId());
+        ids.add(player.get().getUniqueId());
       }
     }
     if (ids.size() != total) {
@@ -229,7 +229,7 @@ class Race {
   void eachPlayers(Consumer<Player> cb) {
     for (var team : teams.values()) {
       for (var player : team.players()) {
-        cb.accept(player);
+        cb.accept(player.get());
       }
     }
   }
