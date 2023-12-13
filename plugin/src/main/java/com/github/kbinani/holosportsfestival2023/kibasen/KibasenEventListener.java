@@ -67,7 +67,7 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   private @Nullable Session session;
   private final @Nonnull Delegate delegate;
   private @Nullable TrackAndField taf;
-  private @Nonnull Announcer announcer;
+  private final @Nonnull Announcer announcer;
 
   public KibasenEventListener(@Nonnull World world, @Nonnull JavaPlugin owner, @Nonnull Announcer announcer, @Nonnull Delegate delegate) {
     this.owner = owner;
@@ -84,6 +84,10 @@ public class KibasenEventListener implements MiniGame, Registrants.Delegate, Ses
   @Override
   public void miniGameClearItem(Player player) {
     ClearItems(player);
+  }
+
+  @Override
+  public void miniGameDispose() {
   }
 
   @Override

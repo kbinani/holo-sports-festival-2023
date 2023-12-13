@@ -10,4 +10,6 @@ public interface MiniGame extends Listener {
   void miniGameClearItem(Player player);
 
   BoundingBox miniGameGetBoundingBox();
+
+  void miniGameDispose();
 }

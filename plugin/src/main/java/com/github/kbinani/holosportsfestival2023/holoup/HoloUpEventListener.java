@@ -76,6 +76,10 @@ public class HoloUpEventListener implements MiniGame, Race.Delegate {
   }
 
   @Override
+  public void miniGameDispose() {
+  }
+
+  @Override
   public void raceDidFinish() {
     reset();
   }

@@ -169,12 +169,14 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public void onDisable() {
     for (var game : miniGames) {
       game.miniGameReset();
+      game.miniGameDispose();
     }
     getServer().getOnlinePlayers().forEach(player -> {
       for (var game : miniGames) {
         game.miniGameClearItem(player);
       }
     });
+    miniGames.clear();
     cleanupScoreboardTeams();
   }
 

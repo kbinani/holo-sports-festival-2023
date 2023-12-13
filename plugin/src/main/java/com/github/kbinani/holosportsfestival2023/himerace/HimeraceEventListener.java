@@ -121,6 +121,10 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
     return announceBounds;
   }
 
+  @Override
+  public void miniGameDispose() {
+  }
+
   private void cleanupPlayer(Player player) {
     ClearItems(player, itemTag);
 

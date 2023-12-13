@@ -106,6 +106,19 @@ public class RelayEventListener implements MiniGame, Race.Delegate {
   }
 
   @Override
+  public void miniGameDispose() {
+    waveTimer.cancel();
+    for (var hanger : breadHangers) {
+      hanger.get().remove();
+    }
+    breadHangers.clear();
+    for (var wave : waves) {
+      wave.dispose();
+    }
+    waves.clear();
+  }
+
+  @Override
   public BoundingBox miniGameGetBoundingBox() {
     return delegate.relayGetAnnounceBounds();
   }
