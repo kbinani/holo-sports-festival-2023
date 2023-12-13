@@ -46,16 +46,18 @@ class Registrants {
       var color = entry.getKey();
       var team = teams.ensure(color);
       for (var unit : entry.getValue()) {
-        team.removePlayer(unit.attacker);
-        unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
-        ClearItems(unit.attacker);
-        Cloakroom.shared.restore(unit.attacker);
+        var attacker = unit.attacker.get();
+        team.removePlayer(attacker);
+        attacker.removePotionEffect(PotionEffectType.GLOWING);
+        ClearItems(attacker);
+        Cloakroom.shared.restore(attacker);
         if (unit.vehicle != null) {
-          team.removePlayer(unit.vehicle);
-          unit.vehicle.removePassenger(unit.attacker);
-          unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
-          ClearItems(unit.vehicle);
-          Cloakroom.shared.restore(unit.vehicle);
+          var vehicle = unit.vehicle.get();
+          team.removePlayer(vehicle);
+          vehicle.removePassenger(attacker);
+          vehicle.removePotionEffect(PotionEffectType.GLOWING);
+          ClearItems(vehicle);
+          Cloakroom.shared.restore(vehicle);
         }
       }
     }
@@ -74,13 +76,14 @@ class Registrants {
   boolean validate() {
     for (var entry : registrants.entrySet()) {
       for (var unit : entry.getValue()) {
-        if (!unit.attacker.isOnline()) {
+        var attacker = unit.attacker.get();
+        if (!attacker.isOnline()) {
           continue;
         }
-        if (unit.vehicle == null || !unit.vehicle.isOnline()) {
+        if (unit.vehicle == null || !unit.vehicle.get().isOnline()) {
           // https://youtu.be/D9vmP7Qj4TI?t=1398
           //NOTE: 本家では prefix 無し
-          broadcast(prefix.append(text(String.format("%sに馬が居ないため、ゲームを開始できません。", unit.attacker.getName()), RED)));
+          broadcast(prefix.append(text(String.format("%sに馬が居ないため、ゲームを開始できません。", attacker.getName()), RED)));
           return false;
         }
       }
@@ -101,13 +104,14 @@ class Registrants {
       var color = entry.getKey();
       var units = new ArrayList<Unit>();
       for (var unit : entry.getValue()) {
-        if (!unit.attacker.isOnline()) {
+        var attacker = unit.attacker.get();
+        if (!attacker.isOnline()) {
           continue;
         }
-        if (unit.vehicle == null || !unit.vehicle.isOnline()) {
+        if (unit.vehicle == null || !unit.vehicle.get().isOnline()) {
           continue;
         }
-        units.add(new Unit(owner, color, unit.attacker, unit.vehicle, unit.isLeader));
+        units.add(new Unit(owner, color, attacker, unit.vehicle.get(), unit.isLeader));
       }
       participants.put(color, units);
     }
@@ -138,10 +142,11 @@ class Registrants {
       }
       broadcast(text(String.format(" %s (%d)", color.text, units.size()), color.textColor));
       for (var unit : units) {
+        var attacker = unit.attacker.get();
         if (unit.vehicle != null) {
-          broadcast(text(String.format(" - [騎手] %s & %s", unit.attacker.getName(), unit.vehicle.getName()), color.textColor));
+          broadcast(text(String.format(" - [騎手] %s & %s", attacker.getName(), unit.vehicle.get().getName()), color.textColor));
         } else {
-          broadcast(text(String.format(" - [騎手] %s", unit.attacker.getName()), color.textColor));
+          broadcast(text(String.format(" - [騎手] %s", attacker.getName()), color.textColor));
         }
       }
     }
@@ -203,7 +208,7 @@ class Registrants {
       attacker.sendMessage(text("そのプレイヤーは馬にできません。(騎乗に失敗しました)", RED));
       return;
     }
-    p.unit.vehicle = vehicle;
+    p.unit.vehicle = new EntityTracking<>(vehicle);
 
     var team = teams.ensure(p.color);
     team.addPlayer(vehicle);
@@ -243,9 +248,9 @@ class Registrants {
     current.unit.isLeader = true;
     updateLeaderRegistrationBarrel();
     if (current.unit.vehicle != null) {
-      current.unit.vehicle.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
+      current.unit.vehicle.get().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
     }
-    current.unit.attacker.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
+    current.unit.attacker.get().addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 1, false, false));
     broadcast(prefix
       .append(current.color.component())
       .append(text("の大将に", WHITE))
@@ -275,9 +280,9 @@ class Registrants {
       .append(text("の大将を辞めました！", WHITE))
     );
     if (current.unit.vehicle != null) {
-      current.unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+      current.unit.vehicle.get().removePotionEffect(PotionEffectType.GLOWING);
     }
-    current.unit.attacker.removePotionEffect(PotionEffectType.GLOWING);
+    current.unit.attacker.get().removePotionEffect(PotionEffectType.GLOWING);
   }
 
   void dismount(Player player) {
@@ -295,7 +300,7 @@ class Registrants {
     inventory.setItem(0, CreateSaddle());
 
     if (current.unit.vehicle != null) {
-      remove(current.unit.vehicle);
+      remove(current.unit.vehicle.get());
     }
   }
 
@@ -315,14 +320,14 @@ class Registrants {
 
       if (current.unit.isLeader) {
         broadcast(prefix
-          .append(text(current.unit.attacker.getName(), GOLD))
+          .append(text(current.unit.attacker.get().getName(), GOLD))
           .append(text("が", WHITE))
           .append(current.color.component())
           .append(text("の大将を辞めました！", WHITE))
         );
         updateLeaderRegistrationBarrel();
         if (current.unit.vehicle != null) {
-          current.unit.vehicle.removePotionEffect(PotionEffectType.GLOWING);
+          current.unit.vehicle.get().removePotionEffect(PotionEffectType.GLOWING);
         }
       }
 
@@ -333,23 +338,25 @@ class Registrants {
       Cloakroom.shared.restore(player);
 
       if (current.unit.vehicle != null) {
-        team.removePlayer(current.unit.vehicle);
-        current.unit.vehicle.removePassenger(player);
-        current.unit.vehicle.sendMessage(prefix
+        var vehicle = current.unit.vehicle.get();
+        team.removePlayer(vehicle);
+        vehicle.removePassenger(player);
+        vehicle.sendMessage(prefix
           .append(text("騎士があなたから降りたため、エントリーが解除されました。", WHITE))
         );
-        Cloakroom.shared.restore(current.unit.vehicle);
+        Cloakroom.shared.restore(vehicle);
       }
     } else {
       current.unit.vehicle = null;
+      var attacker = current.unit.attacker.get();
 
-      if (player.removePassenger(current.unit.attacker)) {
+      if (player.removePassenger(attacker)) {
         player.sendMessage(prefix
           .append(text("エントリー登録を解除しました。", WHITE))
         );
         Cloakroom.shared.restore(player);
-        retireLeader(current.unit.attacker);
-        var inventory = current.unit.attacker.getInventory();
+        retireLeader(attacker);
+        var inventory = attacker.getInventory();
         inventory.setItem(0, CreateSaddle());
       } else {
         // https://youtu.be/D9vmP7Qj4TI?t=1217
@@ -366,10 +373,10 @@ class Registrants {
     for (var entry : registrants.entrySet()) {
       for (var unit : entry.getValue()) {
         var color = entry.getKey();
-        if (unit.vehicle == player) {
+        if (unit.vehicle != null && unit.vehicle.get() == player) {
           return new Participation(color, unit, false);
         }
-        if (unit.attacker == player) {
+        if (unit.attacker.get() == player) {
           return new Participation(color, unit, true);
         }
       }
@@ -432,7 +439,7 @@ class Registrants {
       if (leader == null) {
         inventory.setItem(index, CreateWool(color));
       } else {
-        var attacker = leader.attacker;
+        var attacker = leader.attacker.get();
         var name = color
           .component()
           .appendSpace()

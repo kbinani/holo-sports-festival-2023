@@ -1,9 +1,6 @@
 package com.github.kbinani.holosportsfestival2023.kibasen;
 
-import com.github.kbinani.holosportsfestival2023.HealthDisplay;
-import com.github.kbinani.holosportsfestival2023.ItemBuilder;
-import com.github.kbinani.holosportsfestival2023.Point3i;
-import com.github.kbinani.holosportsfestival2023.TeamColor;
+import com.github.kbinani.holosportsfestival2023.*;
 import io.papermc.paper.entity.TeleportFlag;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -32,8 +29,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 class Unit {
   private final JavaPlugin owner;
   final @Nonnull TeamColor color;
-  final @Nonnull Player attacker;
-  final @Nonnull Player vehicle;
+  final @Nonnull EntityTracking<Player> attacker;
+  final @Nonnull EntityTracking<Player> vehicle;
   private @Nullable HealthDisplay healthDisplay;
   final boolean isLeader;
   private int kills = 0;
@@ -43,8 +40,8 @@ class Unit {
   Unit(JavaPlugin owner, @Nonnull TeamColor color, @Nonnull Player attacker, @Nonnull Player vehicle, boolean isLeader) {
     this.owner = owner;
     this.color = color;
-    this.vehicle = vehicle;
-    this.attacker = attacker;
+    this.vehicle = new EntityTracking<>(vehicle);
+    this.attacker = new EntityTracking<>(attacker);
     this.isLeader = isLeader;
     if (isLeader) {
       this.maxHealth = 5;
@@ -66,13 +63,15 @@ class Unit {
       enemy.teamDisplayName().append(text("を倒しました！", GOLD)),
       times
     );
-    attacker.showTitle(title);
-    vehicle.showTitle(title);
+    attacker.get().showTitle(title);
+    vehicle.get().showTitle(title);
     updateActionBar();
   }
 
   // health が 0 になったら true を返す
   boolean damagedBy(Player enemy) {
+    var attacker = this.attacker.get();
+    var vehicle = this.vehicle.get();
     health -= 1;
     if (health < 1) {
       health = maxHealth;
@@ -93,7 +92,7 @@ class Unit {
   }
 
   void teleport(Location location) {
-    vehicle.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+    vehicle.get().teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN, TeleportFlag.EntityState.RETAIN_PASSENGERS);
   }
 
   void prepare() {
@@ -106,6 +105,8 @@ class Unit {
   }
 
   void clean() {
+    var attacker = this.attacker.get();
+    var vehicle = this.vehicle.get();
     vehicle.removePassenger(attacker);
     if (healthDisplay != null) {
       healthDisplay.dispose();
@@ -126,23 +127,25 @@ class Unit {
     if (this.healthDisplay != null) {
       return this.healthDisplay;
     }
-    var display = new HealthDisplay(owner, attacker, healthDisplayScoreboardTag);
+    var display = new HealthDisplay(owner, attacker.get(), healthDisplayScoreboardTag);
     this.healthDisplay = display;
     return display;
   }
 
   private void updateActionBar() {
     var actionBar = text(String.format("現在のキル数: %d", kills), GREEN);
-    attacker.sendActionBar(actionBar);
-    vehicle.sendActionBar(actionBar);
+    attacker.get().sendActionBar(actionBar);
+    vehicle.get().sendActionBar(actionBar);
   }
 
   private void setupGameMode() {
-    attacker.setGameMode(GameMode.ADVENTURE);
-    vehicle.setGameMode(GameMode.ADVENTURE);
+    attacker.get().setGameMode(GameMode.ADVENTURE);
+    vehicle.get().setGameMode(GameMode.ADVENTURE);
   }
 
   private void setupHealth() {
+    var attacker = this.attacker.get();
+    var vehicle = this.vehicle.get();
     activateHealthModifier(attacker);
     activateHealthModifier(vehicle);
     attacker.setFoodLevel(20);
@@ -173,8 +176,8 @@ class Unit {
   }
 
   private void setupAttackerItems() {
-    ClearItems(attacker);
-    var inventory = attacker.getInventory();
+    ClearItems(attacker.get());
+    var inventory = attacker.get().getInventory();
     var sword = ItemBuilder.For(Material.WOODEN_SWORD)
       .customTag(itemTag)
       .build();
@@ -187,7 +190,7 @@ class Unit {
   }
 
   private void closeLeaderRegistrationInventory() {
-    var view = attacker.getOpenInventory();
+    var view = attacker.get().getOpenInventory();
     for (var index = 0; index < view.countSlots(); index++) {
       var inventory = view.getInventory(index);
       if (inventory == null) {

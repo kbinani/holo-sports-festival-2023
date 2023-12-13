@@ -129,7 +129,7 @@ class Session {
           .append(defence.teamDisplayName())
         );
       }
-      offenceUnit.kill(defenceUnit.attacker);
+      offenceUnit.kill(defenceUnit.attacker.get());
       updateBossBarName();
       var location = respawnLocation.get(defenceUnit.color);
       if (location != null) {
@@ -192,10 +192,10 @@ class Session {
   private @Nullable Unit getUnit(Player attacker) {
     for (var entry : participants.entrySet()) {
       for (var unit : entry.getValue()) {
-        if (unit.attacker == attacker) {
+        if (unit.attacker.get() == attacker) {
           return unit;
         }
-        if (unit.vehicle == attacker) {
+        if (unit.vehicle.get() == attacker) {
           return unit;
         }
       }
@@ -206,10 +206,10 @@ class Session {
   private boolean isParticipant(Player player) {
     for (var entry : participants.entrySet()) {
       for (var unit : entry.getValue()) {
-        if (unit.attacker == player) {
+        if (unit.attacker.get() == player) {
           return true;
         }
-        if (unit.vehicle == player) {
+        if (unit.vehicle.get() == player) {
           return true;
         }
       }
@@ -224,7 +224,7 @@ class Session {
       for (var unit : entry.getValue()) {
         unit.prepare();
         if (respawn != null) {
-          unit.vehicle.teleport(
+          unit.vehicle.get().teleport(
             respawn.toLocation(world),
             PlayerTeleportEvent.TeleportCause.COMMAND,
             TeleportFlag.EntityState.RETAIN_PASSENGERS
@@ -240,13 +240,15 @@ class Session {
       var color = entry.getKey();
       var team = teams.ensure(color);
       for (var unit : entry.getValue()) {
-        team.removePlayer(unit.attacker);
-        team.removePlayer(unit.vehicle);
+        var attacker = unit.attacker.get();
+        var vehicle = unit.vehicle.get();
+        team.removePlayer(attacker);
+        team.removePlayer(vehicle);
         unit.clean();
-        unit.vehicle.spread(safeRespawnBounds);
-        unit.attacker.spread(safeRespawnBounds);
-        Cloakroom.shared.restore(unit.vehicle);
-        Cloakroom.shared.restore(unit.attacker);
+        vehicle.spread(safeRespawnBounds);
+        attacker.spread(safeRespawnBounds);
+        Cloakroom.shared.restore(vehicle);
+        Cloakroom.shared.restore(attacker);
       }
     }
   }
@@ -322,8 +324,8 @@ class Session {
         text(String.format(
           "  #%d: %s & %s - %d kill%s",
           record.order,
-          record.unit.attacker.getName(),
-          record.unit.vehicle.getName(),
+          record.unit.attacker.get().getName(),
+          record.unit.vehicle.get().getName(),
           record.kills,
           record.kills > 1 ? "s" : ""
         ), record.unit.color.textColor)
