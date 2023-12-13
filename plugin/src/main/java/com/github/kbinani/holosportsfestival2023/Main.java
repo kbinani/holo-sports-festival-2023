@@ -299,7 +299,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public @Nullable TrackAndField kibasenTakeTrackAndFieldOwnership() {
     var taf = this.ensureTrackAndField();
     if (this.tafOwner == null || this.tafOwner == TrackAndFieldOwner.KIBASEN) {
-      getLogger().log(Level.INFO, "ownership of track and field is taken by kibasen");
+      getLogger().log(Level.INFO, "「騎馬戦」がグラウンドの利用を開始しました");
       this.tafOwner = TrackAndFieldOwner.KIBASEN;
       return taf;
     } else {
@@ -311,7 +311,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public void kibasenReleaseTrackAndFieldOwnership() {
     if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.KIBASEN) {
       this.tafOwner = null;
-      getLogger().log(Level.INFO, "ownership of track and field was released from kibasen");
+      getLogger().log(Level.INFO, "「騎馬戦」がグラウンドの利用を終了しました");
     }
   }
 
@@ -382,7 +382,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public TrackAndField relayTakeTrackAndFieldOwnership() {
     var taf = this.ensureTrackAndField();
     if (this.tafOwner == null || this.tafOwner == TrackAndFieldOwner.RELAY) {
-      getLogger().log(Level.INFO, "ownership of track and field is taken by relay");
+      getLogger().log(Level.INFO, "「春夏秋冬リレー」がグラウンドの利用を開始しました");
       this.tafOwner = TrackAndFieldOwner.RELAY;
       return taf;
     } else {
@@ -394,7 +394,7 @@ public class Main extends JavaPlugin implements Listener, KibasenEventListener.D
   public void relayReleaseTrackAndFieldOwnership() {
     if (this.tafOwner != null && this.tafOwner == TrackAndFieldOwner.RELAY) {
       this.tafOwner = null;
-      getLogger().log(Level.INFO, "ownership of track and field was released from relay");
+      getLogger().log(Level.INFO, "「春夏秋冬リレー」がグラウンドの利用を終了しました");
     }
   }
 
