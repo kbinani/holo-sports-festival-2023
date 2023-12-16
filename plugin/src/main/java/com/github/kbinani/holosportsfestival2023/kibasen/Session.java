@@ -65,7 +65,15 @@ class Session {
     this.world = world;
     this.announceBounds = announceBounds;
     this.teams = teams;
-    this.participants = new HashMap<>(participants);
+    this.participants = new HashMap<>();
+    for (var entry : participants.entrySet()) {
+      var color = entry.getKey();
+      var units = entry.getValue();
+      if (units.isEmpty()) {
+        continue;
+      }
+      this.participants.put(color, units);
+    }
     var scheduler = Bukkit.getScheduler();
     this.countdownStarter = scheduler.runTaskLater(owner, this::startCountdown, (durationSec - countdownSec) * 20);
     this.tick = scheduler.runTaskTimer(owner, this::tick, 0, 20);

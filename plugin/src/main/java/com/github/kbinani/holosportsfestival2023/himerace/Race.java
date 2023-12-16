@@ -39,11 +39,17 @@ class Race implements Team.Delegate {
   Race(JavaPlugin owner, World world, Map<TeamColor, Team> teams, @Nonnull Announcer announcer, @Nonnull Delegate delegate) {
     this.owner = owner;
     this.world = world;
-    for (var team : teams.values()) {
+    this.teams = new HashMap<>();
+    for (var entry : teams.entrySet()) {
+      var team = entry.getValue();
+      if (team.size() == 0) {
+        continue;
+      }
+      var color = entry.getKey();
       team.delegate = this;
       team.onStart();
+      this.teams.put(color, team);
     }
-    this.teams = new HashMap<>(teams);
     this.delegate = delegate;
     this.announcer = announcer;
     teams.clear();

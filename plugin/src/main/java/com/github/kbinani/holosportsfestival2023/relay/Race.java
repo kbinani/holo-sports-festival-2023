@@ -81,7 +81,11 @@ class Race {
     for (var entry : this.teams.entrySet()) {
       var color = entry.getKey();
       var team = entry.getValue();
-      count = Math.max(count, team.getOrderLength());
+      var orderLength = team.getOrderLength();
+      if (orderLength == 0) {
+        continue;
+      }
+      count = Math.max(count, orderLength);
       var bar = new BossBar(owner, world, announceBounds, 0, color.barColor);
       bars.put(color, bar);
       bar.setName(team.getBossBarName());
