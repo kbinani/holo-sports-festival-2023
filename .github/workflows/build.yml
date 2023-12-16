@@ -3,10 +3,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-env:
-  HOLO_SPORTS_FESTIVAL_2023_PLUGIN_VERSION: ${{ github.ref_name }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,8 +10,3 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build
         run: make plugin
-      - name: Deploy
-        uses: softprops/action-gh-release@v1
-        if: github.ref_type == 'tag'
-        with:
-          files: plugin/build/libs/holo-sports-festival-2023-plugin-${{ env.HOLO_SPORTS_FESTIVAL_2023_PLUGIN_VERSION }}.jar
