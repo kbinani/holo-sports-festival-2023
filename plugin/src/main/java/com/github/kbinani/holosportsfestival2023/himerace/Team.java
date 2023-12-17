@@ -42,7 +42,7 @@ public class Team implements Level.Delegate {
   private @Nullable EntityTracking<Player> princessTracking;
   private final List<EntityTracking<Player>> knights = new LinkedList<>();
   private final Map<UUID, HealthDisplay> healthDisplays = new HashMap<>();
-  private static final int kMaxKnightPlayers = 2;
+  private static final int kMaxKnightPlayers = 3;
   private final Level level;
   private final Teams teams;
   @Nullable
