@@ -552,7 +552,8 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
       player.sendMessage(prefix.append(text("エントリー登録を解除しました。", WHITE)));
       return;
     }
-    if (team.add(player, role)) {
+    var result = team.add(player, role);
+    if (result.value) {
       broadcast(title
         .append(text(" " + player.getName() + " が", WHITE))
         .append(color.component())
@@ -577,6 +578,8 @@ public class HimeraceEventListener implements MiniGame, Race.Delegate {
         .customTag(itemTag)
         .customTag(Stage.FIGHT.tag)
         .build());
+    } else if (result.reason != null) {
+      player.sendMessage(result.reason);
     }
   }
 

@@ -391,34 +391,31 @@ public class Team implements Level.Delegate {
     }
   }
 
-  boolean add(Player player, Role role) {
+  Result<Boolean, Component> add(Player player, Role role) {
     if (getCurrentRole(player) != null) {
-      //TODO: エラーメッセージ
-      return false;
+      return new Result<>(false, text("既に参加登録済みです", RED));
     }
     return switch (role) {
       case PRINCESS -> {
         if (princessTracking == null) {
           if (!Cloakroom.shared.store(player, prefix)) {
-            yield false;
+            yield new Result<>(false, null);
           }
           princessTracking = new EntityTracking<>(player);
-          yield true;
+          yield new Result<>(true, null);
         } else {
-          //TODO: エラーメッセージ
-          yield false;
+          yield new Result<>(false, text("このチームには既に姫として参加登録しているプレイヤーがいます", RED));
         }
       }
       case KNIGHT -> {
         if (kMaxKnightPlayers > knights.size()) {
           if (!Cloakroom.shared.store(player, prefix)) {
-            yield false;
+            yield new Result<>(false, null);
           }
           knights.add(new EntityTracking<>(player));
-          yield true;
+          yield new Result<>(true, null);
         } else {
-          //TODO: エラーメッセージ
-          yield false;
+          yield new Result<>(false, text("参加可能な騎士の人数を超えています", RED));
         }
       }
     };
