@@ -521,14 +521,16 @@ public class CookStage extends AbstractStage {
       .customTag(Stage.COOK.tag)
       .customTag(itemTag)
       .build();
-    book.editMeta(BookMeta.class, it -> {
+    if (book.getItemMeta() instanceof BookMeta meta) {
       var tasks = GetRecipeBookTasks();
       var pages = Arrays.stream(tasks).flatMap(task -> Arrays.stream(task.getRecipePageJp()));
-      var builder = it.toBuilder();
+      var builder = meta.toBuilder();
       pages.forEach(builder::addPage);
-      it.setTitle("");
-      it.setAuthor("");
-    });
+      var built = builder.build();
+      built.setTitle("");
+      built.setAuthor("");
+      book.setItemMeta(built);
+    }
     return book;
   }
 
@@ -538,14 +540,16 @@ public class CookStage extends AbstractStage {
       .customTag(Stage.COOK.tag)
       .customTag(itemTag)
       .build();
-    book.editMeta(BookMeta.class, it -> {
+    if (book.getItemMeta() instanceof BookMeta meta) {
       var tasks = GetRecipeBookTasks();
       var pages = Arrays.stream(tasks).flatMap(task -> Arrays.stream(task.getRecipePageEn()));
-      var builder = it.toBuilder();
+      var builder = meta.toBuilder();
       pages.forEach(builder::addPage);
-      it.setTitle("");
-      it.setAuthor("");
-    });
+      var built = builder.build();
+      built.setTitle("");
+      built.setAuthor("");
+      book.setItemMeta(built);
+    }
     return book;
   }
 
